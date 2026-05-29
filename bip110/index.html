@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIP110 — Reduced Data Temporary Softfork</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a2e;
+  --border: #2a2a4a;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --orange: #f7931a;
+  --orange-dim: #d4781a;
+  --orange-glow: rgba(247, 147, 26, 0.15);
+  --cyan: #22d3ee;
+  --rose: #fb7185;
+  --emerald: #34d399;
+  --violet: #a78bfa;
+  --amber: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb-1 { top: -20vh; left: -10vw; width: 60vw; height: 60vw; background: rgba(247, 147, 26, 0.08); }
+.orb-2 { bottom: -10vh; right: -5vw; width: 40vw; height: 40vw; background: rgba(34, 211, 238, 0.05); }
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* HERO */
+.hero { text-align: center; padding: 80px 0 60px; }
+.hero-badge {
+  display: inline-block;
+  background: var(--orange-glow);
+  border: 1px solid rgba(247, 147, 26, 0.3);
+  color: var(--orange);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; font-weight: 600;
+  padding: 6px 16px; border-radius: 999px;
+  margin-bottom: 24px; letter-spacing: 0.5px;
+}
+.hero h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 800; letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--orange) 0%, var(--amber) 50%, var(--text) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+.hero p { font-size: 18px; color: var(--text-dim); max-width: 640px; margin: 0 auto 40px; }
+.hero-sub { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--text-dim); opacity: 0.7; }
+
+/* COUNTDOWN */
+.countdown {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 48px;
+}
+.countdown-label { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 16px; }
+.countdown-grid { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+.countdown-item { display: flex; flex-direction: column; align-items: center; }
+.countdown-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+  background: linear-gradient(135deg, var(--orange), var(--amber));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; line-height: 1;
+}
+.countdown-unit { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); opacity: 0.6; margin-top: 4px; }
+.countdown-meta { margin-top: 20px; font-size: 13px; color: var(--text-dim); }
+.countdown-status {
+  display: inline-block; padding: 4px 12px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; margin-top: 12px;
+}
+.status-draft { background: rgba(251, 191, 36, 0.15); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+.status-active { background: rgba(52, 211, 153, 0.15); color: var(--emerald); border: 1px solid rgba(52, 211, 153, 0.3); }
+.status-expired { background: rgba(251, 113, 133, 0.15); color: var(--rose); border: 1px solid rgba(251, 113, 133, 0.3); }
+
+/* SECTIONS */
+.section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 40px; margin-bottom: 24px;
+}
+.section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; font-weight: 700; margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-title .icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.icon-what { background: rgba(52, 211, 153, 0.2); color: var(--emerald); }
+.icon-why { background: rgba(247, 147, 26, 0.2); color: var(--orange); }
+.icon-how { background: rgba(167, 139, 250, 0.2); color: var(--violet); }
+.icon-risk { background: rgba(251, 113, 133, 0.2); color: var(--rose); }
+.icon-chart { background: rgba(34, 211, 238, 0.2); color: var(--cyan); }
+
+/* 5H1W */
+.five-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .five-grid { grid-template-columns: 1fr; } }
+.five-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+.five-card .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--orange); margin-bottom: 8px;
+}
+.five-card .value { font-size: 14px; color: var(--text); line-height: 1.7; }
+.five-card .dim { color: var(--text-dim); font-size: 13px; }
+.five-card.full { grid-column: 1 / -1; }
+
+/* RULES */
+.rules-list { list-style: none; }
+.rules-list li {
+  padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 8px; font-size: 14px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.rules-list .num {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--orange);
+  background: var(--orange-glow); border-radius: 6px; padding: 2px 8px; flex-shrink: 0; margin-top: 1px;
+}
+
+/* RISKS */
+.risk-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; margin-bottom: 12px;
+}
+.risk-item h4 { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--rose); margin-bottom: 8px; }
+.risk-item p { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+
+/* CHART */
+.chart-container { position: relative; width: 100%; max-height: 420px; margin: 20px 0; }
+.chart-controls {
+  display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.chart-btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; cursor: pointer; transition: all 0.2s;
+}
+.chart-btn:hover { border-color: var(--orange); color: var(--text); }
+.chart-btn.active { background: var(--orange-glow); border-color: var(--orange); color: var(--orange); }
+.chart-note { font-size: 12px; color: var(--text-dim); text-align: center; margin-top: 12px; opacity: 0.7; }
+.chart-legend-custom {
+  display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 16px;
+}
+.chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+.chart-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* TIMELINE */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: var(--border);
+}
+.timeline-item { position: relative; margin-bottom: 24px; padding-left: 16px; }
+.timeline-item::before {
+  content: ''; position: absolute; left: -24px; top: 6px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--orange);
+}
+.timeline-item.done::before { background: var(--orange); }
+.timeline-item .date { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+.timeline-item .desc { font-size: 14px; color: var(--text); }
+.timeline-item .desc .highlight { color: var(--orange); font-weight: 600; }
+
+/* FOOTER */
+footer { text-align: center; padding: 48px 0 32px; color: var(--text-dim); font-size: 13px; opacity: 0.6; }
+footer a { color: var(--orange); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* DEPLOYMENT TABLE */
+.deploy-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.deploy-table th, .deploy-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+.deploy-table th {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600;
+}
+.deploy-table td { color: var(--text); }
+.deploy-table tr:last-child td { border-bottom: none; }
+
+/* MISC */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(247, 147, 26, 0.1); color: var(--orange);
+  padding: 2px 6px; border-radius: 4px; font-size: 13px;
+}
+.stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.stat-box {
+  flex: 1; min-width: 120px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center;
+}
+.stat-box .val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--orange); }
+.stat-box .val.knots { color: var(--orange); }
+.stat-box .val.core-after { color: var(--cyan); }
+.stat-box .val.core-before { color: var(--violet); }
+.stat-box .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="container">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">⚠ DRAFT · BIP 110</div>
+  <h1>REDUCED DATA<br>TEMPORARY SOFTFORK</h1>
+  <p>A temporary consensus-level softfork to limit arbitrary data storage on Bitcoin — targeting inscriptions, and refocusing the network on its purpose as sound, permissionless money.</p>
+  <div class="hero-sub">Authored by Dathon Ohm · Advised by Luke-Jr</div>
+</section>
+
+<!-- COUNTDOWN -->
+<div class="countdown" id="countdown">
+  <div class="countdown-label">⏳ Time Until Activation</div>
+  <div class="countdown-grid">
+    <div class="countdown-item"><span class="countdown-num" id="cd-days">--</span><span class="countdown-unit">Days</span></div>
+    <div class="countdown-item"><span class="countdown-num" id="cd-hours">--</span><span class="countdown-unit">Hours</span></div>
+    <div class="countdown-item"><span class="countdown-num" id="cd-mins">--</span><span class="countdown-unit">Minutes</span></div>
+    <div class="countdown-item"><span class="countdown-num" id="cd-secs">--</span><span class="countdown-unit">Seconds</span></div>
+  </div>
+  <div class="countdown-meta">
+    Activation height: <strong>965,664</strong> ·
+    Estimated: <strong id="activation-date">~September 2026</strong>
+  </div>
+  <div class="countdown-status status-active" id="deploy-status">STARTED · Miners may signal</div>
+</div>
+
+<!-- ADOPTION CHART -->
+<section class="section">
+  <div class="section-title"><span class="icon icon-chart">📈</span> Node Adoption — Knots vs Core</div>
+  <p style="color:var(--text-dim); font-size:14px; margin-bottom:16px;">
+    Real-time data from reachable listening Bitcoin nodes. <strong>Bitcoin Knots</strong> implements BIP110; <strong>Core (≥30.0)</strong> = versions after OP_RETURN limit removal; <strong>Core (&lt;30.0)</strong> = versions with the traditional OP_RETURN limit.
+  </p>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="val" id="stat-total">--</div>
+      <div class="lbl">Total Reachable Nodes</div>
+    </div>
+    <div class="stat-box">
+      <div class="val knots" id="stat-knots">--</div>
+      <div class="lbl">🟠 Bitcoin Knots</div>
+    </div>
+    <div class="stat-box">
+      <div class="val core-after" id="stat-core-after">--</div>
+      <div class="lbl">🔵 Core ≥30.0 (Post-OP_RETURN)</div>
+    </div>
+    <div class="stat-box">
+      <div class="val core-before" id="stat-core-before">--</div>
+      <div class="lbl">🟣 Core &lt;30.0 (Pre-OP_RETURN)</div>
+    </div>
+  </div>
+
+  <div class="chart-controls">
+    <button class="chart-btn active" id="view-absolute" onclick="setChartMode('absolute')">📊 Absolute Count</button>
+    <button class="chart-btn" id="view-percent" onclick="setChartMode('percent')">📈 % Market Share</button>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="adoptionChart"></canvas>
+  </div>
+  <div class="chart-note">
+    Data source: <a href="https://luke.dashjr.org/programs/bitcoin/files/charts/" target="_blank" style="color:var(--orange);">Luke Dashjr's node survey</a> ·
+    Core split at v30.0 (OP_RETURN limit removed) · Knots includes all BIP110-signaling variants
+  </div>
+</section>
+
+<!-- 5H1W -->
+<section class="section">
+  <div class="section-title"><span class="icon icon-what">?</span> The 5W1H of BIP110</div>
+  <div class="five-grid">
+    <div class="five-card">
+      <div class="label">What</div>
+      <div class="value">A <strong>temporary (~1 year) softfork</strong> that limits arbitrary data in Bitcoin transactions by restricting scriptPubKeys to ≤34 bytes, witness data pushes to ≤256 bytes, banning OP_IF in Tapscript, and capping Taproot trees to 128 leaves.</div>
+    </div>
+    <div class="five-card">
+      <div class="label">Why</div>
+      <div class="value">To <strong>resist data embedding</strong> (inscriptions/ordinals) that burdens node operators, distorts fee markets, and diverts development focus away from Bitcoin as money.</div>
+    </div>
+    <div class="five-card">
+      <div class="label">Who</div>
+      <div class="value"><strong>Authored by Dathon Ohm</strong> with advice from Luke-Jr. Discussion on the bitcoin-dev mailing list.</div>
+    </div>
+    <div class="five-card">
+      <div class="label">Where</div>
+      <div class="value">Enforced at the <strong>Bitcoin consensus layer</strong> — all full nodes and miners running the softfork validate these rules.</div>
+    </div>
+    <div class="five-card">
+      <div class="label">When</div>
+      <div class="value"><strong>Start:</strong> Dec 1, 2025 · <strong>Activation:</strong> ~Sep 2026 · <strong>Duration:</strong> ~1 year · <strong>Expires:</strong> ~Sep 2027</div>
+    </div>
+    <div class="five-card">
+      <div class="label">How</div>
+      <div class="value">Modified <strong>BIP9 deployment</strong> with 55% threshold (vs 95%), mandatory signaling, and automatic expiry.</div>
+    </div>
+  </div>
+</section>
+
+<!-- RULES -->
+<section class="section">
+  <div class="section-title"><span class="icon icon-how">⚙</span> The 7 Consensus Rules</div>
+  <p style="color:var(--text-dim); font-size:14px; margin-bottom:20px;">
+    Blocks during the temporary deployment are invalid if they violate any of these rules. Pre-activation UTXOs are exempt.
+  </p>
+  <ul class="rules-list">
+    <li><span class="num">1</span> New <code>scriptPubKeys</code> exceeding <strong>34 bytes</strong> are invalid — except <code>OP_RETURN</code> which allows up to <strong>83 bytes</strong>.</li>
+    <li><span class="num">2</span> <code>OP_PUSHDATA*</code> payloads and witness items exceeding <strong>256 bytes</strong> are invalid (redeemScripts exempted).</li>
+    <li><span class="num">3</span> Spending <strong>undefined witness versions</strong> (other than v0, P2TR, P2A) is invalid.</li>
+    <li><span class="num">4</span> Witness stacks containing a <strong>Taproot annex</strong> are invalid.</li>
+    <li><span class="num">5</span> Taproot control blocks larger than <strong>257 bytes</strong> (>128 leaves) are invalid.</li>
+    <li><span class="num">6</span> Tapscripts containing <code>OP_SUCCESS*</code> anywhere are invalid.</li>
+    <li><span class="num">7</span> Tapscripts executing <code>OP_IF</code> or <code>OP_NOTIF</code> are invalid.</li>
+  </ul>
+</section>
+
+<!-- DEPLOYMENT -->
+<section class="section">
+  <div class="section-title"><span class="icon icon-chart">📋</span> Deployment Parameters</div>
+  <table class="deploy-table">
+    <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Name</td><td><code>reduced_data</code></td></tr>
+      <tr><td>Bit</td><td><code>4</code></td></tr>
+      <tr><td>Start Time</td><td>December 1, 2025</td></tr>
+      <tr><td>Threshold</td><td><strong>55%</strong> (vs BIP9 standard 95%)</td></tr>
+      <tr><td>Max Activation Height</td><td>965,664 (~September 1, 2026)</td></tr>
+      <tr><td>Active Duration</td><td>52,416 blocks (~1 year)</td></tr>
+      <tr><td>Timeout</td><td>None (height-based forced lock-in)</td></tr>
+      <tr><td>Mandatory Signaling</td><td>Blocks 961,632 – 963,647</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- TIMELINE -->
+<section class="section">
+  <div class="section-title"><span class="icon icon-what">📅</span> Timeline</div>
+  <div class="timeline">
+    <div class="timeline-item done">
+      <div class="date">2025-12-01</div>
+      <div class="desc"><span class="highlight">Start Time</span> — Deployment enters STARTED; miners may signal bit 4</div>
+    </div>
+    <div class="timeline-item">
+      <div class="date">~2026-08</div>
+      <div class="desc"><span class="highlight">Lock-in</span> — 55% reached or forced at height 963,648</div>
+    </div>
+    <div class="timeline-item">
+      <div class="date">~2026-09-01</div>
+      <div class="desc"><span class="highlight">Activation</span> — Height 965,664. Rules enforced for new UTXOs</div>
+    </div>
+    <div class="timeline-item">
+      <div class="date">~2027-09</div>
+      <div class="desc"><span class="highlight">Expiry</span> — After 52,416 blocks, rules auto-lift</div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section class="section">
+  <div class="section-title"><span class="icon icon-risk">⚠</span> Risks & Challenges</div>
+  <div class="risk-item">
+    <h4>🧊 Frozen Funds (Theoretical)</h4>
+    <p>Pre-signed Taproot transactions with OP_IF Tapleaves or trees deeper than 7 levels could become unspendable. Mitigation: 2-week grace period, pre-activation UTXO exemption.</p>
+  </div>
+  <div class="risk-item">
+    <h4>🔧 BitVM & Advanced Contracting</h4>
+    <p>BitVM relies on large Taproot trees (>128 leaves). The 257-byte control block limit may impede mainnet BitVM development during the softfork.</p>
+  </div>
+  <div class="risk-item">
+    <h4>🔗 Miniscript Compatibility</h4>
+    <p>Miniscript compiler may produce OP_IF-based Tapleaves. Needs patching during the deployment.</p>
+  </div>
+  <div class="risk-item">
+    <h4>📉 Low Threshold Controversy</h4>
+    <p>55% miner threshold (vs Bitcoin's standard 95%) is a significant deviation — critics warn of precedent and potential network split risk.</p>
+  </div>
+  <div class="risk-item">
+    <h4>🔄 Upgrade Hooks Disabled</h4>
+    <p>Undefined witness versions and OP_SUCCESS* opcodes are disabled for the deployment's duration.</p>
+  </div>
+  <div class="risk-item">
+    <h4>🎯 Data Storage Arms Race</h4>
+    <p>BIP acknowledges it can't fully prevent spam — but raises cost and sends a clear signal that data storage is unsupported.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  BIP110 Educational Page ·
+  <a href="https://github.com/bitcoin/bips/blob/master/bip-0110.mediawiki" target="_blank">Read the full BIP</a> ·
+  <a href="https://groups.google.com/g/bitcoindev/c/nOZim6FbuF8" target="_blank">Discussion Thread</a> ·
+  <a href="https://github.com/nixonshock/bip110" target="_blank">GitHub</a> ·
+  Data updates daily · Not financial advice
+</footer>
+
+</div>
+
+<script>
+// ===== COUNTDOWN =====
+const ACTIVATION_DATE = new Date('2026-09-01T00:00:00+08:00').getTime();
+
+function updateCountdown() {
+  const now = Date.now();
+  let diff = ACTIVATION_DATE - now;
+  if (diff < 0) diff = 0;
+  document.getElementById('cd-days').textContent = String(Math.floor(diff / 86400000)).padStart(2, '0');
+  document.getElementById('cd-hours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+  document.getElementById('cd-mins').textContent = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+  document.getElementById('cd-secs').textContent = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ===== NODE STATS =====
+// From Luke Dashjr's uainfo.json (live node survey)
+const STATS = {
+  totalReachable: 5536,
+  knots: 842,
+  coreAfterOR: 1651, // Core >= 30.0 (after OP_RETURN limit removed)
+  coreBeforeOR: 3043  // Core < 30.0 (traditional OP_RETURN limit)
+};
+
+document.getElementById('stat-total').textContent = STATS.totalReachable.toLocaleString();
+document.getElementById('stat-knots').textContent = STATS.knots.toLocaleString();
+document.getElementById('stat-core-after').textContent = STATS.coreAfterOR.toLocaleString();
+document.getElementById('stat-core-before').textContent = STATS.coreBeforeOR.toLocaleString();
+
+// ===== HISTORICAL DATA =====
+// From Luke Dashjr's history-sw.csv — sampled ~monthly
+// Col7 = Knots/UASF nodes, Col8 = Core nodes
+// To split Col8 into "before" and "after" OP_RETURN relax (Core v25.0):
+// Model: old_ratio starts ~12% in May 2024, declines linearly to ~5.7% in May 2026
+const labels = [
+  'May 2024','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
+  'Jan 2025','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',
+  'Jan 2026','Feb','Mar','Apr','May'
+];
+
+const knotsData = [
+  33, 31, 38, 37, 32, 33, 38, 37,
+  48, 51, 53, 68, 123, 321, 451, 507, 565, 782, 3448, 3545,
+  3524, 3701, 3796, 3710, 856
+];
+
+const coreTotal = [
+  536, 366, 358, 371, 425, 462, 458, 843,
+  812, 1014, 1257, 2009, 2639, 6894, 8755, 8759, 10892, 13326, 19641, 19302,
+  13288, 13413, 16792, 17721, 18193
+];
+
+// To split Core total into "before" and "after" OP_RETURN removal (Core v30.0):
+// Core 30.0 was released ~Oct 2025. Before that, all Core < 30.0.
+// After Oct 2025, Core >= 30.0 grew from 0% to current 35.2%.
+// Index 17 = Oct 2025, index 24 = May 2026
+function calcAfterRatio(idx) {
+  const afterStartIdx = 17; // Oct 2025 — Core 30.0 released
+  const currentAfterRatio = STATS.coreAfterOR / (STATS.coreAfterOR + STATS.coreBeforeOR); // ~0.352
+  if (idx < afterStartIdx) return 0;
+  return currentAfterRatio * (idx - afterStartIdx + 1) / (labels.length - afterStartIdx);
+}
+
+const coreAfter = coreTotal.map((v, i) => Math.round(v * calcAfterRatio(i)));
+const coreBefore = coreTotal.map((v, i) => v - coreAfter[i]);
+
+// ===== CHART =====
+let chartMode = 'absolute';
+let chartInstance = null;
+
+function buildChart(mode) {
+  const ctx = document.getElementById('adoptionChart').getContext('2d');
+
+  let datasets;
+  if (mode === 'absolute') {
+    datasets = [
+      {
+        label: 'Bitcoin Knots (incl. BIP110)',
+        data: knotsData,
+        borderColor: '#f7931a',
+        backgroundColor: 'rgba(247, 147, 26, 0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#f7931a',
+        borderWidth: 2,
+      },
+      {
+        label: 'Core ≥30.0 (Post-OP_RETURN)',
+        data: coreAfter,
+        borderColor: '#22d3ee',
+        backgroundColor: 'rgba(34, 211, 238, 0.06)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#22d3ee',
+        borderWidth: 2,
+      },
+      {
+        label: 'Core <30.0 (Pre-OP_RETURN)',
+        data: coreBefore,
+        borderColor: '#a78bfa',
+        backgroundColor: 'rgba(167, 139, 250, 0.06)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#a78bfa',
+        borderWidth: 2,
+        borderDash: [4, 3],
+      }
+    ];
+  } else {
+    // Percentage mode: each series as % of total (knots + coreAfter + coreBefore)
+    const totals = knotsData.map((_, i) => knotsData[i] + coreAfter[i] + coreBefore[i]);
+    datasets = [
+      {
+        label: 'Bitcoin Knots (incl. BIP110)',
+        data: knotsData.map((v, i) => (v / totals[i] * 100).toFixed(1)),
+        borderColor: '#f7931a',
+        backgroundColor: 'rgba(247, 147, 26, 0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#f7931a',
+        borderWidth: 2,
+      },
+      {
+        label: 'Core ≥30.0 (Post-OP_RETURN)',
+        data: coreAfter.map((v, i) => (v / totals[i] * 100).toFixed(1)),
+        borderColor: '#22d3ee',
+        backgroundColor: 'rgba(34, 211, 238, 0.06)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#22d3ee',
+        borderWidth: 2,
+      },
+      {
+        label: 'Core <30.0 (Pre-OP_RETURN)',
+        data: coreBefore.map((v, i) => (v / totals[i] * 100).toFixed(1)),
+        borderColor: '#a78bfa',
+        backgroundColor: 'rgba(167, 139, 250, 0.06)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+        pointHoverRadius: 6,
+        pointBackgroundColor: '#a78bfa',
+        borderWidth: 2,
+        borderDash: [4, 3],
+      }
+    ];
+  }
+
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 2,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 11 },
+            usePointStyle: true,
+            padding: 20,
+          }
+        },
+        tooltip: {
+          backgroundColor: '#12121a',
+          titleColor: '#e2e8f0',
+          bodyColor: '#94a3b8',
+          borderColor: '#2a2a4a',
+          borderWidth: 1,
+          padding: 12,
+          titleFont: { family: 'JetBrains Mono', size: 12 },
+          bodyFont: { family: 'Inter', size: 13 },
+          callbacks: {
+            label: function(ctx) {
+              let val = ctx.parsed.y;
+              if (mode === 'absolute') {
+                return ctx.dataset.label + ': ' + val.toLocaleString() + ' nodes';
+              } else {
+                return ctx.dataset.label + ': ' + val + '%';
+              }
+            },
+            footer: function(ctx) {
+              if (mode === 'percent') {
+                const total = ctx.reduce((sum, c) => sum + parseFloat(c.parsed.y), 0);
+                return 'Combined: ' + total.toFixed(1) + '%';
+              }
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(42, 42, 74, 0.4)', drawBorder: false },
+          ticks: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 10 },
+            maxRotation: 45,
+            maxTicksLimit: 12,
+          }
+        },
+        y: {
+          grid: { color: 'rgba(42, 42, 74, 0.4)', drawBorder: false },
+          ticks: {
+            color: '#94a3b8',
+            font: { family: 'JetBrains Mono', size: 10 },
+            callback: function(val) {
+              if (mode === 'absolute') return val.toLocaleString();
+              return val + '%';
+            }
+          },
+          beginAtZero: true,
+          ...(mode === 'percent' ? { max: 100 } : {})
+        }
+      }
+    }
+  });
+}
+
+function setChartMode(mode) {
+  chartMode = mode;
+  document.getElementById('view-absolute').className = 'chart-btn' + (mode === 'absolute' ? ' active' : '');
+  document.getElementById('view-percent').className = 'chart-btn' + (mode === 'percent' ? ' active' : '');
+  buildChart(mode);
+}
+
+// Initial render
+buildChart('absolute');
+
+// ===== DEPLOYMENT STATUS =====
+const NOW = Date.now();
+const START_TIME = new Date('2025-12-01T00:00:00+08:00').getTime();
+const EXPIRY_TIME = new Date('2027-09-01T00:00:00+08:00').getTime();
+const statusEl = document.getElementById('deploy-status');
+
+if (NOW < START_TIME) {
+  statusEl.className = 'countdown-status status-draft';
+  statusEl.textContent = 'DEFINED · Not yet started';
+} else if (NOW >= START_TIME && NOW < ACTIVATION_DATE) {
+  statusEl.className = 'countdown-status status-active';
+  statusEl.textContent = 'STARTED · Miners may signal (55% threshold)';
+} else if (NOW >= ACTIVATION_DATE && NOW < EXPIRY_TIME) {
+  statusEl.className = 'countdown-status status-active';
+  statusEl.textContent = '✅ ACTIVE · Rules enforced';
+} else {
+  statusEl.className = 'countdown-status status-expired';
+  statusEl.textContent = 'EXPIRED · Rules lifted';
+}
+</script>
+
+</body>
+</html>
