@@ -135,22 +135,43 @@ body::before {
 .five-card .dim { color: var(--text-dim); font-size: 13px; }
 .five-card.full { grid-column: 1 / -1; }
 
-/* RULES */
+/* RULES - Mobile-first card design */
 .rules-list { list-style: none; }
 .rules-list li {
-  padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 10px; margin-bottom: 8px; font-size: 14px;
-  display: flex; align-items: flex-start; gap: 12px;
+  position: relative;
+  padding: 14px 16px 14px 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--orange);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.65;
   overflow-wrap: break-word; word-break: break-word;
 }
-.rules-list li code { word-break: break-all; }
+.rules-list li code {
+  word-break: break-all;
+  font-size: 12px;
+  background: rgba(247, 147, 26, 0.12);
+  color: var(--orange);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
 .rules-list .num {
-  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--orange);
-  background: var(--orange-glow); border-radius: 6px; padding: 2px 8px; flex-shrink: 0; margin-top: 1px;
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0a0a0f;
+  background: var(--orange);
+  border-radius: 4px;
+  padding: 1px 7px;
+  margin-right: 6px;
+  line-height: 1.4;
 }
 @media (max-width: 480px) {
-  .rules-list li { font-size: 13px; padding: 10px 12px; gap: 8px; }
-  .rules-list li code { font-size: 12px; }
+  .rules-list li { padding: 12px 14px 12px 16px; font-size: 13px; }
+  .rules-list li code { font-size: 11px; }
 }
 
 /* RISKS */
