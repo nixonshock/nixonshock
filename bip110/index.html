@@ -141,10 +141,16 @@ body::before {
   padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border);
   border-radius: 10px; margin-bottom: 8px; font-size: 14px;
   display: flex; align-items: flex-start; gap: 12px;
+  overflow-wrap: break-word; word-break: break-word;
 }
+.rules-list li code { word-break: break-all; }
 .rules-list .num {
   font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--orange);
   background: var(--orange-glow); border-radius: 6px; padding: 2px 8px; flex-shrink: 0; margin-top: 1px;
+}
+@media (max-width: 480px) {
+  .rules-list li { font-size: 13px; padding: 10px 12px; gap: 8px; }
+  .rules-list li code { font-size: 12px; }
 }
 
 /* RISKS */
