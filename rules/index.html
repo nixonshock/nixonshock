@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Two Rulebooks — nixonshock.com</title>
+<meta name="description" content="Every Bitcoin node follows two sets of rules. One is absolute. One is your choice. Understanding the difference is the first step to understanding why Bitcoin can't be Nixon-Shocked.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a2e;
+  --border: #2a2a4a;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --orange: #f7931a;
+  --orange-dim: #d4781a;
+  --orange-glow: rgba(247, 147, 26, 0.15);
+  --cyan: #22d3ee;
+  --cyan-dim: #1a9bbf;
+  --cyan-glow: rgba(34, 211, 238, 0.12);
+  --rose: #fb7185;
+  --emerald: #34d399;
+  --violet: #a78bfa;
+  --amber: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none; z-index: 0;
+}
+.orb {
+  position: fixed; border-radius: 50%; filter: blur(120px);
+  pointer-events: none; z-index: 0;
+}
+.orb-1 { top: -20vh; left: -10vw; width: 60vw; height: 60vw; background: rgba(247, 147, 26, 0.08); }
+.orb-2 { bottom: -10vh; right: -5vw; width: 40vw; height: 40vw; background: rgba(34, 211, 238, 0.05); }
+.container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* NAV */
+nav { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 14px 24px; position: sticky; top: 0; z-index: 100; }
+nav .nav-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+nav a:hover { color: var(--orange); }
+
+/* HERO */
+.hero { text-align: center; padding: 80px 0 48px; }
+.hero-badge {
+  display: inline-block;
+  background: rgba(247, 147, 26, 0.12); border: 1px solid rgba(247, 147, 26, 0.25);
+  color: var(--orange); font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600; padding: 5px 14px; border-radius: 999px;
+  margin-bottom: 20px; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.hero h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800; letter-spacing: -1px; line-height: 1.15;
+  background: linear-gradient(135deg, var(--orange) 0%, var(--amber) 50%, var(--text) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 16px;
+}
+.hero .subtitle { font-size: 17px; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
+
+/* SECTION */
+.section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 36px; margin-bottom: 24px;
+}
+.section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 700; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.content-text { font-size: 15px; color: var(--text-dim); line-height: 1.8; }
+.content-text p { margin-bottom: 16px; }
+.content-text strong { color: var(--text); font-weight: 600; }
+.content-text .highlight { color: var(--orange); font-weight: 600; }
+.content-text .highlight-cyan { color: var(--cyan); font-weight: 600; }
+
+/* SPLIT COMPARISON */
+.split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+@media (max-width: 640px) { .split-grid { grid-template-columns: 1fr; } }
+.split-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px;
+}
+.split-card.cyan { border-top: 3px solid var(--cyan); }
+.split-card.amber { border-top: 3px solid var(--orange); }
+.split-card .badge-sm {
+  display: inline-block; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 2px 10px; border-radius: 999px; margin-bottom: 10px;
+}
+.split-card.cyan .badge-sm { background: var(--cyan-glow); color: var(--cyan); border: 1px solid rgba(34, 211, 238, 0.3); }
+.split-card.amber .badge-sm { background: rgba(251, 191, 36, 0.15); color: var(--amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+.split-card ul { list-style: none; padding: 0; }
+.split-card ul li {
+  font-size: 13px; color: var(--text-dim); padding: 8px 0;
+  border-bottom: 1px solid rgba(42, 42, 74, 0.4);
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.split-card ul li:last-child { border-bottom: none; }
+
+/* KEY INSIGHT */
+.key-insight {
+  background: var(--orange-glow); border: 1px solid rgba(247, 147, 26, 0.2);
+  border-radius: 12px; padding: 20px 24px; margin: 20px 0;
+}
+.key-insight .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--orange); margin-bottom: 6px; }
+.key-insight p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+/* QUOTE */
+.pull-quote {
+  border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0;
+  font-size: 16px; font-style: italic; color: var(--text); line-height: 1.7;
+}
+.pull-quote .attribution { display: block; margin-top: 8px; font-size: 12px; color: var(--text-dim); font-style: normal; }
+
+/* TOC GRID */
+.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+@media (max-width: 480px) { .toc-grid { grid-template-columns: 1fr; } }
+.toc-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; text-decoration: none;
+  transition: all 0.2s; display: block;
+}
+.toc-card:hover { border-color: var(--orange); }
+.toc-card .num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
+.toc-card .label { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 4px; }
+.toc-card .desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+/* PAGE NAV */
+.page-nav { display: flex; justify-content: flex-end; margin: 32px 0 16px; }
+.page-nav a {
+  display: inline-block; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 24px; text-decoration: none;
+  transition: all 0.2s; text-align: right; min-width: 200px;
+}
+.page-nav a:hover { border-color: var(--orange); }
+.page-nav .dir { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 4px; }
+.page-nav .title { font-size: 14px; color: var(--text); font-weight: 600; }
+.page-nav a:hover .title { color: var(--orange); }
+
+/* FOOTER */
+footer { text-align: center; padding: 48px 0 32px; color: var(--text-dim); font-size: 13px; opacity: 0.6; }
+footer a { color: var(--orange); text-decoration: none; }
+
+@media (max-width: 480px) {
+  .section { padding: 24px 18px; }
+  .hero { padding: 60px 0 32px; }
+  .hero .subtitle { font-size: 15px; }
+  .content-text { font-size: 14px; }
+}
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/">← nixonshock</a>
+    <a href="/bip110/">BIP110</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Part 1 of 5 · The Big Idea</div>
+  <h1>The Two Rulebooks</h1>
+  <p class="subtitle">Every Bitcoin node follows two sets of rules. One is absolute, enforced by every node on the network. The other is configurable — your node, your choice. This distinction is the key to understanding Bitcoin's security model.</p>
+  <a href="#nixon-shock" class="btn-primary" style="display:inline-block;padding:10px 28px;border-radius:10px;background:var(--orange);color:#0a0a0f;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;text-decoration:none;">Start Reading ↓</a>
+</section>
+
+<!-- THE NIXON SHOCK HOOK -->
+<div class="section" id="nixon-shock">
+  <div class="content-text">
+    <p><strong>On August 15, 1971, one man changed the rules of the world's money.</strong></p>
+    <p>President Richard Nixon closed the gold window. The United States had promised since Bretton Woods that any dollar could be redeemed for gold at $35 per ounce. That promise was abandoned with a televised address — no vote, no debate, no appeal. The rules of the global monetary system were changed by <strong>a single signature</strong>.</p>
+    <p>This was not a bug in the system. It was a feature. The entire architecture of fiat money is designed so that those in power can change the rules when it suits them. Central banks adjust interest rates. Treasuries print more money. Reserve requirements shift. Capital controls appear overnight.</p>
+    <p>The problem is not that these changes are sometimes necessary. The problem is that <strong>the rules have no teeth</strong>. They are policies, not laws. They can be rewritten by whoever holds the pen.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"Bitcoin was designed so this can never happen again. Not because it has better promises, but because its rules work differently."</p>
+  </div>
+  <div class="content-text">
+    <p>Satoshi Nakamoto didn't just invent digital money. He invented a system where <strong>no single entity can change the rules</strong>. The rules are enforced by 20,000+ independent nodes running all over the world. To change them, you'd need to convince almost all of those nodes to accept the change — or fork away from them and create your own network.</p>
+    <p>This is why Bitcoin cannot be Nixon-Shocked. Not because Satoshi was a better person than Nixon. Because the architecture is fundamentally different.</p>
+  </div>
+</div>
+
+<!-- THE CORE CONCEPT -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(247,147,26,0.2);color:var(--orange);font-size:16px;">⚡</span>
+    The Core Insight
+  </div>
+  <div class="content-text">
+    <p><strong>Every Bitcoin node operates by two distinct sets of rules:</strong></p>
+  </div>
+
+  <div class="split-grid">
+    <div class="split-card cyan">
+      <div class="badge-sm">⬢ Consensus Rules</div>
+      <h3 style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:14px;">MUST — Universal, Absolute</h3>
+      <ul>
+        <li>✓ Enforced by every node, always</li>
+        <li>✓ Invalid blocks rejected globally</li>
+        <li>✓ Changing them = a fork</li>
+        <li>✓ No exceptions for anyone</li>
+        <li>✓ Enforced by code, not authority</li>
+      </ul>
+    </div>
+    <div class="split-card amber">
+      <div class="badge-sm">⬢ Relay Policies</div>
+      <h3 style="color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:14px;">CHOOSE — Configurable, Local</h3>
+      <ul>
+        <li>✓ Your node, your settings</li>
+        <li>✓ Valid but ignored — your call</li>
+        <li>✓ Changing them = different behavior</li>
+        <li>✓ Affects only your node</li>
+        <li>✓ Configurable in bitcoin.conf</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="content-text">
+    <p style="margin-top:16px;"><strong>Consensus rules</strong> are what make Bitcoin, Bitcoin. Every node that follows the consensus rules sees the exact same blockchain — the same transactions, the same balances, the same history. If one node tries to accept a block that violates a consensus rule, every other honest node rejects it immediately. <strong>The network self-heals.</strong></p>
+    <p><strong>Relay policies</strong> are how your node decides to handle transactions and peers. Should it accept a transaction with a very low fee? Should it relay transactions that signal Replace-by-Fee? Should it log every connection attempt? These are <strong>your choices</strong>, and they only affect your node's experience — not the integrity of the blockchain.</p>
+  </div>
+
+  <div class="key-insight">
+    <div class="label">⬡ The Key Distinction</div>
+    <p>Consensus rules keep Bitcoin <strong>honest</strong>. Relay policies keep it <strong>efficient</strong>. A misconfigured relay policy makes your node less useful to you. A misapplied consensus rule makes your node <strong>not Bitcoin</strong>.</p>
+  </div>
+</div>
+
+<!-- WHY THIS MATTERS -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,113,133,0.2);color:var(--rose);font-size:16px;">🔍</span>
+    Why This Matters
+  </div>
+  <div class="content-text">
+    <p>The Nixon Shock was possible because fiat money has only policies — and whoever holds power can rewrite them. Bitcoin prevents this by splitting the rulebook into two parts:</p>
+    <p><strong class="highlight-cyan">The Consensus Rulebook</strong> — this cannot be rewritten by anyone. Not a president. Not a central bank. Not a mining pool. Not even Satoshi (who famously stepped away after early stewardship). To change a consensus rule, you must convince the global network of node operators to upgrade — voluntary adoption, not top-down decree.</p>
+    <p><strong class="highlight-amber">The Relay Rulebook</strong> — this is your personal preferences. This is where you have agency. You decide what transactions to relay, what peers to connect to, what data to keep. This is where the Nixon Shock analogy <em>almost</em> applies — except your relay policies can only affect you.</p>
+    <p>A central bank can change interest rates and <strong>everyone feels it</strong>. You can set your node's fee filter to 10 sat/vB and <strong>only your node skips low-fee transactions</strong>.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"A central bank's policy affects everyone. Your node's relay policy affects only your node. That's the difference between tyranny and sovereignty."</p>
+  </div>
+</div>
+
+<!-- A PRACTICAL EXAMPLE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(34,211,238,0.2);color:var(--cyan);font-size:16px;">📋</span>
+    A Practical Example
+  </div>
+  <div class="content-text">
+    <p>Imagine Alice creates a transaction with a fee of 0.5 sat/vB — below most nodes' relay threshold but technically valid.</p>
+    <p><strong>Consensus says:</strong> "If this transaction is included in a valid block, I will accept it. The signatures check out. The inputs exist. The outputs don't exceed the inputs. It's valid."</p>
+    <p><strong>Relay says:</strong> "I will not forward this transaction to my peers. The fee is too low. It will sit in my mempool until either the fee is bumped or it gets mined by someone with more permissive relay settings."</p>
+    <p>This is why a transaction can be simultaneously "valid" (all consensus rules pass) and "not relayed" (relay policy says skip). The transaction is not censored — it's just deprioritized. If a miner with low fee thresholds finds it, the transaction gets into a block, and every node on the network <strong>must accept it</strong> because it satisfies consensus.</p>
+    <p style="margin-top:12px;"><strong>This is the magic.</strong> Relay policies let the network stay efficient without ever compromising the consensus that makes Bitcoin trustworthy.</p>
+  </div>
+</div>
+
+<!-- THE SERIES -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(167,139,250,0.2);color:var(--violet);font-size:16px;">📚</span>
+    The Series
+  </div>
+  <div class="content-text">
+    <p>This is Part 1 of a 5-part explainer series. Each part builds on the last, taking you from the big idea to hands-on verification.</p>
+  </div>
+  <div class="toc-grid">
+    <div class="toc-card" style="border-left:3px solid var(--orange);">
+      <div class="num">Part 1 · You Are Here</div>
+      <div class="label">The Two Rulebooks</div>
+      <div class="desc">Why every node follows two sets of rules — and why this prevents another Nixon Shock.</div>
+    </div>
+    <a href="/rules/consensus.html" class="toc-card">
+      <div class="num">Part 2</div>
+      <div class="label">Consensus Rules — The Universal Law</div>
+      <div class="desc">The rules every node must follow. Block structure, coin supply, transactions, mining.</div>
+    </a>
+    <a href="/rules/relay.html" class="toc-card">
+      <div class="num">Part 3</div>
+      <div class="label">Relay Policies — Your Node, Your Choice</div>
+      <div class="desc">The settings you control. Fee filters, mempool, peer management, RBF.</div>
+    </a>
+    <a href="/rules/bip110.html" class="toc-card">
+      <div class="num">Part 4</div>
+      <div class="label">Live Case Study — BIP110</div>
+      <div class="desc">A real soft fork happening right now. How it changes consensus rules and what it means for relay.</div>
+    </a>
+    <a href="/rules/verify.html" class="toc-card" style="grid-column:1/-1;">
+      <div class="num">Part 5</div>
+      <div class="label">See It Yourself</div>
+      <div class="desc">Commands to run, logs to watch, experiments to try. Verify the rules yourself.</div>
+    </a>
+  </div>
+</div>
+
+<!-- NEXT -->
+<div class="page-nav">
+  <div></div>
+  <a href="/rules/consensus.html" class="next">
+    <div class="dir">Next →</div>
+    <div class="title">Consensus Rules — The Universal Law</div>
+  </a>
+</div>
+
+</div>
+
+<footer>
+  <p>nixonshock.com — <a href="/">The Nixon Shock was the biggest default in human history. Bitcoin fixes it.</a></p>
+  <p style="margin-top:8px;font-size:11px;"><a href="/">← Back home</a> · <a href="/bip110/">BIP110</a></p>
+</footer>
+
+</body>
+</html>
