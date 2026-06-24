@@ -15,6 +15,7 @@ A comprehensive Bitcoin education hub that tells the story of the 1971 Nixon Sho
 ├── books/          → Affiliate book recommendations
 ├── wallets/        → Hardware wallet affiliate links
 ├── apps/           → Bitcoin app recommendations
+├── deep-dive/      → Deep Dive hub: explainers, trackers, deep reads
 ├── rules/          → Consensus vs relay explainer series
 └── bip110/         → BIP110 tracker: countdown, chart, analysis
 ```
