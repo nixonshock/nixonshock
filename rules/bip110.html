@@ -182,7 +182,7 @@ footer a { color: var(--orange); text-decoration: none; }
     <tbody>
       <tr><td>An inscription transaction arrives</td><td style="color:var(--cyan);font-weight:600;">Valid, if OP_RETURN ≤ 80 bytes</td><td style="color:var(--amber);font-weight:600;">You choose: relay it, skip it, or log it</td></tr>
       <tr><td>After BIP110 activates</td><td style="color:var(--cyan);font-weight:600;">Valid, if OP_RETURN ≤ 1 byte</td><td style="color:var(--amber);font-weight:600;">Your relay policy unchanged — it just sees fewer large-data transactions to handle</td></tr>
-      <tr><td>An old client tries to send 80 bytes of OP_RETURN</td><td style="color:var(--rose);font-weight:600;">REJECTED — violates new consensus rule</td><td style="color:var(--amber);font-weight:600;">N/A — the transaction never reaches relay; it's invalid at the consensus layer</td></tr>
+      <tr><td>After BIP110 activates: an unupgraded old client sends 80 bytes of OP_RETURN (valid under old rules)</td><td style="color:var(--rose);font-weight:600;">REJECTED — violates new ≤1 byte limit</td><td style="color:var(--amber);font-weight:600;">N/A — rejected at consensus layer before relay is checked</td></tr>
     </tbody>
   </table>
   <div class="content-text">
