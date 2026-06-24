@@ -10,7 +10,6 @@ A comprehensive Bitcoin education hub that tells the story of the 1971 Nixon Sho
 /
 ├── index.html   → Landing: The Nixon Shock → Bitcoin story
 ├── learn/       → Learn Bitcoin hub (Rules, BIP110, more coming)
-├── apps/        → Bitcoin Apps & Ecosystem (66 curated entries)
 ├── rules/       → Consensus vs relay explainer series (5 parts)
 ├── bip110/      → BIP110 tracker: countdown, chart, analysis
 ├── books/       → Affiliate book recommendations
