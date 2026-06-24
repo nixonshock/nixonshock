@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIP110 — A Live Case Study — nixonshock.com</title>
+<meta name="description" content="BIP110 is a consensus soft fork happening right now. It tightens the OP_RETURN data limit — the perfect case study for consensus vs relay in action.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a2e; --border: #2a2a4a;
+  --text: #e2e8f0; --text-dim: #94a3b8;
+  --orange: #f7931a; --orange-glow: rgba(247, 147, 26, 0.15);
+  --cyan: #22d3ee; --emerald: #34d399; --violet: #a78bfa; --rose: #fb7185; --amber: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; overflow-x: hidden; }
+body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+.orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+.orb-1 { top: -15vh; left: -5vw; width: 50vw; height: 50vw; background: rgba(247, 147, 26, 0.08); }
+.orb-2 { bottom: -10vh; right: -5vw; width: 40vw; height: 40vw; background: rgba(52, 211, 153, 0.05); }
+.container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+nav { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 14px 24px; position: sticky; top: 0; z-index: 100; }
+nav .nav-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+nav a:hover { color: var(--orange); }
+.series-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; margin: 20px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.series-bar .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); }
+.series-bar .parts { display: flex; gap: 6px; }
+.series-bar .part { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); text-decoration: none; transition: all 0.2s; }
+.series-bar .part:hover { border-color: var(--orange); color: var(--orange); }
+.series-bar .part.active { background: var(--orange-glow); border-color: var(--orange); color: var(--orange); }
+.hero { text-align: center; padding: 60px 0 40px; }
+.hero-badge { display: inline-block; background: var(--orange-glow); border: 1px solid rgba(247, 147, 26, 0.3); color: var(--orange); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; padding: 5px 14px; border-radius: 999px; margin-bottom: 20px; letter-spacing: 0.8px; text-transform: uppercase; }
+.hero h1 { font-family: 'JetBrains Mono', monospace; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -1px; line-height: 1.15; background: linear-gradient(135deg, var(--orange) 0%, var(--amber) 50%, var(--text) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 16px; }
+.hero .subtitle { font-size: 17px; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
+
+/* CTA BANNER */
+.cta-banner { background: var(--orange-glow); border: 1px solid rgba(247, 147, 26, 0.25); border-radius: 14px; padding: 24px; margin-bottom: 24px; text-align: center; }
+.cta-banner h3 { font-family: 'JetBrains Mono', monospace; font-size: 16px; margin-bottom: 8px; color: var(--orange); }
+.cta-banner p { font-size: 14px; color: var(--text-dim); margin-bottom: 16px; }
+.cta-banner .btn-cta { display: inline-block; padding: 10px 24px; background: var(--orange); color: #0a0a0f; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; text-decoration: none; }
+
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
+.section-title { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.section-title .icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.content-text { font-size: 15px; color: var(--text-dim); line-height: 1.8; }
+.content-text p { margin-bottom: 16px; }
+.content-text strong { color: var(--text); font-weight: 600; }
+.content-text code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(247, 147, 26, 0.1); color: var(--orange); padding: 1px 5px; border-radius: 3px; }
+.content-text .highlight { color: var(--orange); font-weight: 600; }
+.content-text .highlight-cyan { color: var(--cyan); font-weight: 600; }
+
+.rules-list { list-style: none; margin: 16px 0; }
+.rules-list li { padding: 14px 16px 14px 20px; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--orange); border-radius: 10px; margin-bottom: 10px; font-size: 14px; line-height: 1.65; }
+.rules-list li code { font-size: 12px; background: rgba(247, 147, 26, 0.12); color: var(--orange); padding: 1px 5px; border-radius: 4px; }
+.rules-list .num { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #0a0a0f; background: var(--orange); border-radius: 4px; padding: 1px 7px; margin-right: 6px; line-height: 1.4; }
+
+.key-insight { background: var(--orange-glow); border: 1px solid rgba(247, 147, 26, 0.2); border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
+.key-insight .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--orange); margin-bottom: 6px; }
+.key-insight p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+.pull-quote { border-left: 3px solid var(--orange); padding: 16px 20px; margin: 20px 0; font-size: 16px; font-style: italic; color: var(--text); line-height: 1.7; }
+.pull-quote .attribution { display: block; margin-top: 8px; font-size: 12px; color: var(--text-dim); font-style: normal; }
+
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; margin: 16px 0; }
+.data-table th, .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+.data-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; }
+.data-table td { color: var(--text-dim); }
+.data-table .tag-cyan { color: var(--cyan); font-weight: 600; }
+.data-table .tag-amber { color: var(--amber); font-weight: 600; }
+
+.page-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0 16px; }
+@media (max-width: 480px) { .page-nav { grid-template-columns: 1fr; } }
+.page-nav a { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-decoration: none; transition: all 0.2s; }
+.page-nav a:hover { border-color: var(--orange); }
+.page-nav a.next { text-align: right; }
+.page-nav .dir { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 4px; }
+.page-nav .title { font-size: 14px; color: var(--text); font-weight: 600; }
+.page-nav a:hover .title { color: var(--orange); }
+
+footer { text-align: center; padding: 48px 0 32px; color: var(--text-dim); font-size: 13px; opacity: 0.6; }
+footer a { color: var(--orange); text-decoration: none; }
+@media (max-width: 480px) { .section { padding: 24px 18px; } .hero { padding: 40px 0 24px; } }
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/">← nixonshock</a>
+    <a href="/rules/">Rules</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- SERIES BAR -->
+<div class="series-bar">
+  <span class="label">The Two Rulebooks · Part 4 of 5</span>
+  <div class="parts">
+    <a href="/rules/" class="part" title="The Two Rulebooks">1</a>
+    <a href="/rules/consensus.html" class="part" title="Consensus Rules">2</a>
+    <a href="/rules/relay.html" class="part" title="Relay Policies">3</a>
+    <a href="/rules/bip110.html" class="part active" title="Live Case Study">4</a>
+    <a href="/rules/verify.html" class="part" title="See It Yourself">5</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Part 4 of 5 · Happening Right Now</div>
+  <h1>BIP110 — A Live Case Study</h1>
+  <p class="subtitle">A real soft fork changing Bitcoin's consensus rules as you read this. The perfect illustration of how consensus and relay interact in practice.</p>
+</section>
+
+<!-- CTA BANNER -->
+<div class="cta-banner">
+  <h3>📊 Full BIP110 Page</h3>
+  <p>This page is the explainer. For the complete technical breakdown — countdown, node adoption chart, deployment parameters, timeline — visit the dedicated BIP110 page.</p>
+  <a href="/bip110/" class="btn-cta">Go to BIP110 Page →</a>
+</div>
+
+<!-- THE RULE CHANGE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(247,147,26,0.2);color:var(--orange);">⬡</span>
+    What BIP110 Changes
+  </div>
+  <div class="content-text">
+    <p><strong>BIP110 is a temporary soft fork that reduces the OP_RETURN data limit.</strong></p>
+    <p>OP_RETURN is a Bitcoin Script opcode that allows a small amount of data to be embedded in a transaction. Since its introduction in 2014 (OP_RETURN limit of 80 bytes), it's been used for everything from colored coins to timestamps to token protocols.</p>
+    <p>Over time, the data embedded in Bitcoin transactions has grown. With the rise of inscriptions (via Ordinals), some blocks now contain significant amounts of arbitrary data — pushing the network toward being a data storage layer rather than a monetary network.</p>
+    <p><strong>The change:</strong> BIP110 reduces the maximum OP_RETURN data size from <code>80 bytes</code> to <code>1 byte</code> (effectively empty) for a temporary period of ~1 year. After that, the limit reverts back to 80 bytes.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"BIP110 doesn't remove the ability to put data in Bitcoin transactions. It temporarily tightens the limit to discourage the data storage use case while the community debates a permanent solution."</p>
+  </div>
+</div>
+
+<!-- CONSENSUS ANGLE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(34,211,238,0.2);color:var(--cyan);">🔷</span>
+    The Consensus Change
+  </div>
+  <div class="content-text">
+    <p>BIP110 changes a <strong class="highlight">consensus rule</strong>. Specifically, it modifies the script verification rules:</p>
+  </div>
+  <ul class="rules-list">
+    <li><span class="num">1</span> <strong>Current rule:</strong> A transaction can include up to <code>80 bytes</code> of OP_RETURN data per output.</li>
+    <li><span class="num">2</span> <strong>BIP110 rule:</strong> A transaction can include at most <code>1 byte</code> of OP_RETURN data — effectively disabling OP_RETURN for data storage.</li>
+    <li><span class="num">3</span> <strong>Duration:</strong> This tighter rule is enforced for ~13,000 blocks (~3 months) after activation, then automatically reverts.</li>
+    <li><span class="num">4</span> <strong>Activation:</strong> BIP9 signaling via version bit 4. Threshold: <code>55%</code> of blocks in a 2,016-block retarget period.</li>
+  </ul>
+  <div class="content-text">
+    <p>Because it's a <strong>soft fork</strong>, old nodes that haven't upgraded will still accept BIP110 blocks. The rule is tighter, so old nodes see the new blocks as valid (they don't check the OP_RETURN limit as strictly, so they pass the less restrictive check).</p>
+  </div>
+  <div class="key-insight">
+    <div class="label">⬡ Why This Matters for Consensus</div>
+    <p>BIP110 proves that consensus rules CAN change — but only through a deliberate, transparent, multi-month process. Version bit signaling lets the network see miner support in real time. Nodes choose to upgrade. There's no "emergency decree" — just voluntary adoption by node operators and miners.</p>
+  </div>
+</div>
+
+<!-- RELAY ANGLE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">🟡</span>
+    The Relay Angle
+  </div>
+  <div class="content-text">
+    <p>Here's where the Two Rulebooks framework shines. BIP110 changes a consensus rule, but your <strong class="highlight-amber">relay policies</strong> still apply independently:</p>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Situation</th><th>Consensus Says</th><th>Relay Says (Your Choice)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>An inscription transaction arrives</td><td style="color:var(--cyan);font-weight:600;">Valid, if OP_RETURN ≤ 80 bytes</td><td style="color:var(--amber);font-weight:600;">You choose: relay it, skip it, or log it</td></tr>
+      <tr><td>After BIP110 activates</td><td style="color:var(--cyan);font-weight:600;">Valid, if OP_RETURN ≤ 1 byte</td><td style="color:var(--amber);font-weight:600;">Your relay policy unchanged — it just sees fewer large-data transactions to handle</td></tr>
+      <tr><td>An old client tries to send 80 bytes of OP_RETURN</td><td style="color:var(--rose);font-weight:600;">REJECTED — violates new consensus rule</td><td style="color:var(--amber);font-weight:600;">N/A — the transaction never reaches relay; it's invalid at the consensus layer</td></tr>
+    </tbody>
+  </table>
+  <div class="content-text">
+    <p>The important point: once the consensus rule changes, your relay policy doesn't need to adapt. The tighter rule at the consensus layer means fewer data-heavy transactions exist to be relayed. Your relay settings continue to do what they always did — only now they handle less data traffic.</p>
+    <p>A node operator who disagrees with BIP110 can choose to run <strong>pre-BIP110 software</strong>. Their node will still work (since BIP110 is a soft fork), but they'll be on a chain that enforces the old rules. This is the ultimate protection: <strong>your node, your consensus choice</strong>.</p>
+  </div>
+</div>
+
+<!-- WHAT IT MEANS FOR LAYMEN -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(167,139,250,0.2);color:var(--violet);">🔮</span>
+    What BIP110 Teaches Us
+  </div>
+  <div class="content-text">
+    <p>BIP110 is happening right now. You can watch the countdown tick down on the <a href="/bip110/" style="color:var(--orange);">BIP110 page</a>. Here's what it demonstrates about Bitcoin's rule architecture:</p>
+    <p><strong>1. Consensus changes are transparent.</strong> Every step — proposal, signaling, activation — happens in public. Version bits let anyone check miner support block by block.</p>
+    <p><strong>2. Soft forks protect the network.</strong> Old nodes don't break. They just see fewer things. The network upgrades organically, not by fiat.</p>
+    <p><strong>3. Relay policies remain sovereign.</strong> Your node's fee filters, mempool limits, and peer preferences are untouched by BIP110. The consensus layer tightened, but your local settings are still yours.</p>
+    <p><strong>4. Temporary rules test permanence.</strong> BIP110 is designed to auto-revert after ~3 months. This is unprecedented — a temporary soft fork. It shows that Bitcoin can experiment with rule changes without committing to them forever.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"The Nixon Shock changed the rules permanently and without warning. BIP110 changes a rule temporarily and after months of public debate. These are not the same kind of system."</p>
+  </div>
+</div>
+
+<!-- COMPARE WITH NIXON SHOCK -->
+<div class="section" style="border-left:3px solid var(--orange);">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,113,133,0.2);color:var(--rose);">⚖️</span>
+    BIP110 vs The Nixon Shock
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Dimension</th><th>Nixon Shock (1971)</th><th>BIP110 (2026)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Notice</strong></td><td>0 days — announced on TV</td><td>Months of public BIP discussion, signaling</td></tr>
+      <tr><td><strong>Decision maker</strong></td><td>One president</td><td>~Thousands of node operators + miners</td></tr>
+      <tr><td><strong>Scope</strong></td><td>Changed the world's monetary system</td><td>Changed one opcode limit temporarily</td></tr>
+      <tr><td><strong>Permanence</strong></td><td>Permanent (still in effect today)</td><td>Temporary (~3 months, auto-reverts)</td></tr>
+      <tr><td><strong>Dissent option</strong></td><td>None — the law applied to everyone</td><td>Run pre-BIP110 software on your chain</td></tr>
+      <tr><td><strong>Verification</strong></td><td>Trust the government</td><td>Verify with your own node</td></tr>
+    </tbody>
+  </table>
+  <div class="content-text" style="margin-top:16px;">
+    <p>The contrast is the entire point of Bitcoin. The Nixon Shock was possible because the rules were policies, not laws. BIP110 is possible because the rules are laws — and changing them requires broad, transparent, voluntary consensus.</p>
+  </div>
+</div>
+
+<!-- DEEP DIVE LINK -->
+<div class="cta-banner" style="border-color:rgba(247,147,26,0.4);">
+  <h3>📊 See the Full BIP110 Breakdown</h3>
+  <p>Node adoption chart, countdown timer, deployment parameters, timeline, risks — all on the dedicated page.</p>
+  <a href="/bip110/" class="btn-cta">BIP110 Page →</a>
+</div>
+
+<!-- PAGE NAV -->
+<div class="page-nav">
+  <a href="/rules/relay.html">
+    <div class="dir">← Previous</div>
+    <div class="title">Relay Policies — Your Node, Your Choice</div>
+  </a>
+  <a href="/rules/verify.html" class="next">
+    <div class="dir">Next →</div>
+    <div class="title">See It Yourself</div>
+  </a>
+</div>
+
+</div>
+
+<footer>
+  <p>nixonshock.com — <a href="/">The Nixon Shock was the biggest default in human history. Bitcoin fixes it.</a></p>
+  <p style="margin-top:8px;font-size:11px;"><a href="/rules/">← Series Home</a> · <a href="/bip110/">BIP110 Page</a></p>
+</footer>
+
+</body>
+</html>

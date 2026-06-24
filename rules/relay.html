@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay Policies — Your Node, Your Choice — nixonshock.com</title>
+<meta name="description" content="Relay policies are your node's configurable rules. Fee filters, mempool limits, RBF, peers — this is where you have agency over your Bitcoin experience.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a2e; --border: #2a2a4a;
+  --text: #e2e8f0; --text-dim: #94a3b8;
+  --orange: #f7931a; --orange-glow: rgba(247, 147, 26, 0.15);
+  --cyan: #22d3ee;
+  --rose: #fb7185; --emerald: #34d399; --violet: #a78bfa; --amber: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
+  background-size: 40px 40px; pointer-events: none; z-index: 0;
+}
+.orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+.orb-1 { top: -15vh; right: -5vw; width: 50vw; height: 50vw; background: rgba(251, 191, 36, 0.07); }
+.orb-2 { bottom: -10vh; left: -5vw; width: 40vw; height: 40vw; background: rgba(247, 147, 26, 0.05); }
+.container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* NAV */
+nav { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 14px 24px; position: sticky; top: 0; z-index: 100; }
+nav .nav-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+nav a:hover { color: var(--amber); }
+
+/* SERIES INDICATOR */
+.series-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; margin: 20px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.series-bar .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); }
+.series-bar .parts { display: flex; gap: 6px; }
+.series-bar .part { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border); text-decoration: none; transition: all 0.2s; }
+.series-bar .part:hover { border-color: var(--amber); color: var(--amber); }
+.series-bar .part.active { background: rgba(251, 191, 36, 0.15); border-color: var(--amber); color: var(--amber); }
+
+/* HERO */
+.hero { text-align: center; padding: 60px 0 40px; }
+.hero-badge { display: inline-block; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); color: var(--amber); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; padding: 5px 14px; border-radius: 999px; margin-bottom: 20px; letter-spacing: 0.8px; text-transform: uppercase; }
+.hero h1 { font-family: 'JetBrains Mono', monospace; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -1px; line-height: 1.15; background: linear-gradient(135deg, var(--orange) 0%, var(--amber) 50%, var(--text) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 16px; }
+.hero .subtitle { font-size: 17px; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
+
+/* SECTION */
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
+.section-title { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.section-title .icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+
+/* CONTENT */
+.content-text { font-size: 15px; color: var(--text-dim); line-height: 1.8; }
+.content-text p { margin-bottom: 16px; }
+.content-text strong { color: var(--text); font-weight: 600; }
+.content-text code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(247, 147, 26, 0.1); color: var(--orange); padding: 1px 5px; border-radius: 3px; }
+.content-text .highlight { color: var(--orange); font-weight: 600; }
+.content-text .highlight-amber { color: var(--amber); font-weight: 600; }
+
+/* RULES LIST */
+.rules-list { list-style: none; margin: 16px 0; }
+.rules-list li { padding: 14px 16px 14px 20px; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--amber); border-radius: 10px; margin-bottom: 10px; font-size: 14px; line-height: 1.65; overflow-wrap: break-word; word-break: break-word; }
+.rules-list li code { word-break: break-all; font-size: 12px; background: rgba(251, 191, 36, 0.12); color: var(--amber); padding: 1px 5px; border-radius: 4px; }
+.rules-list .num { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #0a0a0f; background: var(--amber); border-radius: 4px; padding: 1px 7px; margin-right: 6px; line-height: 1.4; }
+
+/* KEY INSIGHT */
+.key-insight { background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.15); border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
+.key-insight .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--amber); margin-bottom: 6px; }
+.key-insight p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+/* QUOTE */
+.pull-quote { border-left: 3px solid var(--amber); padding: 16px 20px; margin: 20px 0; font-size: 16px; font-style: italic; color: var(--text); line-height: 1.7; }
+.pull-quote .attribution { display: block; margin-top: 8px; font-size: 12px; color: var(--text-dim); font-style: normal; }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; margin: 16px 0; }
+.data-table th, .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+.data-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; }
+.data-table td { color: var(--text-dim); }
+
+/* CODE */
+.code-block { background: #0a0a0f; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 16px 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); overflow-x: auto; line-height: 1.6; }
+
+/* COMPARISON SPOT */
+.compact-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+@media (max-width: 640px) { .compact-compare { grid-template-columns: 1fr; } }
+.comp-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.comp-card .top { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.comp-card.consensus .top { color: var(--cyan); }
+.comp-card.relay .top { color: var(--amber); }
+.comp-card .val { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+/* PAGE NAV */
+.page-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0 16px; }
+@media (max-width: 480px) { .page-nav { grid-template-columns: 1fr; } }
+.page-nav a { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-decoration: none; transition: all 0.2s; }
+.page-nav a:hover { border-color: var(--amber); }
+.page-nav a.next { text-align: right; }
+.page-nav .dir { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 4px; }
+.page-nav .title { font-size: 14px; color: var(--text); font-weight: 600; }
+.page-nav a:hover .title { color: var(--amber); }
+
+/* FOOTER */
+footer { text-align: center; padding: 48px 0 32px; color: var(--text-dim); font-size: 13px; opacity: 0.6; }
+footer a { color: var(--amber); text-decoration: none; }
+
+@media (max-width: 480px) { .section { padding: 24px 18px; } .hero { padding: 40px 0 24px; } .content-text { font-size: 14px; } }
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/">← nixonshock</a>
+    <a href="/rules/">Rules</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- SERIES BAR -->
+<div class="series-bar">
+  <span class="label">The Two Rulebooks · Part 3 of 5</span>
+  <div class="parts">
+    <a href="/rules/" class="part" title="The Two Rulebooks">1</a>
+    <a href="/rules/consensus.html" class="part" title="Consensus Rules">2</a>
+    <a href="/rules/relay.html" class="part active" title="Relay Policies">3</a>
+    <a href="/rules/bip110.html" class="part" title="Live Case Study">4</a>
+    <a href="/rules/verify.html" class="part" title="See It Yourself">5</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Part 3 of 5 · Your Node, Your Choice</div>
+  <h1>Relay Policies</h1>
+  <p class="subtitle">Consensus rules keep Bitcoin honest. Relay policies keep it efficient — and they're <em>yours</em> to configure.</p>
+</section>
+
+<!-- OPENING -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">🎛️</span>
+    The Administrative Layer
+  </div>
+  <div class="content-text">
+    <p>If consensus rules are the Constitution, relay policies are the <strong>administrative procedures</strong>. They don't define what Bitcoin is. They define how your node interacts with the network day-to-day.</p>
+    <p>Relay policies control things like: which transactions your node forwards, how many peers it connects to, how large its mempool is, what it logs, and what data it serves via RPC. These settings <strong>do not affect the integrity of the blockchain</strong>. They affect <em>your</em> node's resource usage, privacy, and user experience.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"A central bank's policy changes affect everyone in the economy. Your node's relay policy changes affect only your node. That's not a bug — it's the entire point of running your own node."</p>
+  </div>
+  <div class="content-text">
+    <p>The Nixon Shock parallel: central banks have "relay policies" too — they adjust interest rates, reserve requirements, and money supply. And these changes affect everyone. Your Bitcoin node has relay policies that are <em>just as configurable</em>, but the impact is contained to you. The sovereignty is individual, not systemic.</p>
+  </div>
+</div>
+
+<!-- FEE FILTER -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">⚡</span>
+    Fee Filter (minrelaytxfee)
+  </div>
+  <div class="content-text">
+    <p><strong>What it controls:</strong> The minimum fee rate your node will relay.</p>
+  </div>
+  <div class="compact-compare">
+    <div class="comp-card consensus">
+      <div class="top">⬢ Consensus</div>
+      <div class="val">Any fee is valid. Even zero-fee transactions are accepted in blocks if a miner includes them.</div>
+    </div>
+    <div class="comp-card relay">
+      <div class="top">⬢ Relay Policy</div>
+      <div class="val">Default: <code>1 sat/vB</code>. You can set it higher (save bandwidth) or lower (help low-fee transactions propagate).</div>
+    </div>
+  </div>
+  <div class="content-text">
+    <p>This is the most intuitive relay policy. Set it to <code>2 sat/vB</code> and your node ignores transactions below that threshold — they're still valid, your node just won't forward them. Other nodes with lower thresholds may still relay them. A miner can still mine them.</p>
+  </div>
+  <div class="code-block">
+    <span class="comment"># bitcoin.conf — adjust fee filter</span><br>
+    minrelaytxfee=0.00001000  <span class="comment"># 1 sat/vB (default)</span><br>
+    <span class="comment"># Set to 0.00002000 for 2 sat/vB minimum</span>
+  </div>
+</div>
+
+<!-- MEMPOOL -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">📦</span>
+    Mempool Limits
+  </div>
+  <div class="content-text">
+    <p><strong>What it controls:</strong> How much memory your node dedicates to storing unconfirmed transactions.</p>
+  </div>
+  <div class="compact-compare">
+    <div class="comp-card consensus">
+      <div class="top">⬢ Consensus</div>
+      <div class="val">No limit on unconfirmed transactions at the consensus level. Any valid transaction can eventually be mined.</div>
+    </div>
+    <div class="comp-card relay">
+      <div class="top">⬢ Relay Policy</div>
+      <div class="val">Default: <code>300 MB</code> mempool. Your node evicts the lowest-fee transactions when it's full.</div>
+    </div>
+  </div>
+  <div class="content-text">
+    <p>During high-fee periods, your node's mempool fills up and starts evicting low-fee transactions. These transactions aren't lost — they just aren't in <em>your</em> mempool. They can still be relayed by other nodes with larger mempools or lower fee thresholds, and they can still be mined.</p>
+  </div>
+  <div class="code-block">
+    <span class="comment"># bitcoin.conf — mempool size</span><br>
+    maxmempool=300  <span class="comment"># MB (default)</span><br>
+    <span class="comment"># Increase to 500 if you run a high-traffic node</span>
+  </div>
+</div>
+
+<!-- RBF -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">🔄</span>
+    Replace-by-Fee (RBF)
+  </div>
+  <div class="content-text">
+    <p><strong>What it controls:</strong> Whether your node will replace an unconfirmed transaction with a higher-fee version of the same transaction.</p>
+  </div>
+  <div class="compact-compare">
+    <div class="comp-card consensus">
+      <div class="top">⬢ Consensus</div>
+      <div class="val">Only the first confirmed version of a transaction matters. Which one gets mined is up to miners.</div>
+    </div>
+    <div class="comp-card relay">
+      <div class="top">⬢ Relay Policy</div>
+      <div class="val">Default: <code>mempoolfullrbf=0</code> (only full-RBF opt-in). Set to <code>1</code> to accept all replacements.</div>
+    </div>
+  </div>
+  <div class="content-text">
+    <p>RBF is controversial. Some node operators disable it to protect the "first-seen" principle. Others enable it to give users the ability to bump stuck transactions. <strong>Both choices are valid.</strong> Neither affects the security or integrity of the blockchain — only which transactions your node is willing to relay.</p>
+  </div>
+  <div class="code-block">
+    <span class="comment"># bitcoin.conf — RBF policy</span><br>
+    mempoolfullrbf=0  <span class="comment"># Only opt-in RBF (default, conservative)</span><br>
+    <span class="comment"># Set to 1 to allow full RBF (more permissive)</span>
+  </div>
+</div>
+
+<!-- PEER MANAGEMENT -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">🌐</span>
+    Peer &amp; Privacy Policies
+  </div>
+  <div class="content-text">
+    <p>Your node also decides who it talks to and what it reveals:</p>
+  </div>
+  <ul class="rules-list">
+    <li><span class="num">1</span> <strong>Max peers:</strong> Default <code>125</code> outbound+inbound connections. Lower reduces bandwidth. Higher improves network connectivity. Your choice.</li>
+    <li><span class="num">2</span> <strong>Ban score:</strong> Peers that send invalid data accumulate ban score. Default threshold: <code>100</code>. You can raise or lower it.</li>
+    <li><span class="num">3</span> <strong>Tor/Proxy:</strong> Route all traffic through Tor for privacy. Set <code>onlynet=onion</code> to only connect over Tor.</li>
+    <li><span class="num">4</span> <strong>RPC access:</strong> Who can query your node's APIs. Bind to localhost or specific IPs. Disable if not needed.</li>
+    <li><span class="num">5</span> <strong>Bloom filters:</strong> Let light wallets query your node. Disable for privacy, enable to help mobile wallets.</li>
+  </ul>
+</div>
+
+<!-- THE KEY INSIGHT: CONSENSUS VS RELAY IN PRACTICE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(52,211,153,0.2);color:var(--emerald);">💡</span>
+    The Practical Distinction
+  </div>
+  <div class="content-text">
+    <p>Here's the test you can apply to any Bitcoin rule to decide whether it's consensus or relay:</p>
+  </div>
+  <div class="key-insight">
+    <div class="label">⬡ The Test</div>
+    <p><strong>If every node on the network accepted it, would Bitcoin still work?</strong></p>
+    <p>If the answer is "yes, but slower or with more spam" → it's a <strong class="highlight-amber">relay policy</strong> (bandwidth/performance preference).</p>
+    <p>If the answer is "no, the blockchain would be inconsistent" → it's a <strong class="highlight" style="color:var(--cyan)">consensus rule</strong> (integrity requirement).</p>
+  </div>
+  <div class="content-text">
+    <p>This is why a transaction with a 0.1 sat/vB fee is simultaneously "valid" (consensus) and "ignored by most nodes" (relay). The relay policy is a gatekeeper for efficiency, not for correctness.</p>
+    <p>And this is also why the Nixon Shock cannot happen in Bitcoin. The consensus rules that define Bitcoin's money supply are immune to relay preferences. No matter how many node operators decide to change their fee filter, the 21 million cap remains enforced.</p>
+  </div>
+</div>
+
+<!-- WHY LAYMEN SHOULD CARE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(167,139,250,0.2);color:var(--violet);">🎯</span>
+    Why This Matters to You
+  </div>
+  <div class="content-text">
+    <p>If you run a node, relay policies are <strong>your first taste of monetary sovereignty</strong>. You decide what transactions to relay. You decide who connects to you. You decide what data to keep. These are small choices in isolation, but they represent something unprecedented: a monetary system where the individual operator has real agency.</p>
+    <p>You don't have to accept the defaults. You can tune your node to match your values — privacy-maximal, bandwidth-minimal, censorship-resistant, whatever you prioritize.</p>
+    <p><strong>That's the opposite of the Nixon Shock.</strong> In 1971, a decision was made at the top and imposed on everyone. In Bitcoin, decisions made at the bottom (your node) affect only you.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"The Nixon Shock was when one man's policy override affected the whole world. Your relay policy override affects one node. That's not a limitation — that's the revolution."</p>
+  </div>
+</div>
+
+<!-- PAGE NAV -->
+<div class="page-nav">
+  <a href="/rules/consensus.html">
+    <div class="dir">← Previous</div>
+    <div class="title">Consensus Rules — The Universal Law</div>
+  </a>
+  <a href="/rules/bip110.html" class="next">
+    <div class="dir">Next →</div>
+    <div class="title">Live Case Study — BIP110</div>
+  </a>
+</div>
+
+</div>
+
+<footer>
+  <p>nixonshock.com — <a href="/">The Nixon Shock was the biggest default in human history. Bitcoin fixes it.</a></p>
+  <p style="margin-top:8px;font-size:11px;"><a href="/rules/">← Series Home</a> · <a href="/bip110/">BIP110</a></p>
+</footer>
+
+</body>
+</html>

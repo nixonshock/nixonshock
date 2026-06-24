@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consensus Rules — The Universal Law — nixonshock.com</title>
+<meta name="description" content="Consensus rules are the constitution of Bitcoin. Every node enforces them. No one can change them alone. Here's what they are and why they matter.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f; --surface: #12121a; --surface2: #1a1a2e; --border: #2a2a4a;
+  --text: #e2e8f0; --text-dim: #94a3b8;
+  --orange: #f7931a; --orange-glow: rgba(247, 147, 26, 0.15);
+  --cyan: #22d3ee; --cyan-dim: #1a9bbf; --cyan-glow: rgba(34, 211, 238, 0.12);
+  --rose: #fb7185; --emerald: #34d399; --violet: #a78bfa; --amber: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
+  background-size: 40px 40px; pointer-events: none; z-index: 0;
+}
+.orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
+.orb-1 { top: -20vh; left: -10vw; width: 60vw; height: 60vw; background: rgba(34, 211, 238, 0.08); }
+.orb-2 { bottom: -10vh; right: -5vw; width: 40vw; height: 40vw; background: rgba(52, 211, 153, 0.05); }
+.container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+/* NAV */
+nav { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 14px 24px; position: sticky; top: 0; z-index: 100; }
+nav .nav-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+nav a:hover { color: var(--cyan); }
+
+/* SERIES INDICATOR */
+.series-bar {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 20px; margin: 20px 0 0;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.series-bar .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); }
+.series-bar .parts { display: flex; gap: 6px; }
+.series-bar .part {
+  width: 24px; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border);
+  text-decoration: none; transition: all 0.2s;
+}
+.series-bar .part:hover { border-color: var(--cyan); color: var(--cyan); }
+.series-bar .part.active { background: var(--cyan-glow); border-color: var(--cyan); color: var(--cyan); }
+
+/* HERO */
+.hero { text-align: center; padding: 60px 0 40px; }
+.hero-badge {
+  display: inline-block; background: var(--cyan-glow); border: 1px solid rgba(34, 211, 238, 0.3);
+  color: var(--cyan); font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600; padding: 5px 14px; border-radius: 999px;
+  margin-bottom: 20px; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.hero h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -1px; line-height: 1.15;
+  background: linear-gradient(135deg, var(--cyan) 0%, var(--emerald) 50%, var(--text) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin-bottom: 16px;
+}
+.hero .subtitle { font-size: 17px; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; line-height: 1.7; }
+
+/* SECTION */
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
+.section-title { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.section-title .icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+
+/* CONTENT */
+.content-text { font-size: 15px; color: var(--text-dim); line-height: 1.8; }
+.content-text p { margin-bottom: 16px; }
+.content-text strong { color: var(--text); font-weight: 600; }
+.content-text code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(247, 147, 26, 0.1); color: var(--orange); padding: 1px 5px; border-radius: 3px; }
+.content-text .highlight { color: var(--orange); font-weight: 600; }
+.content-text .highlight-cyan { color: var(--cyan); font-weight: 600; }
+
+/* RULES LIST */
+.rules-list { list-style: none; margin: 16px 0; }
+.rules-list li {
+  padding: 14px 16px 14px 20px; background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--cyan); border-radius: 10px; margin-bottom: 10px;
+  font-size: 14px; line-height: 1.65; overflow-wrap: break-word; word-break: break-word;
+}
+.rules-list li code { word-break: break-all; font-size: 12px; background: rgba(34, 211, 238, 0.12); color: var(--cyan); padding: 1px 5px; border-radius: 4px; }
+.rules-list .num { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #0a0a0f; background: var(--cyan); border-radius: 4px; padding: 1px 7px; margin-right: 6px; line-height: 1.4; }
+
+/* KEY INSIGHT */
+.key-insight { background: var(--cyan-glow); border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 12px; padding: 20px 24px; margin: 20px 0; }
+.key-insight .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--cyan); margin-bottom: 6px; }
+.key-insight p { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+/* QUOTE */
+.pull-quote { border-left: 3px solid var(--cyan); padding: 16px 20px; margin: 20px 0; font-size: 16px; font-style: italic; color: var(--text); line-height: 1.7; }
+.pull-quote .attribution { display: block; margin-top: 8px; font-size: 12px; color: var(--text-dim); font-style: normal; }
+
+/* TABLE */
+.data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; margin: 16px 0; }
+.data-table th, .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+.data-table th { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; }
+.data-table td { color: var(--text-dim); }
+
+/* PAGE NAV */
+.page-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0 16px; }
+@media (max-width: 480px) { .page-nav { grid-template-columns: 1fr; } }
+.page-nav a { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-decoration: none; transition: all 0.2s; }
+.page-nav a:hover { border-color: var(--cyan); }
+.page-nav a.next { text-align: right; }
+.page-nav .dir { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 4px; }
+.page-nav .title { font-size: 14px; color: var(--text); font-weight: 600; }
+.page-nav a:hover .title { color: var(--cyan); }
+
+/* CODE */
+.code-block { background: #0a0a0f; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 16px 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); overflow-x: auto; line-height: 1.6; }
+
+/* FOOTER */
+footer { text-align: center; padding: 48px 0 32px; color: var(--text-dim); font-size: 13px; opacity: 0.6; }
+footer a { color: var(--cyan); text-decoration: none; }
+
+@media (max-width: 480px) { .section { padding: 24px 18px; } .hero { padding: 40px 0 24px; } .content-text { font-size: 14px; } }
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/">← nixonshock</a>
+    <a href="/rules/">Rules</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- SERIES BAR -->
+<div class="series-bar">
+  <span class="label">The Two Rulebooks · Part 2 of 5</span>
+  <div class="parts">
+    <a href="/rules/" class="part" title="The Two Rulebooks">1</a>
+    <a href="/rules/consensus.html" class="part active" title="Consensus Rules">2</a>
+    <a href="/rules/relay.html" class="part" title="Relay Policies">3</a>
+    <a href="/rules/bip110.html" class="part" title="Live Case Study">4</a>
+    <a href="/rules/verify.html" class="part" title="See It Yourself">5</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Part 2 of 5 · The Universal Law</div>
+  <h1>Consensus Rules</h1>
+  <p class="subtitle">These are the rules every node must follow. No exceptions. No appeals. They define what Bitcoin <em>is</em> — and what breaks it.</p>
+</section>
+
+<!-- OPENING -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:var(--cyan-glow);color:var(--cyan);">🏛️</span>
+    The Constitution of Bitcoin
+  </div>
+  <div class="content-text">
+    <p>Consensus rules are the <strong>hard law</strong> of Bitcoin. They are built into every node client. When a peer sends your node a block or transaction, your node checks it against every single consensus rule before accepting it.</p>
+    <p>Think of it like a mathematical trapdoor: a transaction either passes all rules or it doesn't. There's no "mostly valid." There's no "close enough." There's no authority to appeal to. <strong>The rules are the authority.</strong></p>
+    <p>Every one of the 20,000+ reachable nodes running Bitcoin enforces these rules independently. If a block is produced that violates even one rule, every honest node rejects it instantly, automatically, and without coordination.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"No government can print more bitcoin. No central bank can lower the block reward. No president can suspend the difficulty adjustment. The rules are not subject to emergency executive orders."</p>
+  </div>
+  <div class="content-text">
+    <p>This is the direct answer to the Nixon Shock. In 1971, the gold convertibility rule was suspended with a speech. In Bitcoin, the supply cap of 21 million is enforced by <strong>every node, everywhere, every time</strong>. Changing it would require convincing almost every node operator on Earth to accept a different version of the rules — a hard fork.</p>
+  </div>
+</div>
+
+<!-- CATEGORY: BLOCK RULES -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(34,211,238,0.2);color:var(--cyan);">⬡</span>
+    Block Structure Rules
+  </div>
+  <div class="content-text">
+    <p>Every block must satisfy these structural constraints before any node will accept it:</p>
+  </div>
+  <ul class="rules-list">
+    <li><span class="num">1</span> <strong>Weight limit:</strong> A block must not exceed <code>4,000,000 weight units</code> (WU). This is the SegWit-adjusted size limit, roughly equivalent to 4 MB of block data or 1 MB of base data.</li>
+    <li><span class="num">2</span> <strong>Valid proof-of-work:</strong> The block header's hash must be below the current difficulty target. This is the rule that makes mining expensive — and makes rewriting history computationally infeasible.</li>
+    <li><span class="num">3</span> <strong>Timestamp rules:</strong> The block timestamp must be greater than the median timestamp of the last 11 blocks (MTP), and not more than 2 hours ahead of the node's system time.</li>
+    <li><span class="num">4</span> <strong>First block at height:</strong> Only one block can exist at any given height. If two blocks claim the same height, only one can be part of the chain with the most cumulative work.</li>
+    <li><span class="num">5</span> <strong>Coinbase maturity:</strong> The coinbase transaction (block reward) cannot be spent until 100 blocks later. This prevents miners from spending money that could vanish in a chain reorganization.</li>
+  </ul>
+</div>
+
+<!-- CATEGORY: COIN RULES -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,191,36,0.2);color:var(--amber);">₿</span>
+    Monetary Rules (The Economics)
+  </div>
+  <div class="content-text">
+    <p>These are the rules that make Bitcoin sound money. They define the supply, issuance, and economic properties that no central bank can override:</p>
+  </div>
+  <ul class="rules-list">
+    <li><span class="num">1</span> <strong>Hard cap of 21 million:</strong> The total supply of bitcoin that will ever exist is <code>21,000,000 BTC</code>. This is enforced by the block reward schedule — no additional coins can ever be created by any mechanism.</li>
+    <li><span class="num">2</span> <strong>Halving schedule:</strong> The block reward halves every <code>210,000 blocks</code> (roughly every 4 years). Starting at 50 BTC in 2009, then 25, 12.5, 6.25, and currently 3.125 BTC per block as of 2024.</li>
+    <li><span class="num">3</span> <strong>Difficulty adjustment:</strong> Every <code>2,016 blocks</code> (roughly 2 weeks), the network adjusts the mining difficulty to keep the average block interval at 10 minutes. If blocks come too fast, difficulty goes up. Too slow, it goes down.</li>
+    <li><span class="num">4</span> <strong>No inflation override:</strong> No mechanism exists to increase the supply beyond the schedule. Not by miners, not by developers, not by anyone.</li>
+  </ul>
+  <div class="key-insight">
+    <div class="label">⬡ Why This Matters</div>
+    <p>The Nixon Shock increased the money supply by uncapping dollar creation. Bitcoin cannot do this. The 21 million cap is not a policy — it's a mathematical constraint enforced by every node. No emergency, no crisis, no "temporary measure" can bypass it.</p>
+  </div>
+</div>
+
+<!-- CATEGORY: TRANSACTION RULES -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(52,211,153,0.2);color:var(--emerald);">✉️</span>
+    Transaction Rules
+  </div>
+  <div class="content-text">
+    <p>Every transaction must prove it has the right to spend its inputs. These are the cryptographic rules that prevent double-spending:</p>
+  </div>
+  <ul class="rules-list">
+    <li><span class="num">1</span> <strong>Valid signatures:</strong> Every input must be signed by the private key corresponding to the previous transaction's output public key. No valid signature = the transaction is rejected.</li>
+    <li><span class="num">2</span> <strong>No double-spend:</strong> An input that has already been spent (appears in any other transaction in the chain) cannot be spent again. The UTXO set tracks all unspent outputs.</li>
+    <li><span class="num">3</span> <strong>No value creation:</strong> The sum of inputs must be greater than or equal to the sum of outputs. The difference becomes the transaction fee (collected by the miner). You cannot create bitcoin out of thin air in a transaction.</li>
+    <li><span class="num">4</span> <strong>Script validity:</strong> The locking script (<code>scriptPubKey</code>) and unlocking script (<code>scriptSig</code>/<code>scriptWitness</code>) must execute without error. Invalid scripts (bad opcodes, missing data) are rejected.</li>
+    <li><span class="num">5</span> <strong>No negative outputs:</strong> Each output value must be a positive integer of satoshis (<code>≥ 546 satoshis</code> for standard transactions).</li>
+  </ul>
+</div>
+
+<!-- WHAT A CONSENSUS CHANGE LOOKS LIKE -->
+<div class="section">
+  <div class="section-title">
+    <span class="icon" style="background:rgba(251,113,133,0.2);color:var(--rose);">🔧</span>
+    How Consensus Rules Change
+  </div>
+  <div class="content-text">
+    <p>Consensus rules can change — but the bar is deliberately high:</p>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Type</th><th>Mechanism</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Soft Fork</strong></td><td>Tightens a rule — old nodes still accept new blocks</td><td>SegWit (2017), BIP110 (2026)</td></tr>
+      <tr><td><strong>Hard Fork</strong></td><td>Relaxes or changes a rule — old nodes reject new blocks</td><td>Bitcoin XT (failed), Bitcoin Cash (2017 split)</td></tr>
+    </tbody>
+  </table>
+  <div class="content-text">
+    <p><strong>Soft forks</strong> are backwards-compatible. Old nodes see new blocks as valid (since they follow stricter rules). <strong>Hard forks</strong> are not. Old nodes see new blocks as invalid — causing a permanent chain split unless everyone upgrades.</p>
+    <p>This is why soft forks are preferred. BIP110 (covered in Part 4) is a live soft fork — it tightens the OP_RETURN data limit without breaking existing nodes.</p>
+  </div>
+  <div class="pull-quote">
+    <p>"A soft fork is like adding a new lock to a door that already has one. Old keys still work. A hard fork is like moving the door — old keys don't open the new location."</p>
+  </div>
+</div>
+
+<!-- PAGE NAV -->
+<div class="page-nav">
+  <a href="/rules/">
+    <div class="dir">← Previous</div>
+    <div class="title">The Two Rulebooks</div>
+  </a>
+  <a href="/rules/relay.html" class="next">
+    <div class="dir">Next →</div>
+    <div class="title">Relay Policies — Your Node, Your Choice</div>
+  </a>
+</div>
+
+</div>
+
+<footer>
+  <p>nixonshock.com — <a href="/">The Nixon Shock was the biggest default in human history. Bitcoin fixes it.</a></p>
+  <p style="margin-top:8px;font-size:11px;"><a href="/rules/">← Series Home</a> · <a href="/bip110/">BIP110</a></p>
+</footer>
+
+</body>
+</html>
