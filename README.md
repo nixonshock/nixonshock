@@ -8,17 +8,13 @@ A comprehensive Bitcoin education hub that tells the story of the 1971 Nixon Sho
 
 ```
 /
-├── index.html       → Landing: The Nixon Shock → Bitcoin story
-├── vercel.json      → Vercel deployment config
-├── bip110/         → BIP110 educational page (countdown, chart, analysis)
-├── learn/          → Bitcoin education hub (coming soon)
-├── books/          → Affiliate book recommendations
-├── wallets/        → Hardware wallet affiliate links
-├── apps/           → Bitcoin app recommendations
-├── ecosystem/      → Bitcoin Ecosystem landscape: 60+ curated entries
-├── learn/          → Learn Bitcoin hub: explainers, trackers, landscape
-├── rules/          → Consensus vs relay explainer series
-└── bip110/         → BIP110 tracker: countdown, chart, analysis
+├── index.html   → Landing: The Nixon Shock → Bitcoin story
+├── learn/       → Learn Bitcoin hub (Rules, BIP110, more coming)
+├── apps/        → Bitcoin Apps & Ecosystem (66 curated entries)
+├── rules/       → Consensus vs relay explainer series (5 parts)
+├── bip110/      → BIP110 tracker: countdown, chart, analysis
+├── books/       → Affiliate book recommendations
+└── vercel.json  → Vercel deployment config
 ```
 
 ## Tech Stack
