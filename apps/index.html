@@ -61,15 +61,9 @@ nav a:hover { color: var(--orange); }
 .item-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 14px 16px; text-decoration: none;
-  transition: all 0.2s; display: flex; align-items: flex-start; gap: 12px;
+  transition: all 0.2s; display: flex; flex-direction: column;
 }
 .item-card:hover { border-color: var(--emerald); background: var(--surface2); }
-.item-card .icon-box {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-  background: var(--surface2); border: 1px solid var(--border);
-}
 .item-card .info { flex: 1; min-width: 0; }
 .item-card .name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .item-card .desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
@@ -103,7 +97,7 @@ footer a { color: var(--orange); text-decoration: none; }
 <section class="hero">
   <div class="hero-badge">⬢ Apps &amp; Ecosystem</div>
   <h1>Bitcoin Apps</h1>
-  <p>Every corner of the Bitcoin ecosystem — wallets, exchanges, mining, nodes, payments, sidechains, development tools, and more. Curated and updated.</p>
+  <p>Every corner of the Bitcoin ecosystem — wallets, exchanges, mining, nodes, payments, sidechains, Nostr, development tools, and more. Curated and updated.</p>
 </section>
 
 <!-- TOC -->
@@ -116,6 +110,7 @@ footer a { color: var(--orange); text-decoration: none; }
     <a href="#nodes">🖥️ Nodes</a>
     <a href="#dev">🛠️ Dev Tools</a>
     <a href="#l2">📡 L2 &amp; Protocols</a>
+    <a href="#nostr">📡 Nostr</a>
     <a href="#payments">💳 Payments</a>
     <a href="#education">📚 Education</a>
     <a href="#security">🔒 Security</a>
@@ -132,7 +127,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://coldcard.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">🧊</div>
       <div class="info">
         <div class="name">Coldcard</div>
         <div class="desc">Hardware wallet. Bitcoin-only, air-gapped, open-source. The gold standard for cold storage.</div>
@@ -140,7 +134,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://trezor.io" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🔶</div>
       <div class="info">
         <div class="name">Trezor</div>
         <div class="desc">Pioneering hardware wallet. Open-source, supports Bitcoin + altcoins.</div>
@@ -148,7 +141,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://foundation.xyz/passport" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🛂</div>
       <div class="info">
         <div class="name">Passport</div>
         <div class="desc">Foundation's Bitcoin-only hardware wallet. Air-gapped, open-source, DIY-repairable.</div>
@@ -156,7 +148,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitbox.swiss" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">📦</div>
       <div class="info">
         <div class="name">BitBox</div>
         <div class="desc">Swiss-made hardware wallet. Bitcoin-only, open-source, microSD backup.</div>
@@ -164,7 +155,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://electrum.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">⚡</div>
       <div class="info">
         <div class="name">Electrum</div>
         <div class="desc">Lightweight desktop wallet. Fast, feature-rich, supports hardware wallets and Lightning.</div>
@@ -172,7 +162,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://sparrowwallet.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">🐦</div>
       <div class="info">
         <div class="name">Sparrow</div>
         <div class="desc">Desktop Bitcoin wallet. Professional-grade, multisig, hardware wallet support.</div>
@@ -180,7 +169,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://phoenix.acinq.co" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🔥</div>
       <div class="info">
         <div class="name">Phoenix</div>
         <div class="desc">Self-custodial Lightning wallet. Runs its own Lightning node on your phone.</div>
@@ -188,7 +176,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://aquawallet.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🟢</div>
       <div class="info">
         <div class="name">Aqua Wallet</div>
         <div class="desc">Bitcoin + Liquid + Lightning in one app. Simple, powerful, self-custodial.</div>
@@ -196,7 +183,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bluewallet.io" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">💙</div>
       <div class="info">
         <div class="name">Blue Wallet</div>
         <div class="desc">Mobile Bitcoin + Lightning wallet. Watch-only, multisig, self-custodial.</div>
@@ -204,7 +190,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://muun.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🌙</div>
       <div class="info">
         <div class="name">Muun</div>
         <div class="desc">Mobile wallet with on-chain + Lightning auto-balancing. Simple onboarding.</div>
@@ -212,7 +197,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://breez.technology" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🌬️</div>
       <div class="info">
         <div class="name">Breez</div>
         <div class="desc">Non-custodial Lightning wallet. Podcasts, POS, and Lightning in one app.</div>
@@ -220,7 +204,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoincore.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">₿</div>
       <div class="info">
         <div class="name">Bitcoin Core</div>
         <div class="desc">The reference implementation of Bitcoin. Full node + wallet. The standard.</div>
@@ -228,7 +211,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://zeusln.app" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">⚡</div>
       <div class="info">
         <div class="name">Zeus</div>
         <div class="desc">Mobile Lightning node manager. Connect to your own LND or CLN node remotely.</div>
@@ -236,7 +218,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://www.walletofsatoshi.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">👛</div>
       <div class="info">
         <div class="name">Wallet of Satoshi</div>
         <div class="desc">Simple custodial Lightning wallet. Immediate setup, zero friction.</div>
@@ -255,7 +236,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://kraken.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">🐙</div>
       <div class="info">
         <div class="name">Kraken</div>
         <div class="desc">Established KYC exchange. BTC/EUR pairs, staking, futures.</div>
@@ -263,7 +243,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://strike.me" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">⚡</div>
       <div class="info">
         <div class="name">Strike</div>
         <div class="desc">Bitcoin + Lightning exchange. Buy/sell with zero-fee DCA. Lightning withdrawals.</div>
@@ -271,7 +250,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://river.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🌊</div>
       <div class="info">
         <div class="name">River</div>
         <div class="desc">Bitcoin-only exchange. DCA, recurring buys, Lightning integration, proof of reserves.</div>
@@ -279,7 +257,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bisq.network" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🔁</div>
       <div class="info">
         <div class="name">Bisq</div>
         <div class="desc">Decentralized P2P exchange. No KYC, open-source, on-chain settlement.</div>
@@ -287,7 +264,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://robosats.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🤖</div>
       <div class="info">
         <div class="name">RoboSats</div>
         <div class="desc">Private P2P exchange over Lightning. No KYC, Tor-only, escrow via Lightning.</div>
@@ -295,7 +271,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://hodlhodl.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">🔒</div>
       <div class="info">
         <div class="name">Hodl Hodl</div>
         <div class="desc">P2P Bitcoin exchange. Non-custodial escrow, no KYC, global.</div>
@@ -303,7 +278,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://lnmarkets.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">📈</div>
       <div class="info">
         <div class="name">LN Markets</div>
         <div class="desc">Bitcoin derivatives on Lightning. Leverage trading, non-custodial, 24/7.</div>
@@ -311,7 +285,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://coinbase.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🔄</div>
       <div class="info">
         <div class="name">Coinbase</div>
         <div class="desc">Largest US exchange. On-ramp for beginners, institutional products.</div>
@@ -330,7 +303,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://foundrydigital.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">🔨</div>
       <div class="info">
         <div class="name">Foundry USA</div>
         <div class="desc">Largest Bitcoin mining pool focused on US-based miners. DCG subsidiary.</div>
@@ -338,7 +310,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://braiins.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">⚙️</div>
       <div class="info">
         <div class="name">Braiins OS</div>
         <div class="desc">Open-source mining firmware. Pool (Slush Pool) + firmware for modern ASICs.</div>
@@ -346,7 +317,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitmain.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🗿</div>
       <div class="info">
         <div class="name">Bitmain</div>
         <div class="desc">Largest ASIC manufacturer. Antminer series: S21, T21, and the Antpool mining pool.</div>
@@ -354,7 +324,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://microbt.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🔩</div>
       <div class="info">
         <div class="name">MicroBT</div>
         <div class="desc">Leading ASIC maker. Whatsminer series, competitive with Bitmain.</div>
@@ -362,7 +331,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://mempool.space" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">📊</div>
       <div class="info">
         <div class="name">Mempool.space</div>
         <div class="desc">Open-source block explorer. Mempool visualizer, fee estimates, mining dashboard.</div>
@@ -381,7 +349,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://bitcoincore.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">₿</div>
       <div class="info">
         <div class="name">Bitcoin Core</div>
         <div class="desc">Reference full node implementation. The backbone of the network.</div>
@@ -389,7 +356,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoinknots.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🔷</div>
       <div class="info">
         <div class="name">Bitcoin Knots</div>
         <div class="desc">Luke Dashjr's full-node fork with enhanced policy and privacy features.</div>
@@ -397,7 +363,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://lightning.network" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">⚡</div>
       <div class="info">
         <div class="name">LND</div>
         <div class="desc">Lightning Network Daemon. Most popular Lightning implementation (Lightning Labs).</div>
@@ -405,7 +370,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://github.com/ElementsProject/lightning" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🔌</div>
       <div class="info">
         <div class="name">Core Lightning (CLN)</div>
         <div class="desc">Blockstream's Lightning implementation. Modular, lightweight, C-based.</div>
@@ -413,7 +377,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://btcpayserver.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🏪</div>
       <div class="info">
         <div class="name">BTCPay Server</div>
         <div class="desc">Self-hosted payment processor. Full node + Lightning + invoicing.</div>
@@ -421,7 +384,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://umbrel.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🌂</div>
       <div class="info">
         <div class="name">Umbrel</div>
         <div class="desc">Home node OS. One-click setup for Bitcoin + Lightning + apps.</div>
@@ -440,7 +402,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://github.com/bitcoin/bips" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">📜</div>
       <div class="info">
         <div class="name">BIPs</div>
         <div class="desc">Bitcoin Improvement Proposals. The standards and specification process for Bitcoin.</div>
@@ -448,7 +409,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoindevkit.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🧰</div>
       <div class="info">
         <div class="name">BDK (Bitcoin Dev Kit)</div>
         <div class="desc">Rust library for building Bitcoin wallets. Portable, well-documented.</div>
@@ -456,7 +416,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://github.com/rust-bitcoin/rust-bitcoin" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🦀</div>
       <div class="info">
         <div class="name">rust-bitcoin</div>
         <div class="desc">Rust library for Bitcoin data structures and protocol. Industry standard.</div>
@@ -464,7 +423,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://github.com/bitcoin-core/secp256k1" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🔐</div>
       <div class="info">
         <div class="name">libsecp256k1</div>
         <div class="desc">Bitcoin Core's optimized elliptic curve library. Used by most Bitcoin software.</div>
@@ -472,7 +430,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://blockstream.info" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🔍</div>
       <div class="info">
         <div class="name">Blockstream.info</div>
         <div class="desc">Block explorer by Blockstream. Esplora API, privacy mode.</div>
@@ -480,7 +437,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoinsearch.xyz" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🔎</div>
       <div class="info">
         <div class="name">BitcoinSearch</div>
         <div class="desc">Search engine for Bitcoin knowledge. Documentation, BIPs, forum posts.</div>
@@ -488,7 +444,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://minibits.cash" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">💵</div>
       <div class="info">
         <div class="name">Minibits</div>
         <div class="desc">Cashu ecash wallet for Bitcoin. Privacy-preserving digital cash on Lightning.</div>
@@ -503,11 +458,10 @@ footer a { color: var(--orange); text-decoration: none; }
   <div class="section-header">
     <span class="emoji">📡</span>
     <h2>L2 &amp; Protocols</h2>
-    <span class="count">6</span>
+    <span class="count">5</span>
   </div>
   <div class="items-grid">
     <a href="https://lightning.network" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">⚡</div>
       <div class="info">
         <div class="name">Lightning Network</div>
         <div class="desc">Layer 2 for instant, low-fee Bitcoin payments. The most deployed L2 protocol.</div>
@@ -515,7 +469,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://liquid.net" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">💧</div>
       <div class="info">
         <div class="name">Liquid Network</div>
         <div class="desc">Bitcoin sidechain by Blockstream. Confidential assets, fast settlement, L-BTC.</div>
@@ -523,7 +476,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://github.com/RGB-WG" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🎨</div>
       <div class="info">
         <div class="name">RGB</div>
         <div class="desc">Smart contract protocol on Bitcoin and Lightning. Client-side validation, no bloat.</div>
@@ -531,27 +483,147 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://docs.cashu.space" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">💸</div>
       <div class="info">
         <div class="name">Cashu</div>
         <div class="desc">Chaumian ecash mint on Lightning. Privacy-preserving, trust-minimized digital cash.</div>
         <span class="tag-sm">Protocol · Ecash</span>
       </div>
     </a>
-    <a href="https://nostr.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">📡</div>
-      <div class="info">
-        <div class="name">Nostr</div>
-        <div class="desc">Decentralized social protocol. Used for Bitcoin identity, zaps, and censorship-resistant communication.</div>
-        <span class="tag-sm">Protocol · Social</span>
-      </div>
-    </a>
     <a href="https://taiga.gitlab.io" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🌿</div>
       <div class="info">
         <div class="name">Taproot Assets</div>
         <div class="desc">Protocol for issuing assets on Bitcoin using Taproot. Formerly TARO (Lightning Labs).</div>
         <span class="tag-sm">Protocol · Assets</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- NOSTR ECOSYSTEM -->
+<div class="section" id="nostr">
+  <div class="section-header">
+    <span class="emoji">📡</span>
+    <h2>Nostr Ecosystem</h2>
+    <span class="count">17</span>
+  </div>
+  <div class="items-grid">
+    <a href="https://primal.net" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Primal</div>
+        <div class="desc">Flagship Nostr client for iOS/Android/web. Fast, curated relay, native zaps and search.</div>
+        <span class="tag-sm">Client · Web/Mobile</span>
+      </div>
+    </a>
+    <a href="https://damus.io" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Damus</div>
+        <div class="desc">Original Nostr iOS client. Built with Swift, supports zaps, reactions, NIP-05 verification.</div>
+        <span class="tag-sm">Client · iOS</span>
+      </div>
+    </a>
+    <a href="https://github.com/vishalxl/amethyst" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Amethyst</div>
+        <div class="desc">Leading Android Nostr client. Robust zap support, relay management, Lightning integration.</div>
+        <span class="tag-sm">Client · Android</span>
+      </div>
+    </a>
+    <a href="https://coracle.social" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Coracle</div>
+        <div class="desc">Feature-rich web client. Strong relay decentralization, NIP-56 reporting, groups and communities.</div>
+        <span class="tag-sm">Client · Web</span>
+      </div>
+    </a>
+    <a href="https://snort.social" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Snort</div>
+        <div class="desc">Popular web client with Twitter-like interface. Zaps, NIP-05, custom emoji reactions.</div>
+        <span class="tag-sm">Client · Web</span>
+      </div>
+    </a>
+    <a href="https://iris.to" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Iris</div>
+        <div class="desc">Clean, elegant web client. Built-in Lightning wallet, NIP-55 Android intents.</div>
+        <span class="tag-sm">Client · Web</span>
+      </div>
+    </a>
+    <a href="https://satellite.earth" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Satellite</div>
+        <div class="desc">Design-focused web client. Media-rich feeds, communities, integrated zaps.</div>
+        <span class="tag-sm">Client · Web</span>
+      </div>
+    </a>
+    <a href="https://github.com/mikedilger/gossip" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Gossip</div>
+        <div class="desc">Desktop client for power users. Full relay control, no JavaScript, GTK-native.</div>
+        <span class="tag-sm">Client · Desktop</span>
+      </div>
+    </a>
+    <a href="https://getalby.com" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Alby</div>
+        <div class="desc">Lightning browser extension. Send/receive sats, Nostr zaps, LNURL, NIP-07 key management.</div>
+        <span class="tag-sm">Wallet · Zaps</span>
+      </div>
+    </a>
+    <a href="https://mutinywallet.com" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Mutiny Wallet</div>
+        <div class="desc">Self-custodial Lightning wallet with native Nostr integration and NWC support.</div>
+        <span class="tag-sm">Wallet · Self-custodial</span>
+      </div>
+    </a>
+    <a href="https://nwc.dev" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Nostr Wallet Connect</div>
+        <div class="desc">NIP-47 protocol standard. Connect Lightning wallets to Nostr clients for seamless zapping.</div>
+        <span class="tag-sm">Protocol · Zaps</span>
+      </div>
+    </a>
+    <a href="https://stacker.news" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Stacker News</div>
+        <div class="desc">Bitcoin-focused news aggregator on Nostr. Zaps for micropayments and reputation.</div>
+        <span class="tag-sm">Content · News</span>
+      </div>
+    </a>
+    <a href="https://wavlake.com" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Wavlake</div>
+        <div class="desc">Independent music platform on Nostr. Albums as replaceable events, artist zaps.</div>
+        <span class="tag-sm">Content · Music</span>
+      </div>
+    </a>
+    <a href="https://highlighter.com" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Highlighter</div>
+        <div class="desc">Social highlighting. Highlight any web page, store as Nostr event, curate with zaps.</div>
+        <span class="tag-sm">Content · Curation</span>
+      </div>
+    </a>
+    <a href="https://zap.stream" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Zap.stream</div>
+        <div class="desc">Livestreaming platform with zap integration. Stream, tip, and chat over Nostr.</div>
+        <span class="tag-sm">Content · Streaming</span>
+      </div>
+    </a>
+    <a href="https://nostr.band" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Nostr.band</div>
+        <div class="desc">Nostr search engine and analytics. Full-text event search, relay stats, entity lookup.</div>
+        <span class="tag-sm">Tool · Search</span>
+      </div>
+    </a>
+    <a href="https://nostr.watch" class="item-card" target="_blank" rel="noopener">
+      <div class="info">
+        <div class="name">Nostr.watch</div>
+        <div class="desc">Relay directory and monitoring. Uptime, sync status, real-time event counts per relay.</div>
+        <span class="tag-sm">Tool · Monitor</span>
       </div>
     </a>
   </div>
@@ -566,7 +638,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://opennode.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🔗</div>
       <div class="info">
         <div class="name">OpenNode</div>
         <div class="desc">Lightning payment processor. Accept Bitcoin payments, auto-converts to fiat.</div>
@@ -574,7 +645,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://getalby.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">⚡</div>
       <div class="info">
         <div class="name">Alby</div>
         <div class="desc">Lightning browser extension. Send/receive sats, Nostr zaps, LNURL.</div>
@@ -582,7 +652,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://lnurl.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🔗</div>
       <div class="info">
         <div class="name">LNURL</div>
         <div class="desc">Lightning protocol standard. Pay-to-username, withdrawals, auth, channel requests.</div>
@@ -590,7 +659,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://lightningaddress.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">📧</div>
       <div class="info">
         <div class="name">Lightning Address</div>
         <div class="desc">Email-like identifiers for Lightning payments. user@domain.com → receive sats.</div>
@@ -609,7 +677,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://saifedean.com/the-bitcoin-standard" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">📖</div>
       <div class="info">
         <div class="name">The Bitcoin Standard</div>
         <div class="desc">Saifedean Ammous's definitive book on Bitcoin's economics and sound money.</div>
@@ -617,7 +684,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://saifedean.com/the-fiat-standard" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">📕</div>
       <div class="info">
         <div class="name">The Fiat Standard</div>
         <div class="desc">Saifedean Ammous on the history and economics of fiat paper money.</div>
@@ -625,7 +691,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoin-whitepaper.io" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">📄</div>
       <div class="info">
         <div class="name">Bitcoin Whitepaper</div>
         <div class="desc">Satoshi Nakamoto's original 9-page paper. The foundation of everything.</div>
@@ -633,7 +698,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcointv.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">📺</div>
       <div class="info">
         <div class="name">BitcoinTV</div>
         <div class="desc">Curated Bitcoin video content. Presentations, talks, and documentaries.</div>
@@ -641,7 +705,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://fountain.fm" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">🎙️</div>
       <div class="info">
         <div class="name">Fountain</div>
         <div class="desc">Bitcoin podcast app with Lightning streaming payments. Earn sats as you listen.</div>
@@ -649,7 +712,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoinmagazine.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">📰</div>
       <div class="info">
         <div class="name">Bitcoin Magazine</div>
         <div class="desc">Longest-running Bitcoin publication. News, analysis, opinion.</div>
@@ -657,7 +719,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://bitcoin.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">🌐</div>
       <div class="info">
         <div class="name">Bitcoin.org</div>
         <div class="desc">Original Bitcoin website. Getting started guides, documentation, client downloads.</div>
@@ -665,7 +726,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://nixonshock.com" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">⛓️</div>
       <div class="info">
         <div class="name">Nixonshock.com</div>
         <div class="desc">You are here. The Nixon Shock — the biggest default in human history. Bitcoin fixes it.</div>
@@ -684,7 +744,6 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
   <div class="items-grid">
     <a href="https://iancoleman.io/bip39/" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">🔑</div>
       <div class="info">
         <div class="name">BIP39 Mnemonic Tool</div>
         <div class="desc">Generate, validate, and convert BIP39 seed phrases. Ian Coleman's reference tool.</div>
@@ -692,7 +751,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://en.wikipedia.org/wiki/Tor" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🧅</div>
       <div class="info">
         <div class="name">Tor</div>
         <div class="desc">Anonymous routing. Default for Bitcoin Core and many wallet privacy features.</div>
@@ -700,7 +758,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://glossary.bitcoin.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">📘</div>
       <div class="info">
         <div class="name">Bitcoin Glossary</div>
         <div class="desc">Bitcoin terminology explained. From "address" to "zero-conf."</div>
@@ -708,7 +765,6 @@ footer a { color: var(--orange); text-decoration: none; }
       </div>
     </a>
     <a href="https://en.bitcoin.it/wiki/Main_Page" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);">📚</div>
       <div class="info">
         <div class="name">Bitcoin Wiki</div>
         <div class="desc">Community-run knowledge base. Comprehensive technical and historical information.</div>
@@ -723,39 +779,14 @@ footer a { color: var(--orange); text-decoration: none; }
   <div class="section-header">
     <span class="emoji">🌐</span>
     <h2>Community</h2>
-    <span class="count">4</span>
+    <span class="count">1</span>
   </div>
   <div class="items-grid">
     <a href="https://bitcointalk.org" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(247,147,26,0.15);border-color:rgba(247,147,26,0.3);">💬</div>
       <div class="info">
         <div class="name">BitcoinTalk</div>
         <div class="desc">Original Bitcoin forum. Where Satoshi announced Bitcoin. Still active.</div>
         <span class="tag-sm">Forum</span>
-      </div>
-    </a>
-    <a href="https://stacker.news" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(34,211,238,0.15);border-color:rgba(34,211,238,0.3);">📬</div>
-      <div class="info">
-        <div class="name">Stacker News</div>
-        <div class="desc">Bitcoin-focused social news. Like Hacker News but with Lightning zaps.</div>
-        <span class="tag-sm">Social · Zaps</span>
-      </div>
-    </a>
-    <a href="https://primal.net" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(52,211,153,0.15);border-color:rgba(52,211,153,0.3);">🟣</div>
-      <div class="info">
-        <div class="name">Primal</div>
-        <div class="desc">Nostr client for iOS/Android/web. Fast, modern, Bitcoin-native social.</div>
-        <span class="tag-sm">Nostr · Social</span>
-      </div>
-    </a>
-    <a href="https://snort.social" class="item-card" target="_blank" rel="noopener">
-      <div class="icon-box" style="background:rgba(251,191,36,0.15);border-color:rgba(251,191,36,0.3);">🐽</div>
-      <div class="info">
-        <div class="name">Snort</div>
-        <div class="desc">Web-based Nostr client. Clean interface, zaps, communities.</div>
-        <span class="tag-sm">Nostr · Social</span>
       </div>
     </a>
   </div>
@@ -763,8 +794,8 @@ footer a { color: var(--orange); text-decoration: none; }
 
 <!-- FOOTER STATS -->
 <div class="section" style="text-align:center;border-left:3px solid var(--emerald);">
-  <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--emerald);margin-bottom:4px;">66</div>
-  <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Entries Across 10 Categories</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--emerald);margin-bottom:4px;">79</div>
+  <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Entries Across 11 Categories</div>
   <div style="margin-top:16px;font-size:12px;color:var(--text-dim);">
     This is a living landscape — additions and corrections welcome.
   </div>
