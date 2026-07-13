@@ -6,6 +6,17 @@
 <title>The Two Rulebooks — nixonshock.com</title>
 <meta name="description" content="Every Bitcoin node follows two sets of rules. One is absolute. One is your choice. Understanding the difference is the first step to understanding why Bitcoin can't be Nixon-Shocked.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+      colors: { bitcoin: { orange: '#f7931a', dark: '#0d0d12', card: '#15151f' } }
+    }
+  }
+}
+</script>
 <style>
 :root {
   --bg: #0a0a0f;
@@ -46,12 +57,6 @@ body::before {
 .orb-1 { top: -20vh; left: -10vw; width: 60vw; height: 60vw; background: rgba(247, 147, 26, 0.08); }
 .orb-2 { bottom: -10vh; right: -5vw; width: 40vw; height: 40vw; background: rgba(34, 211, 238, 0.05); }
 .container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
-
-/* NAV */
-nav { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 14px 24px; position: sticky; top: 0; z-index: 100; }
-nav .nav-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color 0.2s; }
-nav a:hover { color: var(--orange); }
 
 /* HERO */
 .hero { text-align: center; padding: 80px 0 48px; }
@@ -171,9 +176,31 @@ footer a { color: var(--orange); text-decoration: none; }
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
 
-<nav>
-  <div class="nav-inner">
-    <a href="/">← nixonshock</a>
+<!-- NAV -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-bitcoin-dark/90 backdrop-blur-md border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="/" class="flex items-center">
+        <img src="/nixonshock_logo.svg" alt="nixonshock" class="h-8">
+      </a>
+      <div class="hidden md:flex items-center gap-6 text-sm">
+        <a href="/learn/" class="text-gray-400 hover:text-bitcoin-orange transition-colors">Learn</a>
+        <a href="/books/" class="text-gray-400 hover:text-bitcoin-orange transition-colors">Books</a>
+        <a href="/apps/" class="text-gray-400 hover:text-bitcoin-orange transition-colors">Apps</a>
+        <a href="/#get-bitcoin" class="bg-bitcoin-orange text-black px-4 py-2 rounded-lg font-medium hover:bg-amber-500 transition-colors text-sm">Get Bitcoin</a>
+      </div>
+      <button id="menu-btn" class="md:hidden text-gray-400 hover:text-white p-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 bg-bitcoin-dark/95 backdrop-blur-md">
+    <div class="px-4 py-4 space-y-3">
+      <a href="/learn/" class="block text-gray-400 hover:text-bitcoin-orange">Learn</a>
+      <a href="/books/" class="block text-gray-400 hover:text-bitcoin-orange">Books</a>
+      <a href="/apps/" class="block text-gray-400 hover:text-bitcoin-orange">Apps</a>
+      <a href="/#get-bitcoin" class="block bg-bitcoin-orange text-black px-4 py-2 rounded-lg font-medium text-center">Get Bitcoin</a>
+    </div>
   </div>
 </nav>
 
@@ -336,5 +363,11 @@ footer a { color: var(--orange); text-decoration: none; }
   <p style="margin-top:8px;font-size:11px;"><a href="/">← Back home</a> · <a href="/bip110/">BIP110</a></p>
 </footer>
 
+<script>
+document.getElementById('menu-btn').addEventListener('click', function() {
+  const menu = document.getElementById('mobile-menu');
+  menu.classList.toggle('hidden');
+});
+</script>
 </body>
 </html>
