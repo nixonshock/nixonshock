@@ -73,17 +73,6 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-}
 .orb {
   position: fixed;
   border-radius: 50%;
@@ -839,6 +828,7 @@ document.getElementById('menu-btn').addEventListener('click', function() {
 [data-theme] .text-white { color: var(--text-primary); }
 [data-theme] .text-white/90 { color: var(--text-primary); }
 [data-theme] .bg-black/30 { background: rgba(0,0,0,0.15); }
+[data-theme="light"] nav a[href="/"] img { filter: invert(1); }
 </style>
 </body>
 </html>

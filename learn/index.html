@@ -73,14 +73,6 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.6; overflow-x: hidden;
 }
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background-image:
-    linear-gradient(rgba(30, 41, 59, 0.15) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 41, 59, 0.15) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none; z-index: 0;
-}
 .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
 .orb-1 { top: -20vh; left: -10vw; width: 60vw; height: 60vw; background: rgba(247, 147, 26, 0.08); }
 .orb-2 { bottom: -15vh; right: -5vw; width: 50vw; height: 50vw; background: rgba(34, 211, 238, 0.05); }
@@ -261,6 +253,7 @@ document.getElementById('menu-btn').addEventListener('click', function() {
 [data-theme] .bg-bitcoin-dark/90 { background: var(--nav-bg); }
 [data-theme] .bg-bitcoin-dark/95 { background: var(--nav-bg); }
 [data-theme] .text-white { color: var(--text-primary); }
+[data-theme="light"] nav a[href="/"] img { filter: invert(1); }
 </style>
 </body>
 </html>
