@@ -2,11 +2,16 @@
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bitcoin Books — nixonshock.com</title>
-<meta name="description" content="Curated Bitcoin book recommendations with affiliate links.">
+<meta name="description" content="Essential Bitcoin books, curated and reviewed. From economics and history to technical deep dives — every book that matters.">
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{bitcoin:{orange:'#f7931a',dark:'#0d0d12',card:'#15151f'}}}}}</script>
-<style>body{background:#0d0d12;color:#e2e8f0;font-family:'Inter',system-ui,sans-serif}.grid-pattern{background-image:linear-gradient(rgba(247,147,26,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(247,147,26,0.03) 1px,transparent 1px);background-size:40px 40px}</style>
+<style>
+body{background:#0d0d12;color:#e2e8f0;font-family:'Inter',system-ui,sans-serif}
+.grid-pattern{background-image:linear-gradient(rgba(247,147,26,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(247,147,26,0.03) 1px,transparent 1px);background-size:40px 40px}
+.glow-card:hover{box-shadow:0 0 30px rgba(247,147,26,0.12);border-color:rgba(247,147,26,0.3)!important}
+.section-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(247,147,26,0.2),transparent);margin:48px 0}
+</style>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -40,39 +45,285 @@
     </div>
   </div>
 </nav>
-<section class="py-24 px-6">
-  <div class="max-w-3xl mx-auto text-center">
-    <h1 class="text-4xl font-black mb-6">📖 Bitcoin Books</h1>
-    <p class="text-gray-400 text-lg mb-12">Curated reading list. Every book here will deepen your understanding of Bitcoin and sound money.</p>
-    <div class="space-y-6 text-left">
-      <div class="bg-bitcoin-card border border-white/5 rounded-xl p-6 flex gap-6 items-start">
-        <div class="text-4xl flex-shrink-0">📕</div>
-        <div>
-          <h3 class="text-lg font-bold text-white mb-1">The Bitcoin Standard</h3>
-          <p class="text-gray-400 text-sm mb-3">Saifedean Ammous — The definitive book on Bitcoin's economics and why sound money matters.</p>
-          <span class="text-gray-600 text-xs italic">Affiliate link coming soon</span>
-        </div>
-      </div>
-      <div class="bg-bitcoin-card border border-white/5 rounded-xl p-6 flex gap-6 items-start">
-        <div class="text-4xl flex-shrink-0">📕</div>
-        <div>
-          <h3 class="text-lg font-bold text-white mb-1">The Fiat Standard</h3>
-          <p class="text-gray-400 text-sm mb-3">Saifedean Ammous — The history and economics of paper money.</p>
-          <span class="text-gray-600 text-xs italic">Affiliate link coming soon</span>
-        </div>
-      </div>
-      <div class="bg-bitcoin-card border border-white/5 rounded-xl p-6 flex gap-6 items-start">
-        <div class="text-4xl flex-shrink-0">📕</div>
-        <div>
-          <h3 class="text-lg font-bold text-white mb-1">Broken Money</h3>
-          <p class="text-gray-400 text-sm mb-3">Lyn Alden — A comprehensive history of money through the ages.</p>
-          <span class="text-gray-600 text-xs italic">Affiliate link coming soon</span>
-        </div>
-      </div>
+
+<!-- HERO -->
+<section class="pt-28 pb-12 px-6 text-center">
+  <div class="max-w-3xl mx-auto">
+    <div class="inline-flex items-center gap-2 bg-bitcoin-orange/10 border border-bitcoin-orange/20 rounded-full px-4 py-1.5 mb-6">
+      <span class="text-bitcoin-orange text-sm font-mono font-medium">⬢ CURATED READING</span>
+    </div>
+    <h1 class="text-4xl sm:text-5xl font-black tracking-tight mb-4">📖 Bitcoin Books</h1>
+    <p class="text-gray-400 text-lg leading-relaxed">The essential reading list. Every book here will deepen your understanding of Bitcoin, sound money, and the revolution we're living through.</p>
+  </div>
+</section>
+
+<!-- QUICK NAV -->
+<section class="px-6 pb-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-wrap justify-center gap-2 text-sm">
+      <a href="#economics" class="px-3 py-1.5 bg-bitcoin-card border border-white/5 rounded-full text-gray-400 hover:text-bitcoin-orange hover:border-bitcoin-orange/30 transition-all">Economics</a>
+      <a href="#history" class="px-3 py-1.5 bg-bitcoin-card border border-white/5 rounded-full text-gray-400 hover:text-bitcoin-orange hover:border-bitcoin-orange/30 transition-all">History</a>
+      <a href="#technical" class="px-3 py-1.5 bg-bitcoin-card border border-white/5 rounded-full text-gray-400 hover:text-bitcoin-orange hover:border-bitcoin-orange/30 transition-all">Technical</a>
+      <a href="#philosophy" class="px-3 py-1.5 bg-bitcoin-card border border-white/5 rounded-full text-gray-400 hover:text-bitcoin-orange hover:border-bitcoin-orange/30 transition-all">Philosophy</a>
+      <a href="#classics" class="px-3 py-1.5 bg-bitcoin-card border border-white/5 rounded-full text-gray-400 hover:text-bitcoin-orange hover:border-bitcoin-orange/30 transition-all">Classics</a>
     </div>
   </div>
 </section>
-<footer class="border-t border-white/5 py-8 text-center text-gray-600 text-sm">Contains affiliate links. nixonshock.com</footer>
+
+<!-- ECONOMICS & MONEY -->
+<section id="economics" class="px-6 pb-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-8">
+      <span class="text-2xl">🏦</span>
+      <h2 class="text-2xl font-bold text-white">Economics &amp; Sound Money</h2>
+      <span class="text-gray-600 text-sm font-mono">6 books</span>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Bitcoin Standard</h3>
+          <p class="text-xs text-gray-500 mb-1">Saifedean Ammous</p>
+          <p class="text-sm text-gray-400 leading-relaxed">The definitive book on Bitcoin's economics. Traces the history of money, explains why sound money matters, and makes the case for Bitcoin as the modern gold standard.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Fiat Standard</h3>
+          <p class="text-xs text-gray-500 mb-1">Saifedean Ammous</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Companion to The Bitcoin Standard. Analyzes the fiat money system — its history, economics, and societal effects — and why Bitcoin offers a way out.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Broken Money</h3>
+          <p class="text-xs text-gray-500 mb-1">Lyn Alden</p>
+          <p class="text-sm text-gray-400 leading-relaxed">A comprehensive history of money from ancient times to Bitcoin. Lyn Alden connects technological innovation with monetary evolution to explain where we are and where we're going.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Layered Money</h3>
+          <p class="text-xs text-gray-500 mb-1">Nik Bhatia</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Explains the hierarchical nature of money — from gold to central bank reserves to Bitcoin. A concise, powerful framework for understanding monetary systems.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Price of Tomorrow</h3>
+          <p class="text-xs text-gray-500 mb-1">Jeff Booth</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Argues that deflation — not inflation — is the natural state of technological progress, and that our fiat-based debt system is at odds with reality. A thought-provoking look at where we're headed.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Bitcoin Bubble</h3>
+          <p class="text-xs text-gray-500 mb-1">William J. Luther &amp; Lawrence H. White</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Examines Bitcoin through the lens of Austrian economics. Short, sharp, and essential reading on whether Bitcoin is a bubble or the beginning of something new.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="section-divider"></div></div>
+
+<!-- HISTORY -->
+<section id="history" class="px-6 pb-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-8">
+      <span class="text-2xl">📜</span>
+      <h2 class="text-2xl font-bold text-white">History &amp; Origins</h2>
+      <span class="text-gray-600 text-sm font-mono">3 books</span>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Digital Gold</h3>
+          <p class="text-xs text-gray-500 mb-1">Nathaniel Popper</p>
+          <p class="text-sm text-gray-400 leading-relaxed">The gripping narrative of Bitcoin's early days — the cypherpunks, the pioneers, the struggles, and the triumphs. The definitive story of how Bitcoin went from obscure forum posts to a global movement.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Blocksize War</h3>
+          <p class="text-xs text-gray-500 mb-1">Jonathan Bier</p>
+          <p class="text-sm text-gray-400 leading-relaxed">The definitive account of Bitcoin's civil war (2015–2017). The battle between big blockers and small blockers that defined Bitcoin's identity as sound money. Essential context for understanding Bitcoin governance.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Check Your Financial Privilege</h3>
+          <p class="text-xs text-gray-500 mb-1">Alex Gladstein</p>
+          <p class="text-sm text-gray-400 leading-relaxed">A collection of essays on Bitcoin's role as a human rights tool. Stories from Venezuela, Nigeria, Belarus, and beyond — where Bitcoin isn't a gamble, it's a lifeline.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="section-divider"></div></div>
+
+<!-- TECHNICAL -->
+<section id="technical" class="px-6 pb-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-8">
+      <span class="text-2xl">⚙️</span>
+      <h2 class="text-2xl font-bold text-white">Technical Deep Dives</h2>
+      <span class="text-gray-600 text-sm font-mono">3 books</span>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📘</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Mastering Bitcoin</h3>
+          <p class="text-xs text-gray-500 mb-1">Andreas M. Antonopoulos</p>
+          <p class="text-sm text-gray-400 leading-relaxed">The technical bible of Bitcoin. Covers everything from keys and addresses to the blockchain, mining, and Lightning. The book every Bitcoin developer starts with.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📘</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Programming Bitcoin</h3>
+          <p class="text-xs text-gray-500 mb-1">Jimmy Song</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Learn Bitcoin by building one from scratch. Step-by-step implementation of the Bitcoin protocol in Python. The best way to truly understand how Bitcoin works under the hood.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📘</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Mastering the Lightning Network</h3>
+          <p class="text-xs text-gray-500 mb-1">Antonopoulos, Osuntokun &amp; Pickhardt</p>
+          <p class="text-sm text-gray-400 leading-relaxed">The comprehensive guide to Bitcoin's Layer 2. Lightning nodes, channels, routing, payment flows, and building on LN. Essential for anyone building with Lightning.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📘</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Grokking Bitcoin</h3>
+          <p class="text-xs text-gray-500 mb-1">Kalle Rosenbaum</p>
+          <p class="text-sm text-gray-400 leading-relaxed">An accessible, illustrated introduction to how Bitcoin works. Full-color diagrams explain transactions, mining, the blockchain, and security concepts without drowning in code.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="section-divider"></div></div>
+
+<!-- PHILOSOPHY & CULTURE -->
+<section id="philosophy" class="px-6 pb-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-8">
+      <span class="text-2xl">🧠</span>
+      <h2 class="text-2xl font-bold text-white">Philosophy &amp; Culture</h2>
+      <span class="text-gray-600 text-sm font-mono">3 books</span>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Internet of Money</h3>
+          <p class="text-xs text-gray-500 mb-1">Andreas M. Antonopoulos</p>
+          <p class="text-sm text-gray-400 leading-relaxed">A collection of talks and essays that explore Bitcoin's philosophical, social, and political implications. Why Bitcoin matters beyond the price — as a tool for human freedom.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">The Little Bitcoin Book</h3>
+          <p class="text-xs text-gray-500 mb-1">The Bitcoin Collective</p>
+          <p class="text-sm text-gray-400 leading-relaxed">Written by 7 authors from around the world. A concise, beginner-friendly explanation of why Bitcoin exists, how it works, and why it matters. Perfect for newcomers.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start">
+        <div class="text-3xl flex-shrink-0 mt-1">📕</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Bitcoin: A Work in Progress</h3>
+          <p class="text-xs text-gray-500 mb-1">Gigi</p>
+          <p class="text-sm text-gray-400 leading-relaxed">A thoughtful exploration of Bitcoin as a living system — its culture, its evolution, its contradictions. Smart, nuanced, and beautifully written for those already down the rabbit hole.</p>
+          <span class="inline-block mt-2 text-xs text-gray-600 italic">Affiliate link coming soon</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="max-w-5xl mx-auto px-6"><div class="section-divider"></div></div>
+
+<!-- CLASSICS / ORIGINAL -->
+<section id="classics" class="px-6 pb-16">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center gap-3 mb-8">
+      <span class="text-2xl">📄</span>
+      <h2 class="text-2xl font-bold text-white">The Original</h2>
+      <span class="text-gray-600 text-sm font-mono">1 essential</span>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+
+      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-xl p-5 flex gap-4 items-start sm:col-span-2 max-w-xl mx-auto">
+        <div class="text-3xl flex-shrink-0 mt-1">📄</div>
+        <div class="min-w-0">
+          <h3 class="font-bold text-white mb-0.5">Bitcoin: A Peer-to-Peer Electronic Cash System</h3>
+          <p class="text-xs text-gray-500 mb-1">Satoshi Nakamoto — October 31, 2008</p>
+          <p class="text-sm text-gray-400 leading-relaxed">The original whitepaper. Nine pages that started a revolution. Every Bitcoin library starts here.</p>
+          <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noopener" class="inline-block mt-2 text-xs text-bitcoin-orange hover:text-amber-400 transition-colors">Read the whitepaper →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/5 py-8 text-center">
+  <p class="text-gray-600 text-sm">Contains affiliate links. nixonshock.com — The Nixon Shock was the biggest default in human history. Bitcoin fixes it.</p>
+  <p class="text-gray-700 text-xs mt-2">Some links on this page are affiliate links. If you buy through them, we may earn a commission at no extra cost to you.</p>
+</footer>
+
 <script>
 document.getElementById('menu-btn').addEventListener('click', function() {
   const menu = document.getElementById('mobile-menu');
