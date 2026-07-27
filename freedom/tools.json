@@ -1,10 +1,10 @@
 [
   {
-    "id": "coldcard-mk4",
-    "name": "Coldcard Mk4",
+    "id": "coldcard-mk5",
+    "name": "Coldcard Mk5",
     "category": "hardware-wallet",
-    "url": "https://coldcard.com",
-    "description": "The gold standard for Bitcoin cold storage. Air-gapped signing via NFC, microSD, or USB. Military-grade secure element with verifiable randomness.",
+    "url": "https://coldcard.com/mk5",
+    "description": "Latest generation Bitcoin cold storage. Upgraded security hardware, tamper detection, and the same legendary air-gapped signing.",
     "tags": ["bitcoin-only", "air-gapped", "nfc", "secure-element", "power-user"],
     "features": {
       "bitcoin_only": true,
@@ -42,7 +42,7 @@
       "Hardware not fully open-source",
       "USB-C only (model-dependent)"
     ],
-    "price": 158,
+    "price": 169.94,
     "price_currency": "USD",
     "price_note": "Mk4 model; Coldcard Q with color screen available at $200",
     "last_price_update": "2026-07-27",
@@ -94,7 +94,7 @@
       "Hardware still not fully open-source",
       "Bulky form factor"
     ],
-    "price": 200,
+    "price": 249.21,
     "price_currency": "USD",
     "price_note": "Premium model with QWERTY keyboard and color screen",
     "last_price_update": "2026-07-27",
@@ -317,11 +317,11 @@
     "affiliate_url": null
   },
   {
-    "id": "jade",
-    "name": "Blockstream Jade",
+    "id": "jade-core",
+    "name": "Blockstream Jade Core",
     "category": "hardware-wallet",
     "url": "https://blockstream.com/jade/",
-    "description": "The most affordable Bitcoin-only hardware wallet with air-gapped QR signing. Open-source firmware and companion app from Blockstream.",
+    "description": "The entry-level Bitcoin-only hardware wallet from Blockstream. Open-source firmware, air-gapped QR signing, and virtual secure element technology.",
     "tags": ["bitcoin-only", "affordable", "air-gapped", "open-source", "qr-signing"],
     "features": {
       "bitcoin_only": true,
@@ -337,7 +337,7 @@
       "color_screen": true,
       "touch_screen": false,
       "usb_c": true,
-      "bluetooth": false,
+      "bluetooth": true,
       "nfc": false,
       "rechargeable_battery": true,
       "diy_repairable": false,
@@ -347,19 +347,18 @@
       "tor_support": true
     },
     "pros": [
-      "Best value at just $65",
-      "Air-gapped QR signing like Passport at half the price",
-      "Liquid Network support for sidechain BTC trading",
+      "Great value at $99 for a Bitcoin-only air-gapped wallet",
       "Open-source firmware",
-      "Works with Green wallet and other compatible apps"
+      "Air-gapped QR signing via camera",
+      "Liquid Network support",
+      "Works with Green Wallet and other compatible apps"
     ],
     "cons": [
-      "No secure element (mitigated by blind oracles)",
-      "Older model has plastic build",
-      "Limited to Bitcoin + Liquid (not multi-chain)",
-      "No microSD slot"
+      "No secure element (mitigated by virtual SE)",
+      "No microSD slot",
+      "Limited to Bitcoin + Liquid"
     ],
-    "price": 65,
+    "price": 99,
     "price_currency": "USD",
     "last_price_update": "2026-07-27",
     "platforms": ["hardware"],
@@ -367,6 +366,57 @@
     "company_country": "Canada",
     "website": "https://blockstream.com/jade/",
     "founded": 2021,
+    "affiliate_url": null
+  },
+  {
+    "id": "jade-plus",
+    "name": "Blockstream Jade Plus",
+    "category": "hardware-wallet",
+    "url": "https://blockstream.com/jade/",
+    "description": "Blockstream's premium Bitcoin hardware wallet with a metal body, camera for QR scanning, Bluetooth, and USB-C. Full open-source transparency.",
+    "tags": ["bitcoin-only", "air-gapped", "premium", "bluetooth", "metal-body"],
+    "features": {
+      "bitcoin_only": true,
+      "air_gapped": true,
+      "open_source_firmware": true,
+      "open_source_hardware": false,
+      "multisig": true,
+      "passphrase": true,
+      "taproot": true,
+      "coin_control": true,
+      "psbt": true,
+      "secure_element": true,
+      "color_screen": true,
+      "touch_screen": false,
+      "usb_c": true,
+      "bluetooth": true,
+      "nfc": false,
+      "rechargeable_battery": true,
+      "diy_repairable": false,
+      "microsd": true,
+      "shamir_backup": false,
+      "bip39": true,
+      "tor_support": true
+    },
+    "pros": [
+      "Premium metal body for durability",
+      "Camera for air-gapped QR signing",
+      "Bluetooth + USB-C for flexible connectivity",
+      "Open-source firmware with virtual secure element",
+      "microSD slot for encrypted backup"
+    ],
+    "cons": [
+      "More expensive than Jade Core",
+      "Limited to Bitcoin + Liquid"
+    ],
+    "price": 169.99,
+    "price_currency": "USD",
+    "last_price_update": "2026-07-27",
+    "platforms": ["hardware"],
+    "company": "Blockstream",
+    "company_country": "Canada",
+    "website": "https://blockstream.com/jade/",
+    "founded": 2024,
     "affiliate_url": null
   },
   {
@@ -463,7 +513,7 @@
       "Ledger Recover controversy",
       "No microSD slot for backup"
     ],
-    "price": 149,
+    "price": 99,
     "price_currency": "USD",
     "last_price_update": "2026-07-27",
     "platforms": ["hardware"],
@@ -515,7 +565,7 @@
       "Closed-source firmware",
       "Smaller screen than Nano X"
     ],
-    "price": 79,
+    "price": 59,
     "price_currency": "USD",
     "last_price_update": "2026-07-27",
     "platforms": ["hardware"],
