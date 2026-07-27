@@ -76,7 +76,6 @@ body {
 .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
 .orb-1 { top: -20vh; left: -10vw; width: 60vw; height: 60vw; background: rgba(247, 147, 26, 0.08); }
 .orb-2 { bottom: -15vh; right: -5vw; width: 50vw; height: 50vw; background: rgba(34, 211, 238, 0.05); }
-.container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 .hero { text-align: center; padding: 80px 0 48px; }
 .hero h1 {
   font-family: 'JetBrains Mono', monospace;
@@ -175,13 +174,14 @@ theme: {
   </div>
 </nav>
 
-<div class="container">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
 <section class="hero">
   <h1>Learn Bitcoin</h1>
   <p class="subtitle">Explanations, live trackers, the full landscape — everything you need to understand Bitcoin as sound money with rules, not rulers.</p>
 </section>
 
+<div class="max-w-5xl mx-auto">
 <div class="topic-grid">
 
   <a href="/rules/" class="topic-card orange">
@@ -204,6 +204,8 @@ theme: {
     <p>Deep dives on mining, self-custody, Lightning explained, and more on the way.</p>
     <div class="meta">Suggest one → @saturdaylion</div>
   </div>
+
+</div>
 
 </div>
 

@@ -19,9 +19,10 @@ body::before { content: ''; position: fixed; inset: 0; background-image: linear-
 .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; }
 .orb-1 { top: -15vh; left: -5vw; width: 50vw; height: 50vw; background: rgba(247, 147, 26, 0.08); }
 .orb-2 { bottom: -10vh; right: -5vw; width: 40vw; height: 40vw; background: rgba(52, 211, 153, 0.05); }
-.container { max-width: 800px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 nav { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 14px 24px; position: sticky; top: 0; z-index: 100; }
-nav .nav-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+nav .nav-inner { max-width: 1152px; margin: 0 auto; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
+@media (min-width: 640px) { nav .nav-inner { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { nav .nav-inner { padding-left: 32px; padding-right: 32px; } }
 nav a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color 0.2s; }
 nav a:hover { color: var(--orange); }
 .series-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; margin: 20px 0 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
@@ -97,7 +98,8 @@ footer a { color: var(--orange); text-decoration: none; }
   </div>
 </nav>
 
-<div class="container">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-3xl mx-auto">
 
 <!-- SERIES BAR -->
 <div class="series-bar">
@@ -250,6 +252,8 @@ footer a { color: var(--orange); text-decoration: none; }
     <div class="dir">Next →</div>
     <div class="title">See It Yourself</div>
   </a>
+</div>
+
 </div>
 
 </div>

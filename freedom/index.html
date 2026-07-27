@@ -67,7 +67,9 @@ body {
 .hero .badge { display: inline-flex; align-items: center; gap: 6px; background: var(--orange-dim); border: 1px solid rgba(247,147,26,0.2); padding: 4px 14px; border-radius: 999px; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--orange); margin-bottom: 16px; }
 
 /* controls bar */
-.controls { max-width: 1200px; margin: 0 auto; padding: 0 20px 20px; }
+.controls { max-width: 1152px; margin: 0 auto; padding: 0 16px 20px; }
+@media (min-width: 640px) { .controls { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .controls { padding-left: 32px; padding-right: 32px; } }
 .controls-inner { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
 .search-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .search-box { flex: 1; min-width: 200px; position: relative; }
@@ -129,7 +131,9 @@ body {
 .compare-clear.show { display: inline; }
 
 /* grid */
-.grid { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.grid { max-width: 1152px; margin: 0 auto; padding: 0 16px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+@media (min-width: 640px) { .grid { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .grid { padding-left: 32px; padding-right: 32px; } }
 
 /* card */
 .card {
@@ -202,7 +206,9 @@ body {
 .compare-table .pros-list li { margin-bottom: 2px; }
 
 /* empty state */
-.empty-state { max-width: 1200px; margin: 0 auto; padding: 60px 20px; text-align: center; }
+.empty-state { max-width: 1152px; margin: 0 auto; padding: 60px 16px; text-align: center; }
+@media (min-width: 640px) { .empty-state { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .empty-state { padding-left: 32px; padding-right: 32px; } }
 .empty-state .icon { font-size: 40px; margin-bottom: 16px; opacity: 0.3; }
 .empty-state h3 { font-size: 18px; margin-bottom: 6px; }
 .empty-state p { font-size: 14px; color: var(--text-dim); }
@@ -340,7 +346,7 @@ body {
 </div>
 
 <!-- FOOTER -->
-<div style="max-width:1200px;margin:0 auto;padding:30px 20px 40px;text-align:center;">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
   <p style="font-size:12px;color:var(--text-muted);">A <a href="/" style="color:var(--orange);text-decoration:none;">nixonshock.com</a> project. Curated for the freedom tech community. Prices updated periodically.</p>
 </div>
 
