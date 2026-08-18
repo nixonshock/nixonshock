@@ -67,7 +67,7 @@ These programs had no /affiliate, /referral, /partners, or /ambassador pages:
 
 | Program | Type | Notes |
 |---------|------|-------|
-| **Coldcard** ✅ | Hardware Wallet | Coinkite page 404. No public affiliate program. May need to email partnerships. |
+| **Coldcard** | Hardware Wallet | ⛔ DROPPED (Aug 2026) — Jerry rejected: lousy brand, hacked (2026 entropy exploit, ~$100M drained, ~1,400 wallets). Never suggest/affiliate/recommend. |
 | **Electrum** ✅ | Desktop Wallet | Open-source. No affiliate program. |
 | **Sparrow** ✅ | Desktop Wallet | Open-source. No affiliate program. |
 | **Phoenix** ✅ | Lightning Wallet | No affiliate program (404). |
