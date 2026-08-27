@@ -76,6 +76,7 @@ h2.hd{font-size:16px;color:var(--red);margin:14px 0 8px}
 .q-actions button:disabled{opacity:.6;cursor:not-allowed}
 .explanation{margin-top:13px;background:#fcf8e3;border:1px solid #f2e6b1;border-radius:5px;padding:12px 14px;display:none}
 .explanation .uk-text-success{color:#3b7a2f;font-weight:700;margin-bottom:6px;display:block}
+.explanation .uk-text-danger{color:#b02e2e;font-weight:700;margin-bottom:6px;display:block}
 .explanation img{max-width:100%;height:auto}
 
 /* hint tooltip */
@@ -2458,7 +2459,20 @@ var ANSWER_DATA = {"8533331": {"correct": "8533331_C", "exp": "<div class=\"uk-t
       for (var i=0;i<radios.length;i++) radios[i].disabled = true;
       // explanation
       var ebox = qwrap.querySelector('.explanation');
-      if (ebox) { ebox.innerHTML = d.exp; ebox.style.display = 'block'; }
+      if (ebox) {
+        var correctChosen = (typeof chosen !== 'undefined' && chosen === d.correct);
+        var statusHtml;
+        if (correctChosen) {
+          statusHtml = '<div class="uk-text-success uk-margin-small-bottom uk-text-bold">Your answer is correct</div>';
+        } else {
+          var statusText = (typeof chosen === 'undefined')
+            ? 'You did not answer this question. The correct answer is highlighted above.'
+            : 'Your answer is incorrect. The correct answer is highlighted above.';
+          statusHtml = '<div class="uk-text-danger uk-margin-small-bottom uk-text-bold">' + statusText + '</div>';
+        }
+        ebox.innerHTML = d.exp.replace(/<div class="uk-text-success[^>]*>Your answer is correct<\/div>/, statusHtml);
+        ebox.style.display = 'block';
+      }
       // disable actions
       var btns = qwrap.querySelectorAll('button');
       for (var j=0;j<btns.length;j++) btns[j].disabled = true;
