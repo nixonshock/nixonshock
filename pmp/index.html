@@ -80,8 +80,8 @@ h2.hd{font-size:16px;color:var(--red);margin:14px 0 8px}
 
 /* hint tooltip */
 .hint-wrap{position:relative;display:inline-block}
-.hint-tooltip{position:absolute;z-index:50;bottom:120%;left:50%;transform:translateX(-50%);width:300px;max-width:80vw;background:#aaa;color:#000;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:5px;text-align:left;box-shadow:0 3px 8px rgba(0,0,0,.25)}
-.hint-tooltip:after{content:"";position:absolute;top:100%;left:50%;margin-left:-6px;border:6px solid transparent;border-top-color:#aaa}
+.hint-tooltip{position:absolute;z-index:50;bottom:120%;left:0;width:300px;max-width:80vw;background:#aaa;color:#000;font-size:13px;line-height:1.45;padding:9px 11px;border-radius:5px;text-align:left;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+.hint-tooltip:after{content:"";position:absolute;top:100%;left:38px;margin-left:-6px;border:6px solid transparent;border-top-color:#aaa}
 
 /* end-exam big button at bottom */
 .bottom-exam{text-align:center;margin:26px 0 34px}
@@ -2405,6 +2405,17 @@ var ANSWER_DATA = {"8533331": {"correct": "8533331_C", "exp": "<div class=\"uk-t
   });
 
   /* ---------- hint tooltip ---------- */
+  // Each hint button needs a positioned, inline-block wrapper so the
+  // absolutely-positioned tooltip anchors to the button (not the page).
+  var hintBtns = document.querySelectorAll('.hint-btn');
+  for (var hi=0; hi<hintBtns.length; hi++) {
+    var hb = hintBtns[hi];
+    if (hb.parentNode.classList.contains('hint-wrap')) continue;
+    var hw = document.createElement('span');
+    hw.className = 'hint-wrap';
+    hb.parentNode.insertBefore(hw, hb);
+    hw.appendChild(hb);
+  }
   document.addEventListener('click', function(e){
     var t = e.target;
     // clicking anywhere first closes any open tooltip
