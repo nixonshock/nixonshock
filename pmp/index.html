@@ -2423,9 +2423,15 @@ var ANSWER_DATA = {"8533331": {"correct": "8533331_C", "exp": "<div class=\"uk-t
     var tips = document.querySelectorAll('.hint-tooltip');
     for (var i=0;i<tips.length;i++) tips[i].remove();
     if (t.classList && t.classList.contains('hint-btn')) {
+      // The hint titles are double-encoded HTML (e.g. &amp;lt;p&amp;gt;),
+      // so decode twice so leftover entities become real markup/text
+      // instead of showing as literal &lt;p&gt; / <p> characters.
+      var title = t.getAttribute('title') || '';
+      var dec = document.createElement('div');
+      dec.innerHTML = title;
       var tip = document.createElement('div');
       tip.className = 'hint-tooltip';
-      tip.textContent = t.getAttribute('title') || '';
+      tip.innerHTML = dec.textContent || title;
       t.parentNode.appendChild(tip);
     }
   });
