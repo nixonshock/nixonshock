@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>nixonshock.com — The Biggest Default in Human History</title>
-<meta name="description" content="The Nixon Shock of 1971 ended sound money. Bitcoin fixes it. Your one-stop hub to learn about Bitcoin, sound money, and financial sovereignty.">
+<meta name="description" content="Watch President Nixon's Address to the Nation of August 15, 1971 — the night the dollar's last link to gold was severed. The biggest default in human history.">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -73,16 +73,23 @@ tailwind.config = {
 <style>
 html { scroll-behavior: smooth; }
 .glow-orange { box-shadow: var(--glow-orange); }
-.glow-card:hover { box-shadow: 0 0 30px rgba(247,147,26,0.12); border-color: rgba(247,147,26,0.3); }
 .hero-gradient { background: var(--hero-gradient); }
-.text-gradient { background: linear-gradient(135deg, #f7931a 0%, #fbbf24 50%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .grid-pattern { background-image: var(--grid-pattern); background-size: 40px 40px; }
-.timeline-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #f7931a; background: transparent; }
-.timeline-line { width: 2px; background: rgba(247,147,26,0.2); }
 .theme-btn { cursor: pointer; background: none; border: none; padding: 6px; border-radius: 8px; color: var(--text-dim); transition: all 0.2s; line-height: 1; }
 .theme-btn:hover { color: #f7931a; background: rgba(247,147,26,0.1); }
 .theme-btn svg { width: 18px; height: 18px; display: block; }
 body { color: var(--text-primary); }
+
+/* Single-video homepage — layout is inline-critical so it renders before Tailwind CDN arrives */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.video-section { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 5.5rem 1rem 2rem; }
+.video-inner { width: 100%; max-width: 62rem; }
+.video-wrap { position: relative; width: 100%; padding-top: 56.25%; border-radius: 1rem; overflow: hidden; box-shadow: 0 0 70px rgba(247,147,26,0.10); border: 1px solid var(--border-color); }
+.video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; display: block; }
+@media (max-width: 640px) {
+  .video-section { padding: 5rem 0.75rem 1.5rem; }
+  .video-wrap { border-radius: 0.5rem; }
+}
 </style>
 <!-- critical: nav styles + theme init (loads before Tailwind) -->
 <style>
@@ -132,257 +139,22 @@ nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background:
 </nav>
 
 
-<!-- HERO -->
-<section class="min-h-screen flex md:items-center relative overflow-hidden pt-16">
-  <div class="absolute inset-0 hero-gradient"></div>
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-    <div class="max-w-3xl">
-      <div class="inline-flex items-center gap-2 bg-bitcoin-orange/10 border border-bitcoin-orange/20 rounded-full px-4 py-1.5 mb-8">
-        <span class="w-2 h-2 rounded-full bg-bitcoin-orange animate-pulse"></span>
-        <span class="text-bitcoin-orange text-sm font-mono font-medium">The Biggest Default in Human History</span>
-      </div>
-      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black leading-tight tracking-tight mb-6">
-        <span class="text-white/90">The Nixon Shock</span><br>
-        <span class="text-gradient">Bitcoin is the Fix</span>
-      </h1>
-      <p class="text-lg sm:text-xl text-gray-400 leading-relaxed mb-10 max-w-2xl">
-        On <strong class="text-white">August 15, 1971</strong>, President Nixon severed the dollar's last link to gold. 
-        Every dollar became debt. Every savings became a melting ice cube. 
-        <strong class="text-bitcoin-orange">Bitcoin is the exit strategy.</strong>
-      </p>
-      <div class="flex flex-wrap gap-4">
-        <a href="#story" class="bg-bitcoin-orange text-black px-8 py-3.5 rounded-xl font-semibold hover:bg-amber-500 transition-colors text-lg">Tell Me the Story</a>
-        <a href="#get-bitcoin" class="border border-gray-700 text-gray-300 px-8 py-3.5 rounded-xl font-semibold hover:border-bitcoin-orange hover:text-bitcoin-orange transition-colors text-lg">Get Bitcoin →</a>
-      </div>
-    </div>
-  </div>
-</section>
+<h1 class="sr-only">The Nixon Shock — President Nixon's Address to the Nation, August 15, 1971</h1>
 
-<!-- VIDEO -->
-<section class="py-16 border-t border-white/5 bg-bitcoin-card/30">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-8">
-      <h2 class="text-2xl sm:text-3xl font-black tracking-tight mb-3">Watch: The Nixon Shock in 5 Minutes</h2>
-      <p class="text-gray-400">The single most important monetary event of the 20th century — and why it still matters today.</p>
-    </div>
-    <div class="relative" style="padding-top: 56.25%;">
+<!-- THE SPEECH — 15 August 1971 (Richard Nixon Presidential Library) -->
+<section class="video-section">
+  <div class="video-inner">
+    <div class="video-wrap glow-orange">
       <iframe
-        class="absolute inset-0 w-full h-full rounded-2xl shadow-2xl"
-        src="https://www.youtube.com/embed/HZw8-kZS6aM"
-        title="The Nixon Shock - Easy to understand in 5 minutes"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        src="https://www.youtube.com/embed/0BVj2gT6CgI?rel=0&amp;modestbranding=1"
+        title="President Nixon — Address to the Nation, August 15, 1971"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
         allowfullscreen
       ></iframe>
     </div>
   </div>
 </section>
-
-<!-- THE STORY -->
-<section id="story" class="py-24 border-t border-white/5">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4">How We Got Here</h2>
-      <p class="text-gray-400 max-w-2xl mx-auto">Three events. Three shocks. One solution.</p>
-    </div>
-
-    <!-- Timeline -->
-    <div class="max-w-3xl mx-auto relative pl-8">
-      <!-- 1971 -->
-      <div class="relative pb-16">
-        <div class="timeline-dot absolute -left-[1.85rem] top-1 bg-bitcoin-orange"></div>
-        <div class="timeline-line absolute -left-[1.3rem] top-5 bottom-0"></div>
-        <div class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-6 sm:p-8">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="font-mono text-2xl font-bold text-bitcoin-orange">1971</span>
-            <span class="px-3 py-1 bg-red-900/30 text-red-400 text-xs rounded-full font-medium border border-red-800/30">THE BREAK</span>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-3">The Nixon Shock</h3>
-          <p class="text-gray-400 leading-relaxed mb-4">
-            President Nixon announces the US will no longer redeem dollars for gold — unilaterally ending the 
-            Bretton Woods system. The dollar, once "as good as gold," becomes pure fiat: 
-            <strong class="text-white">money backed by nothing but trust in government.</strong>
-          </p>
-          <div class="bg-black/30 rounded-xl p-4 border border-white/5">
-            <p class="text-sm text-gray-500 font-mono">
-              "I have directed Secretary Connally to suspend temporarily the convertibility of the dollar into gold."
-              <span class="block text-gray-600 mt-1">— Richard Nixon, August 15, 1971</span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2008 -->
-      <div class="relative pb-16">
-        <div class="timeline-dot absolute -left-[1.85rem] top-1"></div>
-        <div class="timeline-line absolute -left-[1.3rem] top-5 bottom-0"></div>
-        <div class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-6 sm:p-8">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="font-mono text-2xl font-bold text-gray-400">2008</span>
-            <span class="px-3 py-1 bg-red-900/30 text-red-400 text-xs rounded-full font-medium border border-red-800/30">THE CRASH</span>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-3">Global Financial Crisis</h3>
-          <p class="text-gray-400 leading-relaxed">
-            Decades of fiat money creation and fractional-reserve banking culminate in a systemic collapse. 
-            Banks are "too big to fail." Governments print trillions in bailouts. 
-            <strong class="text-white">The game is exposed.</strong>
-          </p>
-        </div>
-      </div>
-
-      <!-- 2009 -->
-      <div class="relative">
-        <div class="timeline-dot absolute -left-[1.85rem] top-1 bg-bitcoin-orange"></div>
-        <div class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-6 sm:p-8">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="font-mono text-2xl font-bold text-bitcoin-orange">2009</span>
-            <span class="px-3 py-1 bg-emerald-900/30 text-emerald-400 text-xs rounded-full font-medium border border-emerald-800/30">THE FIX</span>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-3">Bitcoin Genesis</h3>
-          <p class="text-gray-400 leading-relaxed mb-4">
-            Satoshi Nakamoto mines the first Bitcoin block. Embedded in the genesis block, a headline:
-          </p>
-          <div class="bg-black/30 rounded-xl p-4 border border-white/5 mb-4">
-            <p class="text-sm text-gray-500 font-mono">
-              "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
-            </p>
-          </div>
-          <p class="text-gray-400 leading-relaxed">
-            A direct commentary on the fiat system. <strong class="text-white">Sound money, reimagined for the internet age.</strong> 
-            Fixed supply. Decentralized. Permissionless. Unconfiscatable.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHY BITCOIN -->
-<section class="py-24 border-t border-white/5 bg-bitcoin-card/50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4">Why Bitcoin?</h2>
-      <p class="text-gray-400 max-w-2xl mx-auto">Because the old system is fundamentally broken. Bitcoin offers something no government can.</p>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-8 text-center">
-        <div class="text-4xl mb-4">🔒</div>
-        <h3 class="text-lg font-bold text-white mb-3">Fixed Supply</h3>
-        <p class="text-gray-400 text-sm leading-relaxed">Only 21 million will ever exist. No printing. No inflation. No central bank can debase your savings.</p>
-      </div>
-      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-8 text-center">
-        <div class="text-4xl mb-4">🌍</div>
-        <h3 class="text-lg font-bold text-white mb-3">Decentralized</h3>
-        <p class="text-gray-400 text-sm leading-relaxed">No government controls it. No company owns it. The network runs on thousands of independent nodes worldwide.</p>
-      </div>
-      <div class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-8 text-center">
-        <div class="text-4xl mb-4">⚡</div>
-        <h3 class="text-lg font-bold text-white mb-3">Permissionless</h3>
-        <p class="text-gray-400 text-sm leading-relaxed">Send any amount to anyone, anywhere, anytime. No bank approval. No borders. No censorship.</p>
-      </div>
-    </div>
-
-    <!-- Comparison table -->
-    <div class="mt-16 max-w-3xl mx-auto">
-      <div class="bg-bitcoin-card border border-white/5 rounded-2xl overflow-hidden">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-white/10">
-              <th class="text-left p-4 text-gray-500 font-medium"></th>
-              <th class="text-left p-4 text-gray-400 font-medium">Fiat (Post-1971)</th>
-              <th class="text-left p-4 text-bitcoin-orange font-medium">Bitcoin</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-white/5">
-            <tr><td class="p-4 text-gray-400">Supply</td><td class="p-4 text-gray-500">Unlimited (printed at will)</td><td class="p-4 text-white font-medium">21 million cap</td></tr>
-            <tr><td class="p-4 text-gray-400">Control</td><td class="p-4 text-gray-500">Governments & central banks</td><td class="p-4 text-white font-medium">Code & consensus</td></tr>
-            <tr><td class="p-4 text-gray-400">Purchasing Power</td><td class="p-4 text-gray-500">↓ 99% since 1971</td><td class="p-4 text-white font-medium">↑ Long-term appreciation</td></tr>
-            <tr><td class="p-4 text-gray-400">Censorship</td><td class="p-4 text-gray-500">Accounts frozen/seized</td><td class="p-4 text-white font-medium">No one can block a tx</td></tr>
-            <tr><td class="p-4 text-gray-400">Counterparty Risk</td><td class="p-4 text-gray-500">Bank runs, bailouts</td><td class="p-4 text-white font-medium">Self-custody = no risk</td></tr>
-            <tr><td class="p-4 text-gray-400">Borderless</td><td class="p-4 text-gray-500">SWIFT fees, delays</td><td class="p-4 text-white font-medium">Global, instant, cheap</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- GET BITCOIN -->
-<section id="get-bitcoin" class="py-24 border-t border-white/5">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4">Start Your Journey</h2>
-      <p class="text-gray-400 max-w-2xl mx-auto">Four steps to financial sovereignty. Each one is a rabbit hole worth going down.</p>
-    </div>
-
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <a href="/learn/" class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-8 text-center hover:border-bitcoin-orange/30 transition-all group">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📚</div>
-        <h3 class="text-lg font-bold text-white mb-2">Learn</h3>
-        <p class="text-gray-500 text-sm">Why sound money matters. The history, the economics, the tech.</p>
-        <span class="text-bitcoin-orange text-sm mt-4 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Start learning →</span>
-      </a>
-      <a href="/books/" class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-8 text-center hover:border-bitcoin-orange/30 transition-all group">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📖</div>
-        <h3 class="text-lg font-bold text-white mb-2">Read</h3>
-        <p class="text-gray-500 text-sm">Essential Bitcoin books, curated and reviewed.</p>
-        <span class="text-bitcoin-orange text-sm mt-4 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Browse books →</span>
-      </a>
-      <a href="/apps/" class="glow-card bg-bitcoin-card border border-white/5 rounded-2xl p-8 text-center hover:border-bitcoin-orange/30 transition-all group">
-        <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">📱</div>
-        <h3 class="text-lg font-bold text-white mb-2">Use</h3>
-        <p class="text-gray-500 text-sm">Apps, exchanges, Lightning, and tools for daily Bitcoin use.</p>
-        <span class="text-bitcoin-orange text-sm mt-4 inline-block opacity-0 group-hover:opacity-100 transition-opacity">Explore apps →</span>
-      </a>
-    </div>
-
-    <!-- BIP110 SECTION -->
-<section class="py-24 border-t border-white/5 bg-bitcoin-card/50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="max-w-3xl mx-auto text-center">
-      <div class="inline-flex items-center gap-2 bg-bitcoin-orange/10 border border-bitcoin-orange/20 rounded-full px-4 py-1.5 mb-6">
-        <span class="text-bitcoin-orange text-sm font-mono font-medium">CONSENSUS WATCH</span>
-      </div>
-      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4">What is BIP110?</h2>
-      <p class="text-gray-400 text-lg leading-relaxed mb-8">
-        A proposed temporary softfork to limit arbitrary data storage on Bitcoin — targeting inscriptions 
-        and refocusing the network on its purpose as sound, permissionless money.
-      </p>
-      <a href="/bip110/" class="inline-flex items-center gap-2 border border-gray-700 text-gray-300 px-8 py-3.5 rounded-xl font-semibold hover:border-bitcoin-orange hover:text-bitcoin-orange transition-colors">
-        Deep Dive → <span class="text-gray-500 text-sm">Countdown, chart, analysis</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="border-t border-white/5 py-16">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid sm:grid-cols-3 gap-8 mb-12">
-      <div>
-        <h4 class="font-bold text-white mb-4">nixonshock.com</h4>
-        <p class="text-gray-500 text-sm leading-relaxed">Understanding the biggest default in human history — and the technology that fixes it.</p>
-      </div>
-      <div>
-        <h4 class="font-bold text-white mb-4">Explore</h4>
-        <div class="space-y-2 text-sm">
-          <a href="/learn/" class="block text-gray-500 hover:text-bitcoin-orange">Learn Bitcoin</a>
-          <a href="/apps/" class="block text-gray-500 hover:text-bitcoin-orange">Bitcoin Apps</a>
-          <a href="/freedom/" class="block text-gray-500 hover:text-bitcoin-orange">Freedom Tech</a>
-          <a href="/books/" class="block text-gray-500 hover:text-bitcoin-orange">Book Reviews</a>
-        </div>
-      </div>
-      <div>
-        <h4 class="font-bold text-white mb-4">Disclaimer</h4>
-        <p class="text-gray-600 text-xs leading-relaxed">This site contains affiliate links. We may earn a commission if you make a purchase. Not financial advice. Do your own research.</p>
-      </div>
-    </div>
-    <div class="border-t border-white/5 pt-8 text-center">
-      <p class="text-gray-600 text-sm">Bitcoin: Money with rules, not rulers.</p>
-    </div>
-  </div>
-</footer>
 
 <script src="/js/nav.js"></script>
 <style>
@@ -399,6 +171,7 @@ nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background:
 [data-theme] .bg-black\/30 { background: rgba(0,0,0,0.15); }
 [data-theme] .text-gray-700 { color: var(--text-muted); }
 [data-theme="light"] nav a[href="/"] img { filter: invert(1); }
+[data-theme="light"] .video-wrap { box-shadow: 0 0 70px rgba(247,147,26,0.08); }
 </style>
 </body>
 </html>
