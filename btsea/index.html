@@ -854,30 +854,24 @@ function showTip(p, px, py) {
   tip.style.left = clamp(px + 16, 8, W - w - 8) + 'px';
   tip.style.top = clamp(py - h - 12 < 8 ? py + 18 : py - h - 12, 8, H - h - 8) + 'px';
 }
-let tipTimer = 0, pinned = null;
+let tipTimer = 0, shown = false;
+function closeTip() { hover = null; tip.hidden = true; shown = false; }
 function pointerAt(e, touchy) {
   const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  // FROZEN: while a dialog is up, moving the mouse never moves or replaces it,
+  // so the cursor can freely travel to the link and click it.
+  if (shown && !touchy) return;
   const h = hitTest(px, py);
-  if (h) {
-    // only retarget the tooltip when a DIFFERENT object is hovered;
-    // otherwise the dialog stays exactly where it is (doesn't move/chase)
-    const key = h.ufo ? 'u' + h.ufo.b : 'c' + h.id;
-    const prevKey = hover ? (hover.ufo ? 'u' + hover.ufo.b : 'c' + hover.id) : null;
-    if (key !== prevKey) {
-      hover = h;
-      showTip(h, px, py);
-      pinned = { x: parseFloat(tip.style.left) || 0, y: parseFloat(tip.style.top) || 0 };
-    }
-  } else if (pinned) {
-    // nothing under cursor: keep the pinned dialog open until the cursor
-    // wanders clearly away — so the mouse can reach the link inside it
-    if (Math.hypot(px - pinned.x, py - pinned.y) > 130) { hover = null; tip.hidden = true; pinned = null; }
-  } else if (hover) { hover = null; tip.hidden = true; }
-  clearTimeout(tipTimer); if (touchy && hover) tipTimer = setTimeout(() => { hover = null; tip.hidden = true; pinned = null; }, 4000);
+  if (h) { hover = h; showTip(h, px, py); shown = true; clearTimeout(tipTimer); if (touchy) tipTimer = setTimeout(closeTip, 4000); }
+  else closeTip();
 }
 canvas.addEventListener('pointermove', e => { if (e.pointerType !== 'touch') pointerAt(e, false); });
-canvas.addEventListener('pointerdown', e => pointerAt(e, e.pointerType === 'touch'));
-canvas.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') { hover = null; tip.hidden = true; } });
+canvas.addEventListener('pointerdown', e => {
+  const touchy = e.pointerType === 'touch', r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  if (shown && !touchy && !hitTest(px, py)) { closeTip(); return; }  // clicked the sea → dismiss
+  pointerAt(e, touchy);
+});
+canvas.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') closeTip(); });
 canvas.addEventListener('dblclick', e => {
   const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
   const p = hitTest(px, py);
