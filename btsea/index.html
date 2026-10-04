@@ -162,7 +162,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis;
 }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
-.tip { position: absolute; z-index: 5; pointer-events: none; padding: 9px 12px; border-radius: 12px; font-size: 12px; min-width: 150px; max-width: 250px; }
+.tip { position: absolute; z-index: 5; pointer-events: auto; padding: 9px 12px; border-radius: 12px; font-size: 12px; min-width: 150px; max-width: 250px; }
 .tip b { display: block; font-size: 14px; font-weight: 700; }
 .tip .amt { font-family: var(--font-mono); font-size: 15px; font-variant-numeric: tabular-nums; margin: 2px 0 4px; }
 .tip .meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
@@ -226,15 +226,6 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     </div>
     <div class="controls">
       <div id="feedChip" class="chip panel" data-state="connecting" role="status"><span class="dot"></span><span id="feedLabel">Connecting…</span></div>
-      <div class="seg panel" role="group" aria-label="Transaction source">
-        <button type="button" data-src="live" aria-pressed="true">Live</button>
-        <button type="button" data-src="demo" aria-pressed="false">Demo</button>
-      </div>
-      <div class="seg panel" id="traffic" role="group" aria-label="Demo traffic" hidden>
-        <button type="button" data-rate="0" aria-pressed="false">Quiet</button>
-        <button type="button" data-rate="1" aria-pressed="true">Normal</button>
-        <button type="button" data-rate="2" aria-pressed="false">Congested</button>
-      </div>
       <button id="pause" class="btn panel" type="button" data-on="0" title="Pause or resume">Pause <span class="kbd">Space</span></button>
     </div>
   </div>
@@ -254,7 +245,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <div><b id="sBtc">0</b><span>BTC moved</span></div>
       <div><b id="sLive">0</b><span>afloat</span></div>
       <div><b id="sNext">0:40</b><span>next block</span></div>
-      <div class="hint"><span id="hint">Ranges are in BTC. Press a tier to send a test transaction. 🔊 toggles sound. Space pauses.</span></div>
+      <div class="hint"><span id="hint">Ranges are in BTC. Hover a creature for details. Double-click it to open the tx. 🔊 toggles sound. Space pauses.</span></div>
     </div>
     <div class="legend panel" id="legend" role="group" aria-label="Transaction size tiers"></div>
   </div>
@@ -444,10 +435,11 @@ function place(c, t) {
 }
 
 /* ---------- block events ---------- */
-function mineBlock() {
-  ufos.push({ x: -60 * U, t0: simT, n: 0, ph: rr(0, TAU) });
+function mineBlock(h) {
+  const b = h || 0;
+  ufos.push({ x: -60 * U, t0: simT, n: 0, ph: rr(0, TAU), b });
   playBlip('ufo');
-  showToast('Block found. Confirming transactions…');
+  showToast(b ? 'Block #' + b + ' found. Confirming transactions…' : 'Block found. Confirming transactions…');
   blockIn = rr(70, 100);
 }
 let toastTimer = 0;
@@ -770,6 +762,16 @@ function drawUFO(u, t) {
     ctx.beginPath(); ctx.arc(x + i * 10 * s, y + (1.8 - Math.abs(i) * 0.25) * s, 2 * s, 0, TAU); ctx.fill();
   }
   ctx.globalAlpha = 1;
+  // block number badge
+  if (u.b) {
+    ctx.font = '11px var(--font-mono)';
+    const lbl = '#' + u.b, tw = ctx.measureText(lbl).width;
+    ctx.fillStyle = 'rgba(10,35,55,0.82)';
+    ctx.beginPath(); ctx.roundRect(x - tw / 2 - 7, y - 16 * s - 12, tw + 14, 16, 8); ctx.fill();
+    ctx.fillStyle = '#ffd27e'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(lbl, x, y - 16 * s - 4);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
 }
 function confirmTx(c, u) { c.confirmed = true; c.ct = simT; u.n++; }
 function updateUfos(dt) {
@@ -820,11 +822,29 @@ function hitTest(px, py) {
     const sky = c.T.realm === 'sky', dx = (px - c.cx) / (sky ? 1.7 : 1), dy = py - c.cy, rad = c.r + 4, d = Math.hypot(dx, dy);
     if (d < rad && d < bd) { best = c; bd = d; }
   }
+  for (const u of ufos) {
+    const ux = u.x, uy = Math.max(70, hy * 0.36) + Math.sin(simT * 1.6 + u.ph) * 5, d = Math.hypot(px - ux, py - uy);
+    if (d < 60 * U && d < bd) { best = { ufo: u, cx: ux, cy: uy, r: 60 * U, txid: null }; bd = d; }
+  }
   return best;
 }
-function showTip(c, px, py) {
-  if (!c) { tip.hidden = true; return; }
-  const url = `https://mempool.space/tx/${c.txid}`;
+function showTip(p, px, py) {
+  if (!p) { tip.hidden = true; return; }
+  if (p.ufo) {
+    const u = p.ufo;
+    const url = u.b ? `https://mempool.space/block/${u.b}` : '';
+    tip.innerHTML = '<b></b><div class="meta"></div><div class="st" style="margin-top:4px"></div>';
+    tip.children[0].textContent = 'Block #' + (u.b || '?');
+    tip.children[1].textContent = 'A new block was found — UFO beam confirming transactions in view.';
+    tip.children[2].innerHTML = url ? `<a href="${url}" target="_blank" rel="noopener">Open block on mempool.space ↗</a>` : '';
+    tip.hidden = false;
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = clamp(px + 16, 8, W - w - 8) + 'px';
+    tip.style.top = clamp(py - h - 12 < 8 ? py + 18 : py - h - 12, 8, H - h - 8) + 'px';
+    return;
+  }
+  const c = p;
+  const url = c.txid ? `https://mempool.space/tx/${c.txid}` : '';
   tip.innerHTML = '<b></b><div class="amt"></div><div class="meta"></div><div class="meta id"></div><div class="st"></div><div class="meta" style="margin-top:6px"><a href="' + url + '" target="_blank" rel="noopener">Open on mempool.space ↗</a></div>';
   tip.children[0].textContent = c.T.name;
   tip.children[1].textContent = fmtBTC(c.v) + ' BTC';
@@ -840,12 +860,22 @@ function showTip(c, px, py) {
 let tipTimer = 0;
 function pointerAt(e, touchy) {
   const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
-  hover = hitTest(px, py); showTip(hover, px, py);
+  const h = hitTest(px, py);
+  // only reposition/refresh the tooltip when the hovered object CHANGES,
+  // so the dialog stays anchored and clickable (doesn't chase the cursor)
+  if (h !== hover) { hover = h; showTip(h, px, py); }
   clearTimeout(tipTimer); if (touchy && hover) tipTimer = setTimeout(() => { hover = null; tip.hidden = true; }, 4000);
 }
 canvas.addEventListener('pointermove', e => { if (e.pointerType !== 'touch') pointerAt(e, false); });
 canvas.addEventListener('pointerdown', e => pointerAt(e, e.pointerType === 'touch'));
 canvas.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') { hover = null; tip.hidden = true; } });
+canvas.addEventListener('dblclick', e => {
+  const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  const p = hitTest(px, py);
+  if (!p) return;
+  if (p.ufo) { if (p.ufo.b) window.open('https://mempool.space/block/' + p.ufo.b, '_blank'); return; }
+  if (p.txid) window.open('https://mempool.space/tx/' + p.txid, '_blank');
+});
 
 /* controls */
 const pauseBtn = $('#pause');
@@ -857,10 +887,6 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('keyup', e => { if (e.code === 'Space') e.preventDefault(); });
 pauseBtn.addEventListener('click', () => setPaused(!paused));
-document.querySelectorAll('#traffic button').forEach(b => b.addEventListener('click', () => {
-  traffic = +b.dataset.rate;
-  document.querySelectorAll('#traffic button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-}));
 
 /* legend */
 (function buildLegend() {
@@ -915,8 +941,9 @@ function onMempoolTx(tx) {
 function dropSocket() { const w = ws; ws = null; if (w) { w.onopen = w.onmessage = w.onerror = w.onclose = null; try { w.close(); } catch (e) {} } }
 function liveFailed(wasLive) {
   dropSocket(); source = 'idle';
-  if (wasLive) { setState('connecting', 'Reconnecting…', 'Reconnecting…', false); retryT = setTimeout(connectLive, 3000); }
-  else setState('failed', 'Live feed unreachable', 'Can’t reach the live feed from this page. The demo shows how it looks.', true);
+  retryT = setTimeout(connectLive, wasLive ? 3000 : 5000);
+  setState(wasLive ? 'connecting' : 'failed', wasLive ? 'Reconnecting…' : 'Live feed unreachable',
+    wasLive ? 'Reconnecting…' : 'Can’t reach the live feed. Retrying…', false);
 }
 function connectLive() {
   setState('connecting', 'Connecting to mempool.space…', 'Connecting…', false);
@@ -932,7 +959,7 @@ function connectLive() {
   };
   sock.onmessage = ev => {
     let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
-    if (m.block && m.block.height) mineBlock();
+    if (m.block && m.block.height) mineBlock(m.block.height);
     if (m['mempool-transactions']) {
       for (const tx of (m['mempool-transactions'].added || [])) onMempoolTx(tx);
     }
@@ -940,17 +967,8 @@ function connectLive() {
   const drop = () => { clearTimeout(to); if (ws === sock) liveFailed(opened); };
   sock.onerror = drop; sock.onclose = drop;
 }
-function selectSource(which) {
-  document.querySelectorAll('[data-src]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.src === which)));
-  dropSocket(); clearTimeout(retryT); clearScene();
-  if (which === 'demo') { source = 'sim'; blockIn = 40; acc = 0; setState('sim', 'Demo · simulated transactions', '', false); }
-  else { source = 'idle'; connectLive(); }
-  $('#traffic').hidden = which !== 'demo';
-  document.querySelectorAll('.tier').forEach(b => { b.disabled = source !== 'sim'; });
-  $('#hint').textContent = which === 'demo' ? 'Ranges are in BTC. Press a tier to send one. 🔊 toggles sound. Space pauses.' : 'Ranges are in BTC. Hover a creature for details. 🔊 toggles sound. Space pauses.';
-}
-document.querySelectorAll('[data-src]').forEach(b => b.addEventListener('click', () => selectSource(b.dataset.src)));
-emptyDemo.addEventListener('click', () => selectSource('demo'));
+function selectSource() { dropSocket(); clearTimeout(retryT); clearScene(); source = 'idle'; connectLive(); }
+emptyDemo.addEventListener('click', () => {});
 
 /* ---------- stats ---------- */
 let lastStat = 0;
@@ -971,7 +989,8 @@ let rsT = 0;
 new ResizeObserver(() => { clearTimeout(rsT); rsT = setTimeout(() => { layout(); creatures.forEach(c => place(c, simT)); }, 60); }).observe($('#app'));
 
 readTheme(); themeDirty = true;
-layout(); setPaused(false); updateStats(); selectSource('live');
+layout(); setPaused(false); updateStats(); connectLive();
+document.querySelectorAll('.tier').forEach(b => b.disabled = true);
 let last = performance.now();
 function frame(now) {
   const rdt = Math.min(0.05, (now - last) / 1000); last = now;
