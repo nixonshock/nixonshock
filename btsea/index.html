@@ -845,26 +845,35 @@ function showTip(p, px, py) {
   }
   const c = p;
   const url = c.txid ? `https://mempool.space/tx/${c.txid}` : '';
-  tip.innerHTML = '<b></b><div class="amt"></div><div class="meta"></div><div class="meta id"></div><div class="st"></div><div class="meta" style="margin-top:6px"><a href="' + url + '" target="_blank" rel="noopener">Open on mempool.space ↗</a></div>';
+  tip.innerHTML = '<b></b><div class="amt"></div><div class="meta"></div><div class="meta" style="margin-top:8px"><a href="' + url + '" target="_blank" rel="noopener">Open on mempool.space ↗</a></div>';
   tip.children[0].textContent = c.T.name;
   tip.children[1].textContent = fmtBTC(c.v) + ' BTC';
   tip.children[2].textContent = 'fee ' + (c.fee >= 10 ? Math.round(c.fee) : c.fee.toFixed(1)) + ' sat/vB · ' + c.vsize + ' vB';
-  tip.children[3].textContent = c.txid ? c.txid.slice(0, 8) + '…' + c.txid.slice(-6) : '';
-  tip.children[4].textContent = c.confirmed ? 'Confirmed in a block' : 'Waiting in the mempool';
-  tip.children[4].className = 'st' + (c.confirmed ? '' : ' wait');
   tip.hidden = false;
   const w = tip.offsetWidth, h = tip.offsetHeight;
   tip.style.left = clamp(px + 16, 8, W - w - 8) + 'px';
   tip.style.top = clamp(py - h - 12 < 8 ? py + 18 : py - h - 12, 8, H - h - 8) + 'px';
 }
-let tipTimer = 0;
+let tipTimer = 0, pinned = null;
 function pointerAt(e, touchy) {
   const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
   const h = hitTest(px, py);
-  // only reposition/refresh the tooltip when the hovered object CHANGES,
-  // so the dialog stays anchored and clickable (doesn't chase the cursor)
-  if (h !== hover) { hover = h; showTip(h, px, py); }
-  clearTimeout(tipTimer); if (touchy && hover) tipTimer = setTimeout(() => { hover = null; tip.hidden = true; }, 4000);
+  if (h) {
+    // only retarget the tooltip when a DIFFERENT object is hovered;
+    // otherwise the dialog stays exactly where it is (doesn't move/chase)
+    const key = h.ufo ? 'u' + h.ufo.b : 'c' + h.id;
+    const prevKey = hover ? (hover.ufo ? 'u' + hover.ufo.b : 'c' + hover.id) : null;
+    if (key !== prevKey) {
+      hover = h;
+      showTip(h, px, py);
+      pinned = { x: parseFloat(tip.style.left) || 0, y: parseFloat(tip.style.top) || 0 };
+    }
+  } else if (pinned) {
+    // nothing under cursor: keep the pinned dialog open until the cursor
+    // wanders clearly away — so the mouse can reach the link inside it
+    if (Math.hypot(px - pinned.x, py - pinned.y) > 130) { hover = null; tip.hidden = true; pinned = null; }
+  } else if (hover) { hover = null; tip.hidden = true; }
+  clearTimeout(tipTimer); if (touchy && hover) tipTimer = setTimeout(() => { hover = null; tip.hidden = true; pinned = null; }, 4000);
 }
 canvas.addEventListener('pointermove', e => { if (e.pointerType !== 'touch') pointerAt(e, false); });
 canvas.addEventListener('pointerdown', e => pointerAt(e, e.pointerType === 'touch'));
