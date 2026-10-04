@@ -23,7 +23,6 @@ PAGES = {
     'learn/index.html': 'learn',
     'books/index.html': 'books',
     'apps/index.html': 'apps',
-    'btsea/index.html': 'btsea',
     'bip110/index.html': 'bip110',
     'freedom/index.html': 'freedom',
 }
@@ -33,7 +32,6 @@ ACTIVE_MAP = {
     'learn': 'learn',
     'books': 'books',
     'apps': 'apps',
-    'btsea': 'btsea',
     'bip110': 'bip110',
     'freedom': 'freedom',
 }

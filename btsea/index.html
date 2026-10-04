@@ -27,10 +27,10 @@
       height: 100vh;
       cursor: crosshair;
     }
-    /* Panel sits below the fixed site nav (64px) */
+    /* Pure animation page — no site header */
     #ui {
       position: fixed;
-      top: 86px;
+      top: 14px;
       left: 14px;
       z-index: 10;
       background: rgba(4, 18, 36, 0.82);
@@ -198,54 +198,8 @@
       background: rgba(0,0,0,0.25);
     }
   </style>
-<!-- critical: nav styles + theme init (loads before Tailwind) -->
-<style>
-/* Nav critical — works before Tailwind CDN arrives */
-nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(9,9,15,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-.theme-btn { cursor: pointer; background: none; border: none; padding: 6px; border-radius: 8px; color: var(--text-dim); transition: all 0.2s; line-height: 1; }
-.theme-btn:hover { color: #f7931a; background: rgba(247,147,26,0.1); }
-.theme-btn svg { width: 18px; height: 18px; display: block; }
-[data-theme="light"] nav a[href="/"] img { filter: invert(1); }
-</style>
-<script>try{var t=localStorage.getItem('nixonshock-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var m={dark:'Light',light:'Dark'};document.body&&document.body.setAttribute('data-theme-ready','1')}catch(e){}</script>
 </head>
 <body>
-  <nav class="fixed top-0 left-0 right-0 z-50 bg-bitcoin-dark/90 backdrop-blur-md border-b border-white/5">
- <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
- <div class="flex items-center justify-between h-16">
- <a href="/" class="flex items-center">
- <img src="/nixonshock_logo.svg" alt="nixonshock" class="h-8">
- </a>
- <div class="hidden md:flex items-center gap-6 text-sm">
- <a href="/learn/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Learn</a>
- <a href="/books/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Books</a>
- <a href="/apps/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Apps</a>
- <a href="/btsea/" class="text-gray-400 hover:text-bitcoin-orange transition-colors text-bitcoin-orange">BTSea</a>
- <a href="/freedom/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Freedom</a>
- <button class="theme-btn" id="theme-btn-desktop" aria-label="Toggle theme">
- <svg id="theme-icon-desktop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
- </button>
- </div>
- <button class="md:hidden text-gray-400 hover:text-white p-2" id="menu-btn">
- <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
- </button>
- </div>
- </div>
- <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 bg-bitcoin-dark/95 backdrop-blur-md">
- <div class="px-4 py-4 space-y-3">
- <a href="/learn/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Learn</a>
- <a href="/books/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Books</a>
- <a href="/apps/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Apps</a>
- <a href="/btsea/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors text-bitcoin-orange">BTSea</a>
- <a href="/freedom/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Freedom</a>
- <button class="theme-btn w-full flex items-center justify-center gap-2 text-gray-400 hover:text-bitcoin-orange py-2" id="theme-btn-mobile">
- <svg id="theme-icon-mobile" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
- <span id="theme-label" class="text-sm">Light</span>
- </button>
- </div>
- </div>
-</nav>
-
 
   <canvas id="canvas"></canvas>
 
@@ -529,12 +483,22 @@ nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background:
 
     function classify(valueBtc) {
       if (valueBtc >= 200)  return { type: 'ship',      size: 1.4 + Math.min(valueBtc / 500, 1.6) };
-      if (valueBtc >= 100)  return { type: 'astronaut', size: 1.05 + Math.min(valueBtc / 150, 0.5) };
+      if (valueBtc >= 100)  return { type: 'astronaut', size: 1.7 + Math.min(valueBtc / 150, 0.9) };
       if (valueBtc >= 10)   return { type: 'whale',     size: 1.15 + Math.min(valueBtc / 50, 1.3) };
       if (valueBtc >= 1)    return { type: 'shark',     size: 0.95 + Math.min(valueBtc / 8, 0.85) };
       if (valueBtc >= 0.1)  return { type: 'fish',      size: 0.65 + Math.min(valueBtc / 1.5, 0.65) };
       if (valueBtc >= 0.01) return { type: 'shrimp',    size: 0.40 + Math.min(valueBtc / 0.15, 0.35) };
       return { type: 'jelly', size: 0.32 + Math.min(valueBtc / 0.02, 0.3) };
+    }
+
+    // Depth band per creature type (0 = surface, 1 = ocean floor).
+    // Jellyfish ride the deepest, then shrimp/fish/shark; whales and
+    // astronauts cruise almost at the surface.
+    function depthForType(type, withJitter = true) {
+      const bands = { jelly: 0.90, shrimp: 0.76, fish: 0.60, shark: 0.42, whale: 0.22, astronaut: 0.13 };
+      const base = bands[type] ?? 0.5;
+      const j = withJitter ? (Math.random() - 0.5) * 0.10 : 0;
+      return Math.max(0.06, Math.min(0.94, base + j));
     }
 
     const PALETTES = {
@@ -556,7 +520,7 @@ nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background:
       const colors = PALETTES[type];
       const color = colors[Math.floor(Math.random() * colors.length)];
 
-      const depthFactor = Math.max(0.08, Math.min(0.92, 1 - Math.log10(fr + 1) / 2.8));
+      const depthFactor = depthForType(type);
       const y = surfaceY + 36 + depthFactor * (window.innerHeight - surfaceY - 70);
 
       const baseSpeed = 0.55 + Math.min(fr / 35, 1.6);
@@ -853,64 +817,163 @@ nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background:
     function drawAstronaut(c, t) {
       ctx.save();
       ctx.translate(c.x, c.y);
-      const s = c.size * 14;
-      const bob = Math.sin(t * 0.004 + c.phase) * 2;
+      const s = c.size * 17; // big — reads as an astronaut at the surface
+      const bob = Math.sin(t * 0.004 + c.phase) * 2.5;
       ctx.translate(0, bob);
+      const swim = Math.sin(t * 0.012 + c.phase);
 
-      ctx.fillStyle = '#64748b';
-      ctx.fillRect(-s * 0.55, -s * 0.35, s * 0.45, s * 0.9);
-
-      ctx.fillStyle = c.color || '#e2e8f0';
+      // ---- PLSS life-support backpack (behind the upper body) ----
+      ctx.fillStyle = '#d7dee6';
+      ctx.strokeStyle = '#55606e';
+      ctx.lineWidth = 1.6;
       ctx.beginPath();
-      ctx.ellipse(0, s * 0.15, s * 0.55, s * 0.85, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      const armSwing = Math.sin(t * 0.012 + c.phase) * 0.5;
-      ctx.strokeStyle = c.color || '#e2e8f0';
-      ctx.lineWidth = s * 0.22;
+      ctx.moveTo(-s * 1.28, -s * 1.12);
+      ctx.lineTo(-s * 1.28, -s * 1.42);
+      ctx.quadraticCurveTo(-s * 1.28, -s * 1.5, -s * 1.2, -s * 1.5);
+      ctx.lineTo(-s * 0.7, -s * 1.5);
+      ctx.quadraticCurveTo(-s * 0.62, -s * 1.5, -s * 0.62, -s * 1.42);
+      ctx.lineTo(-s * 0.62, -s * 0.34);
+      ctx.lineTo(-s * 0.98, -s * 0.34);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // backpack vents / status panels
+      ctx.fillStyle = '#8f9baa';
+      ctx.fillRect(-s * 1.16, -s * 1.36, s * 0.42, s * 0.2);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-s * 1.16, -s * 1.06, s * 0.42, s * 0.12);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(-s * 1.16, -s * 0.6, s * 0.42, s * 0.12);
+      // life-support hoses running to the suit
+      ctx.strokeStyle = '#9aa7b5';
+      ctx.lineWidth = s * 0.09;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(-s * 0.35, -s * 0.05);
-      ctx.quadraticCurveTo(-s * 1.1, -s * 0.4 + armSwing * s, -s * 1.4, s * 0.2 + armSwing * s * 0.5);
+      ctx.moveTo(-s * 0.68, -s * 0.95);
+      ctx.quadraticCurveTo(-s * 0.4, -s * 0.6, -s * 0.3, -s * 0.3);
       ctx.stroke();
+      ctx.lineWidth = s * 0.07;
       ctx.beginPath();
-      ctx.moveTo(s * 0.35, -s * 0.05);
-      ctx.quadraticCurveTo(s * 1.1, -s * 0.4 - armSwing * s, s * 1.4, s * 0.2 - armSwing * s * 0.5);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(-s * 0.2, s * 0.75);
-      ctx.lineTo(-s * 0.35, s * 1.45);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(s * 0.2, s * 0.75);
-      ctx.lineTo(s * 0.4, s * 1.4);
+      ctx.moveTo(-s * 0.66, -s * 0.45);
+      ctx.quadraticCurveTo(-s * 0.46, -s * 0.18, -s * 0.42, s * 0.02);
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(186, 230, 253, 0.35)';
-      ctx.strokeStyle = '#94a3b8';
-      ctx.lineWidth = 2;
+      // ---- legs (kicking) ----
+      ctx.lineCap = 'round';
+      const kk = swim;
+      ctx.strokeStyle = '#dfe5ec';
+      ctx.lineWidth = s * 0.23;
+      ctx.beginPath(); // rear leg
+      ctx.moveTo(-s * 0.05, s * 0.5);
+      ctx.quadraticCurveTo(-s * 0.32, s * 1.02 + kk * s * 0.35, -s * 0.62, s * 1.12 + kk * s * 0.5);
+      ctx.stroke();
+      ctx.strokeStyle = '#eef2f7';
+      ctx.beginPath(); // front leg
+      ctx.moveTo(s * 0.14, s * 0.5);
+      ctx.quadraticCurveTo(s * 0.02, s * 1.08 - kk * s * 0.35, s * 0.3, s * 1.2 - kk * s * 0.5);
+      ctx.stroke();
+      // boots
+      ctx.fillStyle = '#5b6b7b';
+      ctx.beginPath(); ctx.ellipse(-s * 0.66, s * 1.14 + kk * s * 0.5, s * 0.16, s * 0.24, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(s * 0.33, s * 1.22 - kk * s * 0.5, s * 0.16, s * 0.24, 0.3, 0, Math.PI * 2); ctx.fill();
+      // knee joint ring
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath(); ctx.ellipse(-s * 0.34, s * 0.82 + kk * s * 0.2, s * 0.12, s * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+
+      // ---- torso (EVA suit) ----
+      const grad = ctx.createLinearGradient(-s * 0.6, 0, s * 0.6, 0);
+      grad.addColorStop(0, '#dfe5ec');
+      grad.addColorStop(0.45, '#f3f6fa');
+      grad.addColorStop(1, '#e6ebf1');
+      ctx.fillStyle = grad;
+      ctx.strokeStyle = '#c3ccd6';
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
-      ctx.arc(0, -s * 0.55, s * 0.48, 0, Math.PI * 2);
+      ctx.ellipse(0, s * 0.1, s * 0.62, s * 0.6, 0, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+      // soft belly shadow
+      ctx.fillStyle = 'rgba(148,163,184,0.28)';
+      ctx.beginPath(); ctx.ellipse(0, s * 0.44, s * 0.5, s * 0.2, 0, 0.05, Math.PI); ctx.fill();
+      // shoulder ring (front)
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath(); ctx.ellipse(s * 0.3, -s * 0.3, s * 0.2, s * 0.13, -0.35, 0, Math.PI * 2); ctx.fill();
+      // chest control panel (LCD + buttons)
+      ctx.fillStyle = '#aeb9c5';
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.05, -s * 0.18); ctx.lineTo(s * 0.34, -s * 0.05);
+      ctx.lineTo(s * 0.3, s * 0.28); ctx.lineTo(-s * 0.08, s * 0.22); ctx.closePath();
       ctx.fill();
+      ctx.strokeStyle = '#5b6b7b'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#0f172a'; // small screen
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.0, -s * 0.12); ctx.lineTo(s * 0.28, -s * 0.03);
+      ctx.lineTo(s * 0.26, s * 0.12); ctx.lineTo(-s * 0.02, s * 0.08); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#22d3ee'; // screen glow
+      ctx.fillRect(-s * 0.005, -s * 0.09, s * 0.06, s * 0.12);
+      // buttons
+      ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(s * 0.24, s * 0.18, s * 0.035, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(s * 0.1, s * 0.2, s * 0.035, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(s * 0.17, s * 0.21, s * 0.035, 0, Math.PI * 2); ctx.fill();
+
+      // ---- arms (swimming rhythm) ----
+      const as = swim;
+      ctx.strokeStyle = '#dfe5ec';
+      ctx.lineWidth = s * 0.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath(); // rear arm
+      ctx.moveTo(-s * 0.3, -s * 0.1);
+      ctx.quadraticCurveTo(-s * 1.05, -s * 0.3 + as * s * 0.8, -s * 1.3, s * 0.18 + as * s * 0.9);
       ctx.stroke();
+      ctx.strokeStyle = '#eef2f7';
+      ctx.lineWidth = s * 0.2;
+      ctx.beginPath(); // front arm
+      ctx.moveTo(s * 0.34, -s * 0.24);
+      ctx.quadraticCurveTo(s * 1.02, -s * 0.75 - as * s * 0.6, s * 1.28, -s * 0.28 - as * s * 0.7);
+      ctx.stroke();
+      ctx.fillStyle = '#64748b'; // rear shoulder ring
+      ctx.beginPath(); ctx.ellipse(-s * 0.24, -s * 0.2, s * 0.17, s * 0.12, 0.4, 0, Math.PI * 2); ctx.fill();
+      // gloves (mitts)
+      ctx.fillStyle = '#8f9baa';
+      ctx.beginPath(); ctx.ellipse(-s * 1.33, s * 0.2 + as * s * 0.9, s * 0.13, s * 0.19, 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(s * 1.31, -s * 0.26 - as * s * 0.7, s * 0.13, s * 0.19, -0.2, 0, Math.PI * 2); ctx.fill();
 
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.beginPath();
-      ctx.ellipse(-s * 0.12, -s * 0.65, s * 0.18, s * 0.22, -0.3, 0, Math.PI * 2);
-      ctx.fill();
+      // ---- helmet ----
+      // neck collar ring
+      ctx.fillStyle = '#475569';
+      ctx.beginPath(); ctx.ellipse(0, -s * 0.52, s * 0.42, s * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+      // helmet shell (white)
+      ctx.fillStyle = '#f1f5fa';
+      ctx.beginPath(); ctx.arc(0, -s * 0.64, s * 0.52, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#c3ccd6'; ctx.lineWidth = 1.4; ctx.stroke();
+      // rim shading
+      ctx.fillStyle = 'rgba(148,163,184,0.35)';
+      ctx.beginPath(); ctx.arc(0, -s * 0.64, s * 0.52, Math.PI * 0.6, Math.PI * 1.5); ctx.fill();
+      // gold-tinted visor (forward/right)
+      const vg = ctx.createLinearGradient(s * 0.05, -s * 0.92, s * 0.4, -s * 0.36);
+      vg.addColorStop(0, '#fbe488');
+      vg.addColorStop(0.55, '#f5c542');
+      vg.addColorStop(1, '#cf9220');
+      ctx.fillStyle = vg;
+      ctx.beginPath(); ctx.ellipse(s * 0.12, -s * 0.62, s * 0.36, s * 0.31, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#b39a2f'; ctx.lineWidth = s * 0.05;
+      ctx.beginPath(); ctx.ellipse(s * 0.12, -s * 0.62, s * 0.36, s * 0.31, 0, 0, Math.PI * 2); ctx.stroke();
+      // visor glint + reflection
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.beginPath(); ctx.ellipse(s * 0.02, -s * 0.72, s * 0.11, s * 0.06, -0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath(); ctx.ellipse(s * 0.28, -s * 0.58, s * 0.12, s * 0.18, 0.3, 0, Math.PI * 2); ctx.fill();
+      // helmet seam
+      ctx.strokeStyle = 'rgba(148,163,184,0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, -s * 0.64, s * 0.46, -Math.PI * 0.15, Math.PI * 0.12); ctx.stroke();
 
-      ctx.fillStyle = '#38bdf8';
-      ctx.beginPath();
-      ctx.arc(0, s * 0.05, s * 0.1, 0, Math.PI * 2);
-      ctx.fill();
-
+      // ---- bubbles ----
       ctx.fillStyle = 'rgba(186, 230, 253, 0.4)';
       for (let i = 0; i < 3; i++) {
-        const bx = -s * 0.8 - i * s * 0.45 - Math.sin(t * 0.01 + i) * 4;
-        const by = -s * 0.3 + Math.sin(t * 0.015 + i * 2) * 8;
+        const bx = -s * 0.95 - i * s * 0.4 - Math.sin(t * 0.01 + i) * 4;
+        const by = -s * 0.28 + Math.sin(t * 0.015 + i * 2) * 8;
         ctx.beginPath();
-        ctx.arc(bx, by, 2 + i * 0.8, 0, Math.PI * 2);
+        ctx.arc(bx, by, 2.2 + i * 0.9, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -1187,8 +1250,7 @@ nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background:
           if (c.x > window.innerWidth + 140) {
             c.x = -120 - Math.random() * 60;
             if (c.type !== 'ship') {
-              const depthFactor = Math.max(0.08, Math.min(0.92, 1 - Math.log10(c.feeRate + 1) / 2.8));
-              c.y = surfaceY + 36 + depthFactor * (window.innerHeight - surfaceY - 70);
+              c.y = surfaceY + 36 + depthForType(c.type) * (window.innerHeight - surfaceY - 70);
             }
           }
 
