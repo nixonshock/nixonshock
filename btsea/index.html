@@ -902,15 +902,15 @@ function setState(state, label, empty, withDemo) {
   chip.dataset.state = state; feedLabel.textContent = label;
   emptyText.textContent = empty; emptyDemo.hidden = !withDemo; emptyEl.hidden = seenAny || !empty;
 }
-function onLiveTx(x) {
-  if (paused || source !== 'live') return;
-  try {
-    const out = (x.out || []).reduce((s, o) => s + (o.value || 0), 0);
-    const inn = (x.inputs || []).reduce((s, i) => s + ((i.prev_out && i.prev_out.value) || 0), 0);
-    const size = Math.max(100, x.size || 250);
-    if (out <= 0) return;
-    spawn(out / 1e8, { fee: clamp(inn > out ? (inn - out) / size : 1, 1, 400), vsize: size, txid: x.hash });
-  } catch (e) { /* ignore malformed messages */ }
+function onMempoolTx(tx) {
+  // mempool.space 'mempool-transactions'.added → tx has vout[] in sats
+  let out = 0; if (Array.isArray(tx.vout)) for (const o of tx.vout) out += (o.value || 0);
+  const vsize = tx.vsize || (tx.weight ? Math.round(tx.weight / 4) : 250);
+  const fee = tx.fee || 0;
+  const fr = vsize ? fee / vsize : 5;
+  const v = out / 1e8;
+  if (v <= 0) return;
+  spawn(v, { feeRate: fr, fee: fr, vsize, txid: tx.txid });
 }
 function dropSocket() { const w = ws; ws = null; if (w) { w.onopen = w.onmessage = w.onerror = w.onclose = null; try { w.close(); } catch (e) {} } }
 function liveFailed(wasLive) {
@@ -919,20 +919,23 @@ function liveFailed(wasLive) {
   else setState('failed', 'Live feed unreachable', 'Can’t reach the live feed from this page. The demo shows how it looks.', true);
 }
 function connectLive() {
-  setState('connecting', 'Connecting to blockchain.info…', 'Connecting…', false);
+  setState('connecting', 'Connecting to mempool.space…', 'Connecting…', false);
   let sock, opened = false;
-  try { sock = new WebSocket('wss://ws.blockchain.info/inv'); } catch (e) { liveFailed(false); return; }
+  try { sock = new WebSocket('wss://mempool.space/api/v1/ws'); } catch (e) { liveFailed(false); return; }
   ws = sock;
-  const to = setTimeout(() => { if (ws === sock && !opened) liveFailed(false); }, 8000);
+  const to = setTimeout(() => { if (ws === sock && !opened) liveFailed(false); }, 9000);
   sock.onopen = () => {
     opened = true; clearTimeout(to); source = 'live';
-    setState('live', 'Live · blockchain.info', 'Listening for the next transaction…', false);
-    sock.send(JSON.stringify({ op: 'unconfirmed_sub' })); sock.send(JSON.stringify({ op: 'blocks_sub' }));
+    setState('live', 'Live · mempool.space', 'Listening for the next transaction…', false);
+    sock.send(JSON.stringify({ action: 'want', data: ['blocks', 'stats'] }));
+    sock.send(JSON.stringify({ 'track-mempool': true }));
   };
   sock.onmessage = ev => {
     let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
-    if (m.op === 'utx' && m.x) onLiveTx(m.x);
-    else if (m.op === 'block') mineBlock();
+    if (m.block && m.block.height) mineBlock();
+    if (m['mempool-transactions']) {
+      for (const tx of (m['mempool-transactions'].added || [])) onMempoolTx(tx);
+    }
   };
   const drop = () => { clearTimeout(to); if (ws === sock) liveFailed(opened); };
   sock.onerror = drop; sock.onclose = drop;
