@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTSea — Live Bitcoin Mempool Ocean</title>
+  <meta name="description" content="BTSea — a living ocean of Bitcoin mempool transactions. Watch every creature of the mempool swim by, sized by value, in real time." />
+  <meta property="og:title" content="BTSea — Live Bitcoin Mempool Ocean" />
+  <meta property="og:description" content="Every transaction of the Bitcoin mempool, as a living ocean. Sized by value, in real time." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="theme-color" content="#020810" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #020810;
+      color: #e8f4ff;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      user-select: none;
+    }
+    #canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      cursor: crosshair;
+    }
+    /* Panel sits below the fixed site nav (64px) */
+    #ui {
+      position: fixed;
+      top: 86px;
+      left: 14px;
+      z-index: 10;
+      background: rgba(4, 18, 36, 0.82);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(100, 180, 255, 0.22);
+      border-radius: 14px;
+      padding: 16px 18px;
+      max-width: 300px;
+      font-size: 13px;
+      line-height: 1.5;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+    #ui .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    #ui h1 {
+      font-size: 22px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #7dd3fc, #a78bfa, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+    }
+    #ui .tagline {
+      font-size: 12.5px;
+      color: #bae6fd;
+      opacity: 0.85;
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+    #ui .stat { opacity: 0.92; margin: 2px 0; }
+    #ui .stat span { color: #bae6fd; font-weight: 560; }
+    #ui .hint {
+      margin-top: 10px;
+      font-size: 11px;
+      opacity: 0.65;
+      border-top: 1px solid rgba(100,180,255,0.15);
+      padding-top: 8px;
+    }
+    #tooltip {
+      position: fixed;
+      z-index: 30;
+      background: rgba(6, 22, 42, 0.95);
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 12.5px;
+      max-width: 320px;
+      display: none;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      pointer-events: auto;
+    }
+    #tooltip .txid {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      color: #7dd3fc;
+      word-break: break-all;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+    #tooltip .row { margin: 4px 0; }
+    #tooltip .label { color: #94a3b8; margin-right: 4px; }
+    #tooltip a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    #tooltip a:hover { text-decoration: underline; color: #7dd3fc; }
+    #status {
+      position: fixed;
+      bottom: 14px;
+      left: 14px;
+      font-size: 12px;
+      opacity: 0.75;
+      z-index: 10;
+      background: rgba(4,18,36,0.6);
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    #legend {
+      position: fixed;
+      bottom: 14px;
+      right: 14px;
+      background: rgba(4, 18, 36, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(100, 180, 255, 0.2);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 12px;
+      z-index: 10;
+      line-height: 1.7;
+      min-width: 240px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    }
+    #legend h3 {
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .leg-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 5px 0;
+      cursor: default;
+    }
+    .leg-swatch {
+      width: 18px;
+      height: 12px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
+    }
+    .leg-label { flex: 1; color: #e2e8f0; }
+    .leg-range { color: #94a3b8; font-size: 11px; min-width: 72px; text-align: right; }
+    .sound-btn {
+      width: 26px;
+      height: 22px;
+      border: 1px solid rgba(148,163,184,0.35);
+      background: rgba(15, 40, 70, 0.6);
+      border-radius: 6px;
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .sound-btn:hover { border-color: #7dd3fc; color: #7dd3fc; }
+    .sound-btn.on {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: #38bdf8;
+      color: #7dd3fc;
+    }
+    #pauseOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 8, 16, 0.55);
+      z-index: 25;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #pauseOverlay.show { display: flex; }
+    #pauseOverlay span {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.85);
+      text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+      border: 2px solid rgba(255,255,255,0.35);
+      padding: 14px 36px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.25);
+    }
+  </style>
+<!-- critical: nav styles + theme init (loads before Tailwind) -->
+<style>
+/* Nav critical — works before Tailwind CDN arrives */
+nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(9,9,15,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.theme-btn { cursor: pointer; background: none; border: none; padding: 6px; border-radius: 8px; color: var(--text-dim); transition: all 0.2s; line-height: 1; }
+.theme-btn:hover { color: #f7931a; background: rgba(247,147,26,0.1); }
+.theme-btn svg { width: 18px; height: 18px; display: block; }
+[data-theme="light"] nav a[href="/"] img { filter: invert(1); }
+</style>
+<script>try{var t=localStorage.getItem('nixonshock-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var m={dark:'Light',light:'Dark'};document.body&&document.body.setAttribute('data-theme-ready','1')}catch(e){}</script>
+</head>
+<body>
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-bitcoin-dark/90 backdrop-blur-md border-b border-white/5">
+ <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+ <div class="flex items-center justify-between h-16">
+ <a href="/" class="flex items-center">
+ <img src="/nixonshock_logo.svg" alt="nixonshock" class="h-8">
+ </a>
+ <div class="hidden md:flex items-center gap-6 text-sm">
+ <a href="/learn/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Learn</a>
+ <a href="/books/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Books</a>
+ <a href="/apps/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Apps</a>
+ <a href="/btsea/" class="text-gray-400 hover:text-bitcoin-orange transition-colors text-bitcoin-orange">BTSea</a>
+ <a href="/freedom/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Freedom</a>
+ <button class="theme-btn" id="theme-btn-desktop" aria-label="Toggle theme">
+ <svg id="theme-icon-desktop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+ </button>
+ </div>
+ <button class="md:hidden text-gray-400 hover:text-white p-2" id="menu-btn">
+ <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+ </button>
+ </div>
+ </div>
+ <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 bg-bitcoin-dark/95 backdrop-blur-md">
+ <div class="px-4 py-4 space-y-3">
+ <a href="/learn/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Learn</a>
+ <a href="/books/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Books</a>
+ <a href="/apps/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Apps</a>
+ <a href="/btsea/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors text-bitcoin-orange">BTSea</a>
+ <a href="/freedom/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Freedom</a>
+ <button class="theme-btn w-full flex items-center justify-center gap-2 text-gray-400 hover:text-bitcoin-orange py-2" id="theme-btn-mobile">
+ <svg id="theme-icon-mobile" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+ <span id="theme-label" class="text-sm">Light</span>
+ </button>
+ </div>
+ </div>
+</nav>
+
+
+  <canvas id="canvas"></canvas>
+
+  <div id="ui">
+    <div class="brand">
+      <h1>BTSea</h1>
+    </div>
+    <div class="tagline">Bitcoin Mempool Ocean — every live tx, sized by value</div>
+    <div class="stat">Mempool: <span id="txCount">–</span> txs · <span id="mempoolSize">–</span></div>
+    <div class="stat">Next block fee: <span id="nextFee">–</span> sat/vB</div>
+    <div class="stat">Creatures: <span id="creatureCount">0</span></div>
+    <div class="hint">Click creature · Space = pause · Sound toggles in legend</div>
+  </div>
+
+  <div id="tooltip"></div>
+  <div id="status">Connecting…</div>
+  <div id="pauseOverlay"><span>PAUSED</span></div>
+
+  <div id="legend">
+    <h3>Legend · Sound</h3>
+    <div class="leg-row" data-type="jelly">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#67e8f9,#22d3ee,#a5f3fc)"></div>
+      <div class="leg-label">Jellyfish</div>
+      <div class="leg-range">&lt; 0.01 ₿</div>
+      <button class="sound-btn" data-type="jelly" title="Toggle sound">🔇</button>
+    </div>
+    <div class="leg-row" data-type="shrimp">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#f9a8d4,#f472b6)"></div>
+      <div class="leg-label">Shrimp</div>
+      <div class="leg-range">0.01 – 0.1 ₿</div>
+      <button class="sound-btn" data-type="shrimp" title="Toggle sound">🔇</button>
+    </div>
+    <div class="leg-row" data-type="fish">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#6ee7b7,#34d399)"></div>
+      <div class="leg-label">Fish</div>
+      <div class="leg-range">0.1 – 1 ₿</div>
+      <button class="sound-btn" data-type="fish" title="Toggle sound">🔇</button>
+    </div>
+    <div class="leg-row" data-type="shark">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#fb923c,#f97316)"></div>
+      <div class="leg-label">Shark</div>
+      <div class="leg-range">1 – 10 ₿</div>
+      <button class="sound-btn on" data-type="shark" title="Toggle sound">🔊</button>
+    </div>
+    <div class="leg-row" data-type="whale">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#a78bfa,#8b5cf6)"></div>
+      <div class="leg-label">Whale</div>
+      <div class="leg-range">10 – 100 ₿</div>
+      <button class="sound-btn on" data-type="whale" title="Toggle sound">🔊</button>
+    </div>
+    <div class="leg-row" data-type="astronaut">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#e2e8f0,#94a3b8,#f8fafc)"></div>
+      <div class="leg-label">Astronaut</div>
+      <div class="leg-range">100 – 200 ₿</div>
+      <button class="sound-btn on" data-type="astronaut" title="Toggle sound">🔊</button>
+    </div>
+    <div class="leg-row" data-type="ship">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#fde047,#facc15)"></div>
+      <div class="leg-label">Ship</div>
+      <div class="leg-range">≥ 200 ₿</div>
+      <button class="sound-btn on" data-type="ship" title="Toggle sound">🔊</button>
+    </div>
+    <div class="leg-row" data-type="ufo" style="margin-top:8px;border-top:1px solid rgba(100,180,255,0.15);padding-top:8px">
+      <div class="leg-swatch" style="background: linear-gradient(90deg,#e0e7ff,#c4b5fd,#a78bfa)"></div>
+      <div class="leg-label">UFO (block)</div>
+      <div class="leg-range">new block</div>
+      <button class="sound-btn on" data-type="ufo" title="Toggle sound">🔊</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // BTSea - Bitcoin Mempool Ocean
+    // ============================================================
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const statusEl = document.getElementById('status');
+    const pauseOverlay = document.getElementById('pauseOverlay');
+
+    let W = 0, H = 0, surfaceY = 0;
+    let paused = false;
+    let lastTime = performance.now();
+
+    // Sound enabled by default for ≥1 BTC categories + UFO
+    const soundOn = {
+      jelly: false,
+      shrimp: false,
+      fish: false,
+      shark: true,
+      whale: true,
+      astronaut: true,
+      ship: true,
+      ufo: true
+    };
+
+    // Web Audio for procedural sounds
+    let audioCtx = null;
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playBlip(type, value = 1) {
+      if (!soundOn[type]) return;
+      ensureAudio();
+      const now = audioCtx.currentTime;
+
+      const freqs = {
+        jelly: 1200 + Math.random() * 400,
+        shrimp: 880 + Math.random() * 200,
+        fish: 520 + Math.random() * 120,
+        shark: 280 + Math.random() * 80,
+        whale: 110 + Math.random() * 40,
+        astronaut: 220 + Math.random() * 40,
+        ship: 180 + Math.random() * 60,
+        ufo: 180
+      };
+      const durations = {
+        jelly: 0.15,
+        shrimp: 0.08,
+        fish: 0.12,
+        shark: 0.22,
+        whale: 0.55,
+        astronaut: 0.45,
+        ship: 0.4,
+        ufo: 3.2
+      };
+      const vols = {
+        jelly: 0.035,
+        shrimp: 0.04,
+        fish: 0.06,
+        shark: 0.09,
+        whale: 0.14,
+        astronaut: 0.11,
+        ship: 0.12,
+        ufo: 0.16
+      };
+
+      if (type === 'ufo') {
+        const osc = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const osc3 = audioCtx.createOscillator();
+        const lfo = audioCtx.createOscillator();
+        const lfoGain = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        const master = audioCtx.createGain();
+
+        osc.connect(filter);
+        osc2.connect(filter);
+        osc3.connect(filter);
+        filter.connect(master);
+        master.connect(audioCtx.destination);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(600, now);
+        filter.Q.value = 4.5;
+
+        osc.type = 'sawtooth';
+        osc2.type = 'square';
+        osc3.type = 'triangle';
+        lfo.type = 'sine';
+
+        osc.frequency.setValueAtTime(140, now);
+        osc2.frequency.setValueAtTime(280, now);
+        osc3.frequency.setValueAtTime(210, now);
+
+        osc.frequency.linearRampToValueAtTime(95, now + 1.6);
+        osc.frequency.linearRampToValueAtTime(160, now + 3.0);
+        osc2.frequency.linearRampToValueAtTime(190, now + 1.6);
+        osc2.frequency.linearRampToValueAtTime(320, now + 3.0);
+
+        lfo.frequency.value = 5.5;
+        lfoGain.gain.value = 18;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        lfoGain.connect(osc2.frequency);
+
+        filter.frequency.linearRampToValueAtTime(900, now + 1.2);
+        filter.frequency.linearRampToValueAtTime(450, now + 2.8);
+
+        master.gain.setValueAtTime(0, now);
+        master.gain.linearRampToValueAtTime(vols.ufo, now + 0.25);
+        master.gain.linearRampToValueAtTime(vols.ufo * 0.7, now + 2.0);
+        master.gain.linearRampToValueAtTime(0, now + durations.ufo);
+
+        osc.start(now); osc2.start(now); osc3.start(now); lfo.start(now);
+        osc.stop(now + durations.ufo + 0.05);
+        osc2.stop(now + durations.ufo + 0.05);
+        osc3.stop(now + durations.ufo + 0.05);
+        lfo.stop(now + durations.ufo + 0.05);
+      } else {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'whale') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freqs.whale, now);
+          osc.frequency.linearRampToValueAtTime(freqs.whale * 0.7, now + 0.35);
+          gain.gain.setValueAtTime(vols.whale, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + durations.whale);
+        } else if (type === 'ship') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freqs.ship, now);
+          gain.gain.setValueAtTime(vols.ship, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + durations.ship);
+        } else {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freqs[type] || 400, now);
+          if (type === 'jelly') {
+            osc.frequency.linearRampToValueAtTime(freqs.jelly * 0.55, now + 0.12);
+          }
+          gain.gain.setValueAtTime(vols[type] || 0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (durations[type] || 0.1));
+        }
+        osc.start(now);
+        osc.stop(now + (durations[type] || 0.1) + 0.05);
+      }
+    }
+
+    // Legend sound buttons
+    document.querySelectorAll('.sound-btn').forEach(btn => {
+      const type = btn.dataset.type;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        ensureAudio();
+        soundOn[type] = !soundOn[type];
+        btn.classList.toggle('on', soundOn[type]);
+        btn.textContent = soundOn[type] ? '🔊' : '🔇';
+        if (soundOn[type]) playBlip(type);
+      });
+    });
+
+    function resize() {
+      W = canvas.width = window.innerWidth * devicePixelRatio;
+      H = canvas.height = window.innerHeight * devicePixelRatio;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      surfaceY = window.innerHeight * 0.20;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ---------- Pause ----------
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        paused = !paused;
+        pauseOverlay.classList.toggle('show', paused);
+        statusEl.textContent = paused ? 'Paused' : 'Connected · live';
+      }
+    });
+
+    // ---------- Creatures ----------
+    const creatures = new Map();
+    const MAX_CREATURES = 240;
+    const MIN_VALUE_BTC = 0.001;
+
+    function btcValue(tx) {
+      if (typeof tx.value === 'number') {
+        if (tx.value > 1000 && Number.isInteger(tx.value)) return tx.value / 1e8;
+        return tx.value > 50 ? tx.value / 1e8 : tx.value;
+      }
+      if (tx.vout && Array.isArray(tx.vout)) {
+        const sats = tx.vout.reduce((s, o) => s + (o.value || 0), 0);
+        return sats / 1e8;
+      }
+      return 0.005;
+    }
+    function feeRate(tx) {
+      if (tx.fee != null && tx.vsize) return tx.fee / tx.vsize;
+      if (tx.fee != null && tx.weight) return tx.fee / (tx.weight / 4);
+      return 5;
+    }
+
+    function classify(valueBtc) {
+      if (valueBtc >= 200)  return { type: 'ship',      size: 1.4 + Math.min(valueBtc / 500, 1.6) };
+      if (valueBtc >= 100)  return { type: 'astronaut', size: 1.05 + Math.min(valueBtc / 150, 0.5) };
+      if (valueBtc >= 10)   return { type: 'whale',     size: 1.15 + Math.min(valueBtc / 50, 1.3) };
+      if (valueBtc >= 1)    return { type: 'shark',     size: 0.95 + Math.min(valueBtc / 8, 0.85) };
+      if (valueBtc >= 0.1)  return { type: 'fish',      size: 0.65 + Math.min(valueBtc / 1.5, 0.65) };
+      if (valueBtc >= 0.01) return { type: 'shrimp',    size: 0.40 + Math.min(valueBtc / 0.15, 0.35) };
+      return { type: 'jelly', size: 0.32 + Math.min(valueBtc / 0.02, 0.3) };
+    }
+
+    const PALETTES = {
+      jelly:      ['#67e8f9', '#22d3ee', '#a5f3fc', '#cffafe'],
+      shrimp:     ['#f9a8d4', '#f472b6', '#ec4899', '#db2777'],
+      fish:       ['#6ee7b7', '#34d399', '#10b981', '#059669'],
+      shark:      ['#fb923c', '#f97316', '#ea580c', '#c2410c'],
+      whale:      ['#c4b5fd', '#a78bfa', '#8b5cf6', '#7c3aed'],
+      astronaut:  ['#e2e8f0', '#cbd5e1', '#f8fafc', '#94a3b8'],
+      ship:       ['#fde047', '#facc15', '#eab308', '#ca8a04']
+    };
+
+    function createCreature(tx) {
+      const value = btcValue(tx);
+      if (value < 0.01 && creatures.size > 160) return null;
+
+      const fr = feeRate(tx);
+      const { type, size } = classify(value);
+      const colors = PALETTES[type];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      const depthFactor = Math.max(0.08, Math.min(0.92, 1 - Math.log10(fr + 1) / 2.8));
+      const y = surfaceY + 36 + depthFactor * (window.innerHeight - surfaceY - 70);
+
+      const baseSpeed = 0.55 + Math.min(fr / 35, 1.6);
+      const speed = baseSpeed * (0.75 + Math.random() * 0.5);
+
+      return {
+        txid: tx.txid,
+        type, size, value, feeRate: fr,
+        fee: tx.fee || 0,
+        vsize: tx.vsize || (tx.weight ? tx.weight / 4 : 200),
+        x: -100 - Math.random() * 80,
+        y,
+        vx: speed,
+        vy: (Math.random() - 0.5) * 0.25,
+        phase: Math.random() * Math.PI * 2,
+        age: 0,
+        color,
+        accent: colors[(colors.indexOf(color) + 1) % colors.length],
+        highlighted: false,
+        data: tx,
+        playedSound: false
+      };
+    }
+
+    function addCreature(tx) {
+      if (!tx || !tx.txid || creatures.has(tx.txid)) return;
+      if (creatures.size >= MAX_CREATURES) {
+        let oldest = null, oldestAge = 0;
+        for (const c of creatures.values()) {
+          if ((c.type === 'jelly' || c.type === 'shrimp' || c.type === 'fish') && c.age > oldestAge) {
+            oldestAge = c.age; oldest = c;
+          }
+        }
+        if (oldest) creatures.delete(oldest.txid);
+        else return;
+      }
+      const c = createCreature(tx);
+      if (c) {
+        creatures.set(c.txid, c);
+        setTimeout(() => {
+          if (creatures.has(c.txid) && !c.playedSound) {
+            playBlip(c.type, c.value);
+            c.playedSound = true;
+          }
+        }, 120 + Math.random() * 200);
+      }
+    }
+
+    // ---------- UFO (block) ----------
+    let ufo = null;
+
+    function spawnUFO(block) {
+      ufo = {
+        x: -280,
+        y: surfaceY * 0.45,
+        vx: 1.15,
+        start: performance.now(),
+        duration: 9000,
+        height: block?.height || '?',
+        phase: 0
+      };
+      playBlip('ufo');
+    }
+
+    // ---------- Drawing ----------
+    function drawBackground(t) {
+      const h = window.innerHeight;
+      const sky = ctx.createLinearGradient(0, 0, 0, surfaceY);
+      sky.addColorStop(0, '#0b1220');
+      sky.addColorStop(0.6, '#132337');
+      sky.addColorStop(1, '#1a3350');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, window.innerWidth, surfaceY);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let i = 0; i < 60; i++) {
+        const sx = (i * 137.5 + t * 0.008) % window.innerWidth;
+        const sy = (i * 89.3) % (surfaceY - 10);
+        const r = (i % 3 === 0) ? 1.2 : 0.7;
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const water = ctx.createLinearGradient(0, surfaceY, 0, h);
+      water.addColorStop(0, '#0c4a6e');
+      water.addColorStop(0.25, '#0a3a58');
+      water.addColorStop(0.6, '#062a40');
+      water.addColorStop(1, '#021018');
+      ctx.fillStyle = water;
+      ctx.fillRect(0, surfaceY, window.innerWidth, h - surfaceY);
+
+      ctx.beginPath();
+      ctx.moveTo(0, surfaceY);
+      for (let x = 0; x <= window.innerWidth; x += 10) {
+        const y = surfaceY
+          + Math.sin(x * 0.012 + t * 0.0011) * 4
+          + Math.sin(x * 0.035 + t * 0.0018) * 1.8;
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'rgba(186, 230, 253, 0.45)';
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+
+      ctx.save();
+      ctx.globalAlpha = 0.035;
+      for (let i = 0; i < 6; i++) {
+        const x = ((i * 180 + t * 0.025) % (window.innerWidth + 220)) - 110;
+        ctx.beginPath();
+        ctx.moveTo(x, surfaceY);
+        ctx.lineTo(x + 90, h);
+        ctx.lineTo(x + 160, h);
+        ctx.lineTo(x + 50, surfaceY);
+        ctx.fillStyle = '#bae6fd';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawJelly(c, t) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const s = c.size * 11;
+      const pulse = 1 + Math.sin(t * 0.008 + c.phase) * 0.12;
+      ctx.fillStyle = c.color;
+      ctx.globalAlpha = 0.75;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 1.1 * pulse, s * 0.75 * pulse, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(0, -s * 0.15, s * 0.55, s * 0.35, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = c.accent || c.color;
+      ctx.lineWidth = 1.4;
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * s * 0.28, s * 0.05);
+        const wobble = Math.sin(t * 0.015 + c.phase + i) * s * 0.35;
+        ctx.quadraticCurveTo(
+          i * s * 0.35 + wobble * 0.4,
+          s * 1.1,
+          i * s * 0.2 + wobble,
+          s * 2.0 + Math.sin(t * 0.01 + i) * 4
+        );
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
+    function drawShrimp(c, t) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const s = c.size * 9;
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 1.5, s * 0.55, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = c.accent;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(-s * 1.3, 0);
+      ctx.quadraticCurveTo(-s * 2.3, Math.sin(t * 0.022 + c.phase) * 5, -s * 3.0, 0);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(s * 1.2, -s * 0.2);
+      ctx.quadraticCurveTo(s * 2.2, -s * 1.1, s * 2.6, -s * 0.6);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawFish(c, t) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const s = c.size * 15;
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 1.65, s * 0.72, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.beginPath();
+      ctx.ellipse(s * 0.15, s * 0.18, s * 1.1, s * 0.32, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.accent;
+      ctx.beginPath();
+      ctx.moveTo(-s * 1.45, 0);
+      ctx.lineTo(-s * 2.55, -s * 0.75 + Math.sin(t * 0.028 + c.phase) * 4);
+      ctx.lineTo(-s * 2.55,  s * 0.75 + Math.sin(t * 0.028 + c.phase) * 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.2, -s * 0.65);
+      ctx.lineTo(s * 0.35, -s * 1.15);
+      ctx.lineTo(s * 0.7, -s * 0.55);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s * 0.85, -s * 0.12, s * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(s * 0.95, -s * 0.12, s * 0.09, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawShark(c, t) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const s = c.size * 19;
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 2.15, s * 0.62, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.18)';
+      ctx.beginPath();
+      ctx.ellipse(s * 0.2, s * 0.2, s * 1.5, s * 0.28, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.accent;
+      ctx.beginPath();
+      ctx.moveTo(s * 0.15, -s * 0.55);
+      ctx.lineTo(s * 0.55, -s * 1.45);
+      ctx.lineTo(s * 1.05, -s * 0.48);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-s * 1.95, 0);
+      ctx.lineTo(-s * 3.15, -s * 0.95 + Math.sin(t * 0.02 + c.phase) * 5);
+      ctx.lineTo(-s * 2.7, 0);
+      ctx.lineTo(-s * 3.15,  s * 0.95 + Math.sin(t * 0.02 + c.phase) * 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(s * 0.9 - i * s * 0.22, 0, s * 0.28, -0.7, 0.7);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s * 1.45, -s * 0.12, s * 0.17, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(s * 1.55, -s * 0.12, s * 0.075, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawWhale(c, t) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const s = c.size * 24;
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, s * 2.7, s * 0.95, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(s * 1.7, -s * 0.1, s * 1.0, s * 0.75, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.beginPath();
+      ctx.ellipse(s * 0.3, s * 0.35, s * 1.9, s * 0.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.accent;
+      ctx.beginPath();
+      ctx.moveTo(-s * 2.5, 0);
+      ctx.quadraticCurveTo(-s * 3.7, -s * 1.4 + Math.sin(t * 0.014 + c.phase) * 7, -s * 4.4, -s * 0.25);
+      ctx.lineTo(-s * 3.9, 0);
+      ctx.quadraticCurveTo(-s * 3.7, s * 1.4 + Math.sin(t * 0.014 + c.phase) * 7, -s * 4.4, s * 0.25);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(s * 2.05, -s * 0.28, s * 0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(s * 2.12, -s * 0.28, s * 0.065, 0, Math.PI * 2);
+      ctx.fill();
+      if (Math.sin(t * 0.009 + c.phase) > 0.65) {
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.55)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(s * 1.55, -s * 0.95);
+        ctx.quadraticCurveTo(s * 1.8, -s * 2.4, s * 2.15, -s * 3.1);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawAstronaut(c, t) {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      const s = c.size * 14;
+      const bob = Math.sin(t * 0.004 + c.phase) * 2;
+      ctx.translate(0, bob);
+
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(-s * 0.55, -s * 0.35, s * 0.45, s * 0.9);
+
+      ctx.fillStyle = c.color || '#e2e8f0';
+      ctx.beginPath();
+      ctx.ellipse(0, s * 0.15, s * 0.55, s * 0.85, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const armSwing = Math.sin(t * 0.012 + c.phase) * 0.5;
+      ctx.strokeStyle = c.color || '#e2e8f0';
+      ctx.lineWidth = s * 0.22;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.35, -s * 0.05);
+      ctx.quadraticCurveTo(-s * 1.1, -s * 0.4 + armSwing * s, -s * 1.4, s * 0.2 + armSwing * s * 0.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(s * 0.35, -s * 0.05);
+      ctx.quadraticCurveTo(s * 1.1, -s * 0.4 - armSwing * s, s * 1.4, s * 0.2 - armSwing * s * 0.5);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.2, s * 0.75);
+      ctx.lineTo(-s * 0.35, s * 1.45);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(s * 0.2, s * 0.75);
+      ctx.lineTo(s * 0.4, s * 1.4);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.35)';
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -s * 0.55, s * 0.48, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.beginPath();
+      ctx.ellipse(-s * 0.12, -s * 0.65, s * 0.18, s * 0.22, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(0, s * 0.05, s * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.4)';
+      for (let i = 0; i < 3; i++) {
+        const bx = -s * 0.8 - i * s * 0.45 - Math.sin(t * 0.01 + i) * 4;
+        const by = -s * 0.3 + Math.sin(t * 0.015 + i * 2) * 8;
+        ctx.beginPath();
+        ctx.arc(bx, by, 2 + i * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawShip(c, t) {
+      ctx.save();
+      const bob = Math.sin(t * 0.0028 + c.phase) * 2.5;
+      ctx.translate(c.x, surfaceY - 6 + bob);
+      const s = c.size * 17;
+      ctx.fillStyle = c.color;
+      ctx.beginPath();
+      ctx.moveTo(-s * 2.9, 0);
+      ctx.lineTo(s * 2.7, 0);
+      ctx.lineTo(s * 2.15, s * 0.95);
+      ctx.lineTo(-s * 2.3, s * 0.95);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = c.accent;
+      ctx.fillRect(-s * 2.7, s * 0.35, s * 5.2, s * 0.18);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(-s * 0.9, -s * 1.15, s * 2.0, s * 1.15);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(-s * 0.35, -s * 1.75, s * 1.1, s * 0.65);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(s * 0.55, -s * 2.15, s * 0.55, s * 1.05);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(s * 0.55, -s * 2.15, s * 0.55, s * 0.22);
+      ctx.fillStyle = '#38bdf8';
+      for (let i = 0; i < 4; i++) {
+        ctx.fillRect(-s * 0.7 + i * s * 0.5, -s * 0.9, s * 0.28, s * 0.32);
+      }
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-s * 1.6, 0);
+      ctx.lineTo(-s * 1.6, -s * 1.9);
+      ctx.stroke();
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.moveTo(-s * 1.6, -s * 1.9);
+      ctx.lineTo(-s * 0.7, -s * 1.65);
+      ctx.lineTo(-s * 1.6, -s * 1.4);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawUFO(u, t) {
+      ctx.save();
+      ctx.translate(u.x, u.y + Math.sin(t * 0.004 + u.phase) * 6);
+
+      const glow = ctx.createRadialGradient(0, 0, 10, 0, 0, 140);
+      glow.addColorStop(0, 'rgba(196, 181, 253, 0.45)');
+      glow.addColorStop(0.5, 'rgba(139, 92, 246, 0.15)');
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 140, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#e0e7ff';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 95, 28, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#a78bfa';
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 95, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#c4b5fd';
+      ctx.beginPath();
+      ctx.ellipse(0, -18, 42, 32, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.ellipse(-10, -28, 16, 12, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      const lightColors = ['#f472b6', '#38bdf8', '#fbbf24', '#34d399', '#a78bfa'];
+      for (let i = 0; i < 5; i++) {
+        const lx = -60 + i * 30;
+        ctx.fillStyle = lightColors[i];
+        ctx.beginPath();
+        ctx.arc(lx, 12, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.12 + 0.08 * Math.sin(t * 0.01 + i);
+        ctx.fillStyle = lightColors[i];
+        ctx.beginPath();
+        ctx.moveTo(lx - 8, 18);
+        ctx.lineTo(lx - 25, 120);
+        ctx.lineTo(lx + 25, 120);
+        ctx.lineTo(lx + 8, 18);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = 'bold 15px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(`BLOCK ${u.height}`, 0, -55);
+      ctx.font = '11px system-ui';
+      ctx.fillStyle = 'rgba(226,232,240,0.75)';
+      ctx.fillText('catching high-fee txs', 0, -38);
+
+      ctx.restore();
+    }
+
+    function drawCreature(c, t) {
+      if (c.highlighted) {
+        ctx.save();
+        ctx.shadowColor = c.color;
+        ctx.shadowBlur = 22;
+      }
+      switch (c.type) {
+        case 'jelly':      drawJelly(c, t); break;
+        case 'shrimp':     drawShrimp(c, t); break;
+        case 'fish':       drawFish(c, t); break;
+        case 'shark':      drawShark(c, t); break;
+        case 'whale':      drawWhale(c, t); break;
+        case 'astronaut':  drawAstronaut(c, t); break;
+        case 'ship':       drawShip(c, t); break;
+      }
+      if (c.highlighted) ctx.restore();
+    }
+
+    // ---------- WebSocket ----------
+    let ws = null;
+    let reconnectDelay = 1600;
+
+    function connect() {
+      statusEl.textContent = 'Connecting to mempool.space…';
+      ws = new WebSocket('wss://mempool.space/api/v1/ws');
+
+      ws.onopen = () => {
+        statusEl.textContent = 'Connected · live';
+        reconnectDelay = 1600;
+        ws.send(JSON.stringify({ action: 'want', data: ['blocks', 'stats', 'mempool-blocks'] }));
+        ws.send(JSON.stringify({ 'track-mempool': true }));
+      };
+
+      ws.onmessage = (ev) => {
+        let msg;
+        try { msg = JSON.parse(ev.data); } catch { return; }
+
+        if (msg.block) {
+          spawnUFO(msg.block);
+          const sorted = [...creatures.values()].sort((a, b) => b.feeRate - a.feeRate);
+          const n = Math.min(45, Math.floor(sorted.length * 0.38));
+          for (let i = 0; i < n; i++) {
+            sorted[i].dying = true;
+            sorted[i].dieAt = performance.now() + 2200 + Math.random() * 1200;
+          }
+          statusEl.textContent = `Block ${msg.block.height} found — UFO inbound`;
+          setTimeout(() => {
+            if (statusEl.textContent.includes('UFO')) statusEl.textContent = 'Connected · live';
+          }, 5000);
+        }
+
+        if (msg.mempoolInfo) {
+          document.getElementById('txCount').textContent = (msg.mempoolInfo.size || 0).toLocaleString();
+          document.getElementById('mempoolSize').textContent =
+            ((msg.mempoolInfo.bytes || 0) / 1e6).toFixed(2) + ' MB';
+        }
+
+        if (msg['mempool-blocks']?.[0]) {
+          const m = msg['mempool-blocks'][0].medianFee;
+          document.getElementById('nextFee').textContent = m ? m.toFixed(1) : '–';
+        }
+
+        if (msg['mempool-transactions']) {
+          const added = msg['mempool-transactions'].added || [];
+          for (const tx of added) {
+            const value = btcValue(tx);
+            if (value >= 0.01 || Math.random() < 0.35) addCreature(tx);
+          }
+          for (const id of [...(msg['mempool-transactions'].mined || []),
+                            ...(msg['mempool-transactions'].removed || [])]) {
+            creatures.delete(id);
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        statusEl.textContent = `Disconnected · retry ${Math.round(reconnectDelay/1000)}s`;
+        setTimeout(connect, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 1.55, 18000);
+      };
+      ws.onerror = () => ws.close();
+    }
+    connect();
+
+    // Seed with recent txs
+    (async () => {
+      try {
+        const list = await (await fetch('https://mempool.space/api/mempool/recent')).json();
+        for (const tx of list.slice(0, 35)) {
+          if (tx.value) addCreature(tx);
+          else {
+            try {
+              const full = await (await fetch(`https://mempool.space/api/tx/${tx.txid}`)).json();
+              addCreature(full);
+            } catch {}
+          }
+        }
+      } catch (e) { console.warn('seed', e); }
+    })();
+
+    // ---------- Interaction ----------
+    let mouse = { x: 0, y: 0 };
+    canvas.addEventListener('mousemove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    canvas.addEventListener('click', e => {
+      const mx = e.clientX, my = e.clientY;
+      let closest = null, best = 48;
+      for (const c of creatures.values()) {
+        const cy = c.type === 'ship' ? surfaceY : c.y;
+        const d = Math.hypot(c.x - mx, cy - my);
+        if (d < best * (0.6 + c.size * 0.5)) {
+          best = d;
+          closest = c;
+        }
+      }
+      for (const c of creatures.values()) c.highlighted = false;
+      if (closest) {
+        closest.highlighted = true;
+        showTooltip(closest, mx, my);
+      } else {
+        tooltip.style.display = 'none';
+      }
+    });
+
+    tooltip.addEventListener('click', e => e.stopPropagation());
+
+    function showTooltip(c, x, y) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(x + 18, window.innerWidth - 330) + 'px';
+      tooltip.style.top  = Math.min(y + 14, window.innerHeight - 180) + 'px';
+      const url = `https://mempool.space/tx/${c.txid}`;
+      tooltip.innerHTML = `
+        <div class="txid">${c.txid}</div>
+        <div class="row"><span class="label">Type</span> ${c.type.toUpperCase()}</div>
+        <div class="row"><span class="label">Value</span> ${c.value.toFixed(4)} BTC</div>
+        <div class="row"><span class="label">Fee rate</span> ${c.feeRate.toFixed(1)} sat/vB</div>
+        <div class="row"><span class="label">Fee</span> ${(c.fee / 1e8).toFixed(6)} BTC</div>
+        <div class="row"><span class="label">Size</span> ${Math.round(c.vsize)} vB</div>
+        <div class="row" style="margin-top:10px">
+          <a href="${url}" target="_blank" rel="noopener">Open on mempool.space ↗</a>
+        </div>
+      `;
+    }
+
+    // ---------- Main loop ----------
+    function frame(now) {
+      const dt = Math.min(40, now - lastTime);
+      lastTime = now;
+
+      if (!paused) {
+        for (const [id, c] of creatures) {
+          c.age += dt;
+          c.x += c.vx * (dt / 16);
+          c.y += c.vy * (dt / 16);
+          c.phase += dt * 0.002;
+
+          if (c.type !== 'ship') {
+            c.y += Math.sin(now * 0.0014 + c.phase) * 0.18;
+            if (c.y < surfaceY + 28) c.y = surfaceY + 28;
+            if (c.y > window.innerHeight - 28) c.y = window.innerHeight - 28;
+          }
+
+          if (c.x > window.innerWidth + 140) {
+            c.x = -120 - Math.random() * 60;
+            if (c.type !== 'ship') {
+              const depthFactor = Math.max(0.08, Math.min(0.92, 1 - Math.log10(c.feeRate + 1) / 2.8));
+              c.y = surfaceY + 36 + depthFactor * (window.innerHeight - surfaceY - 70);
+            }
+          }
+
+          if (c.dying && now > c.dieAt) creatures.delete(id);
+        }
+
+        if (ufo) {
+          ufo.x += ufo.vx * (dt / 16);
+          ufo.phase += dt * 0.001;
+          if (ufo.x > window.innerWidth + 300) ufo = null;
+        }
+      }
+
+      drawBackground(now);
+      const sorted = [...creatures.values()].sort((a, b) => a.y - b.y);
+      for (const c of sorted) drawCreature(c, now);
+      if (ufo) drawUFO(ufo, now);
+
+      document.getElementById('creatureCount').textContent = creatures.size;
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
