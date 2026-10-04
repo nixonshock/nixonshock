@@ -282,7 +282,7 @@ const TIERS = [
   { key: 'turtle',   name: 'Sea turtle',   range: '0.1 – 1',       min: 0.1,   realm: 'sea', L: 58,  lo: -1, hi: 0,   speed: [20, 32], band: [0.30, 0.85] },
   { key: 'fish',     name: 'Reef fish',    range: '0.01 – 0.1',    min: 0.01,  realm: 'sea', L: 30,  lo: -2, hi: -1,  speed: [44, 78], band: [0.12, 0.88] },
   { key: 'minnow',   name: 'Minnow',       range: '0.001 – 0.01',  min: 0.001, realm: 'sea', L: 15,  lo: -3, hi: -2,  speed: [58, 96], band: [0.08, 0.75] },
-  { key: 'plankton', name: 'Plankton',     range: 'under 0.001',   min: 0,     realm: 'sea', L: 5,   lo: -5, hi: -3,  speed: [5, 13],  band: [0.05, 0.95] }
+  { key: 'plankton', name: 'Plankton',     range: 'under 0.001',   min: 0,     realm: 'sea', L: 3,   lo: -5, hi: -3,  speed: [120, 170], band: [0.05, 0.95] }
 ].map((t, i) => Object.assign({ idx: i }, t));
 const tierOf = v => TIERS.find(t => v >= t.min) || TIERS[TIERS.length - 1];
 const randIn = T => Math.pow(10, rr(T.lo, T.key === 'cruise' ? 3.9 : T.hi));
@@ -520,7 +520,7 @@ function drawTurtle(c, t) {
 }
 
 function drawPlankton(c, t) {
-  const r = Math.max(1.6, c.size * 0.35);
+  const r = Math.max(1.1, c.size * 0.26);
   for (let i = 0; i < 4; i++) {
     const a = t * 0.7 + c.ph + i * 1.9, ox = Math.cos(a) * c.size * 2.2, oy = Math.sin(a * 1.3) * c.size * 1.6;
     ctx.fillStyle = rgba(P.plankton, 0.2); ctx.beginPath(); ctx.arc(ox, oy, r * 3, 0, TAU); ctx.fill();
