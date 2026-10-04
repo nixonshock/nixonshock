@@ -166,6 +166,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tip b { display: block; font-size: 14px; font-weight: 700; }
 .tip .amt { font-family: var(--font-mono); font-size: 15px; font-variant-numeric: tabular-nums; margin: 2px 0 4px; }
 .tip .meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.tip .go { color: var(--accent); font-weight: 600; }
 .tip .st { margin-top: 4px; font-weight: 600; font-size: 11.5px; }
 .tip .st.wait { color: var(--accent); }
 .tip a { color: var(--accent); text-decoration: none; font-weight: 600; }
@@ -832,11 +833,9 @@ function showTip(p, px, py) {
   if (!p) { tip.hidden = true; return; }
   if (p.ufo) {
     const u = p.ufo;
-    const url = u.b ? `https://mempool.space/block/${u.b}` : '';
-    tip.innerHTML = '<b></b><div class="meta"></div><div class="st" style="margin-top:4px"></div>';
+    tip.innerHTML = '<b></b><div class="meta"></div><div class="meta go" style="margin-top:6px">Double-click to view block on mempool.space</div>';
     tip.children[0].textContent = 'Block #' + (u.b || '?');
     tip.children[1].textContent = 'A new block was found — UFO beam confirming transactions in view.';
-    tip.children[2].innerHTML = url ? `<a href="${url}" target="_blank" rel="noopener">Open block on mempool.space ↗</a>` : '';
     tip.hidden = false;
     const w = tip.offsetWidth, h = tip.offsetHeight;
     tip.style.left = clamp(px + 16, 8, W - w - 8) + 'px';
@@ -844,8 +843,7 @@ function showTip(p, px, py) {
     return;
   }
   const c = p;
-  const url = c.txid ? `https://mempool.space/tx/${c.txid}` : '';
-  tip.innerHTML = '<b></b><div class="amt"></div><div class="meta"></div><div class="meta" style="margin-top:8px"><a href="' + url + '" target="_blank" rel="noopener">Open on mempool.space ↗</a></div>';
+  tip.innerHTML = '<b></b><div class="amt"></div><div class="meta"></div><div class="meta go" style="margin-top:6px">Double-click to view on mempool.space</div>';
   tip.children[0].textContent = c.T.name;
   tip.children[1].textContent = fmtBTC(c.v) + ' BTC';
   tip.children[2].textContent = 'fee ' + (c.fee >= 10 ? Math.round(c.fee) : c.fee.toFixed(1)) + ' sat/vB · ' + c.vsize + ' vB';
@@ -854,24 +852,15 @@ function showTip(p, px, py) {
   tip.style.left = clamp(px + 16, 8, W - w - 8) + 'px';
   tip.style.top = clamp(py - h - 12 < 8 ? py + 18 : py - h - 12, 8, H - h - 8) + 'px';
 }
-let tipTimer = 0, shown = false;
-function closeTip() { hover = null; tip.hidden = true; shown = false; }
+let tipTimer = 0;
 function pointerAt(e, touchy) {
   const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
-  // FROZEN: while a dialog is up, moving the mouse never moves or replaces it,
-  // so the cursor can freely travel to the link and click it.
-  if (shown && !touchy) return;
-  const h = hitTest(px, py);
-  if (h) { hover = h; showTip(h, px, py); shown = true; clearTimeout(tipTimer); if (touchy) tipTimer = setTimeout(closeTip, 4000); }
-  else closeTip();
+  hover = hitTest(px, py); showTip(hover, px, py);
+  clearTimeout(tipTimer); if (touchy && hover) tipTimer = setTimeout(() => { hover = null; tip.hidden = true; }, 4000);
 }
 canvas.addEventListener('pointermove', e => { if (e.pointerType !== 'touch') pointerAt(e, false); });
-canvas.addEventListener('pointerdown', e => {
-  const touchy = e.pointerType === 'touch', r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
-  if (shown && !touchy && !hitTest(px, py)) { closeTip(); return; }  // clicked the sea → dismiss
-  pointerAt(e, touchy);
-});
-canvas.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') closeTip(); });
+canvas.addEventListener('pointerdown', e => pointerAt(e, e.pointerType === 'touch'));
+canvas.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') { hover = null; tip.hidden = true; } });
 canvas.addEventListener('dblclick', e => {
   const r = canvas.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
   const p = hitTest(px, py);
