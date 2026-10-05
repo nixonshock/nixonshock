@@ -4,7 +4,8 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/bip11", "destination": "/bip110", "permanent": true }
+    { "source": "/bip11", "destination": "/bip110", "permanent": true },
+    { "source": "/beeteesea", "destination": "/beeteasea", "permanent": false }
   ],
   "headers": [
     {
