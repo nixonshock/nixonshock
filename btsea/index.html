@@ -148,11 +148,6 @@ body {
 .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; }
 .seg button { background: transparent; border: 0; padding: 5px 12px; border-radius: 999px; }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--panel-solid); }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
-.chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
-.chip[data-state="live"] .dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(255, 150, 40, 0.28); }
-.chip[data-state="connecting"] .dot { animation: blink 1s infinite; }
-@keyframes blink { 50% { opacity: 0.25; } }
 .btn[data-on="1"] { background: var(--fg); color: var(--panel-solid); }
 .kbd { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 1px 6px; border: 1px solid currentColor; border-radius: 5px; opacity: 0.65; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -196,18 +191,16 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .grp-label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-align: center; align-self: center; padding: 0 2px; }
 .sightings[hidden] { display: none; }
 /* mempool fee panel (top-right) */
-.fees { position: absolute; right: 16px; top: 64px; display: flex; flex-direction: column; gap: 7px; padding: 10px 12px; border-radius: 14px; pointer-events: none; }
-.fees .fh { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-.fees .frow { display: flex; gap: 7px; }
-.fees .fee { display: flex; flex-direction: column; min-width: 84px; padding: 7px 10px 8px; border-radius: 10px; background: rgba(127,127,127,0.07); border: 1px solid var(--line); border-top: 3px solid var(--fcol, var(--muted)); }
+.fees { display: inline-flex; align-items: center; margin-right: 2px; }
+.fees .fee { display: inline-flex; align-items: baseline; gap: 5px; padding: 6px 10px; white-space: nowrap; }
+.fees .fee + .fee { border-left: 1px solid var(--line); }
+.fees .t { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--fcol); }
+.fees .rate { font-family: var(--font-mono); font-size: 13.5px; font-weight: 680; font-variant-numeric: tabular-nums; color: var(--fg); }
+.fees .rate small { font-size: 9px; color: var(--muted); font-weight: 500; margin-left: 2px; }
+.fees .usd { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--fcol); font-variant-numeric: tabular-nums; }
 .fees .fee.l { --fcol: #2ebd85; }
 .fees .fee.m { --fcol: #f5a623; }
 .fees .fee.h { --fcol: #ec5a4a; }
-.fees .fee b { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg); opacity: 0.8; }
-.fees .fee .rate { font-family: var(--font-mono); font-size: 16px; font-weight: 680; font-variant-numeric: tabular-nums; color: var(--fg); line-height: 1.25; }
-.fees .fee .rate i { font-style: normal; }
-.fees .fee .rate small { font-size: 10px; color: var(--muted); font-weight: 500; margin-left: 3px; }
-.fees .fee .usd { font-family: var(--font-mono); font-size: 11px; color: var(--fcol); font-weight: 600; font-variant-numeric: tabular-nums; }
 .twrap { display: inline-flex; align-items: center; gap: 4px; }
 .tier {
   flex: none; display: grid; grid-template-columns: auto 1fr; column-gap: 9px; align-items: center;
@@ -236,7 +229,6 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .toast { transition: none; }
   .sight { animation: none; }
-  .chip .dot { animation: none; }
 }
 </style>
 <!-- Vercel Web Analytics -->
@@ -254,7 +246,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <p>Bitcoin Mempool Ocean — every transaction waiting for a block, drawn by how much bitcoin it moves.</p>
     </div>
     <div class="controls">
-      <div id="feedChip" class="chip panel" data-state="connecting" role="status"><span class="dot"></span><span id="feedLabel">Connecting…</span></div>
+      <div class="fees panel" id="fees" role="group" aria-label="Mempool fee estimates">
+        <span class="fee l" id="fLow" title="Low priority fee"><span class="t">Low</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
+        <span class="fee m" id="fMed" title="Medium priority fee"><span class="t">Med</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
+        <span class="fee h" id="fHigh" title="High priority fee"><span class="t">High</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
+      </div>
       <button id="pause" class="btn panel" type="button" data-on="0" title="Pause or resume">Pause <span class="kbd">Space</span></button>
     </div>
   </div>
@@ -262,15 +258,6 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   <div class="sightings" id="sightings" hidden>
     <h2>Big movers</h2>
     <ul id="sightList"></ul>
-  </div>
-
-  <div class="fees panel" id="fees" role="group" aria-label="Mempool fee estimates">
-    <span class="fh">Mempool fees</span>
-    <div class="frow">
-      <div class="fee l" id="fLow" title="Low priority · smallest typical txs"><b>Low</b><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></div>
-      <div class="fee m" id="fMed" title="Medium priority · average typical txs"><b>Medium</b><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></div>
-      <div class="fee h" id="fHigh" title="High priority · fastest typical txs"><b>High</b><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></div>
-    </div>
   </div>
 
   <div id="toast" class="toast panel" role="status" aria-live="polite"></div>
@@ -970,7 +957,8 @@ function clearScene() {
   $('#sightList').textContent = ''; $('#sightings').hidden = true;
 }
 function setState(state, label, empty, withDemo) {
-  chip.dataset.state = state; feedLabel.textContent = label;
+  if (chip) chip.dataset.state = state;
+  if (feedLabel) feedLabel.textContent = label;
   emptyText.textContent = empty; emptyDemo.hidden = !withDemo; emptyEl.hidden = seenAny || !empty;
 }
 function onMempoolTx(tx) {
