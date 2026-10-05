@@ -5,7 +5,7 @@
   "trailingSlash": false,
   "redirects": [
     { "source": "/bip11", "destination": "/bip110", "permanent": true },
-    { "source": "/(.*)", "destination": "https://nixonshock.com/btsea/$1", "permanent": true, "has": [{ "type": "host", "value": "btsea.nixonshock.com" }] }
+    { "source": "/", "destination": "/btsea/", "permanent": true, "has": [{ "type": "host", "value": "btsea.nixonshock.com" }] }
   ],
   "headers": [
     {
