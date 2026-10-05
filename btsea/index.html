@@ -185,6 +185,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .stats b { font-weight: 500; font-size: 15px; font-variant-numeric: tabular-nums; margin-right: 5px; }
 .stats span { color: var(--muted); }
 .stats .hint { font-family: var(--font-ui); font-size: 12px; }
+.stats .btn { margin-left: auto; align-self: center; }
 .legend { display: flex; gap: 8px; overflow-x: auto; padding: 8px; border-radius: 16px; scrollbar-width: thin; }
 .grp { display: flex; gap: 4px; flex: none; align-items: center; }
 .grp + .grp { padding-left: 8px; border-left: 1px solid var(--line); }
@@ -259,14 +260,8 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <p>Bitcoin Mempool Ocean — every transaction waiting for a block, drawn by how much bitcoin it moves.</p>
     </div>
     <div class="controls">
-      <div class="fees panel" id="fees" role="group" aria-label="Mempool fee estimates">
-        <span class="fee l" id="fLow" title="Low priority fee"><span class="t">Low</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
-        <span class="fee m" id="fMed" title="Medium priority fee"><span class="t">Med</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
-        <span class="fee h" id="fHigh" title="High priority fee"><span class="t">High</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
-      </div>
-      <button id="pause" class="btn panel" type="button" data-on="0" title="Pause or resume">Pause <span class="kbd">Space</span></button>
       <span class="ddon">
-        <button id="dbtn" class="btn panel bolt" type="button" data-on="0" aria-label="Donate" title="Send a few sats">⚡</button>
+        <button id="dbtn" class="btn panel" type="button" data-on="0" aria-label="Donate" title="Send a few sats">Donate <span class="kbd">d</span></button>
         <div class="donate panel" id="dcard" hidden role="dialog" aria-label="Donate">
           <span class="dh">Support the ocean ⚡</span>
           <img src="donate-qr.png" alt="Scan to pay nixonshock@coinos.io" width="148" height="148">
@@ -275,6 +270,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
           <div class="dnote">Any Lightning wallet · min 1,000 sats</div>
         </div>
       </span>
+      <div class="fees panel" id="fees" role="group" aria-label="Mempool fee estimates">
+        <span class="fee l" id="fLow" title="Low priority fee"><span class="t">Low</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
+        <span class="fee m" id="fMed" title="Medium priority fee"><span class="t">Med</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
+        <span class="fee h" id="fHigh" title="High priority fee"><span class="t">High</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
+      </div>
     </div>
   </div>
 
@@ -294,6 +294,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <div><b id="sLive">0</b><span>afloat</span></div>
       <div><b id="sNext">0:40</b><span>next block</span></div>
       <div class="hint"><span id="hint">Ranges are in BTC. Hover a creature for details. Double-click it to open the tx. 🔊 toggles sound. Space pauses.</span></div>
+      <button id="pause" class="btn panel" type="button" data-on="0" title="Pause or resume">Pause <span class="kbd">Space</span></button>
     </div>
     <div class="legend panel" id="legend" role="group" aria-label="Transaction size tiers"></div>
   </div>
