@@ -79,10 +79,6 @@ body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 var(--
 .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; }
 .seg button { background: transparent; border: 0; padding: 5px 12px; border-radius: 999px; }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--panel-solid); }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
-.chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; }
-.chip[data-state="live"] .dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(255, 150, 40, 0.28); }
-.chip[data-state="connecting"] .dot { animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: 0.25; } }
 .kbd { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 1px 6px; border: 1px solid currentColor; border-radius: 5px; opacity: 0.65; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -163,7 +159,6 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   .toast { transition: none; }
   .sight { animation: none; }
-  .chip .dot { animation: none; }
 }
 </style>
 <!-- Vercel Web Analytics -->
@@ -181,11 +176,6 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
       <p>Bitcoin Mempool Meadow — every transaction waiting for a block, flying by how much bitcoin it moves.</p>
     </div>
     <div class="controls">
-      <div id="feedChip" class="chip panel" data-state="connecting" role="status"><span class="dot"></span><span id="feedLabel">Connecting…</span></div>
-      <div class="seg panel" role="group" aria-label="Transaction source">
-        <button type="button" data-src="live" aria-pressed="true">Live</button>
-        <button type="button" data-src="demo" aria-pressed="false">Demo</button>
-      </div>
       <div class="seg panel" id="traffic" role="group" aria-label="Demo traffic" hidden>
         <button type="button" data-rate="0" aria-pressed="false">Quiet</button>
         <button type="button" data-rate="1" aria-pressed="true">Normal</button>
@@ -916,7 +906,7 @@ function clearScene() {
   $('#sightList').textContent = ''; $('#sightings').hidden = true;
 }
 function setState(state, label, empty, withDemo) {
-  chip.dataset.state = state; feedLabel.textContent = label;
+  if (chip) chip.dataset.state = state; if (feedLabel) feedLabel.textContent = label;
   emptyText.textContent = empty; emptyDemo.hidden = !withDemo; emptyEl.hidden = seenAny || !empty;
 }
 function onMempoolTx(tx) {
