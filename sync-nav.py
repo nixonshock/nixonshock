@@ -22,6 +22,7 @@ PAGES = {
     'index.html': 'index',
     'learn/index.html': 'learn',
     'books/index.html': 'books',
+    'listen/index.html': 'listen',
     'apps/index.html': 'apps',
     'bip110/index.html': 'bip110',
     'freedom/index.html': 'freedom',
@@ -31,6 +32,7 @@ ACTIVE_MAP = {
     'index': None,
     'learn': 'learn',
     'books': 'books',
+    'listen': 'listen',
     'apps': 'apps',
     'bip110': 'bip110',
     'freedom': 'freedom',
@@ -55,7 +57,7 @@ def build_nav_html(active_id):
     with open(nav_path, 'r') as f:
         content = f.read()
 
-    all_pages = ['index', 'learn', 'books', 'apps', 'btsea', 'freedom', 'bip110']
+    all_pages = ['index', 'learn', 'books', 'listen', 'apps', 'btsea', 'freedom', 'bip110']
 
     for pid in all_pages:
         marker = f'__ACTIVE__{pid}'
