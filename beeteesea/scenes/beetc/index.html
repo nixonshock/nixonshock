@@ -7,13 +7,13 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nixonshock.com/beeteesea/scenes/beetc/">
 <meta property="og:title" content="BeeTC — Bitcoin Mempool Meadow">
-<meta property="og:description" content="Every bitcoin transaction waiting for a block, drawn as a bee or insect in the live mempool meadow. Hover to inspect, double-click to view on mempool.space.">
+<meta property="og:description" content="Every bitcoin transaction waiting for a block, drawn as a bee in the live mempool meadow. Hover to inspect, double-click to view on mempool.space.">
 <meta property="og:image" content="https://nixonshock.com/beeteesea/scenes/beetc/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="BeeTC — Bitcoin Mempool Meadow">
-<meta name="twitter:description" content="Every bitcoin transaction waiting for a block, drawn as a bee or insect in the live mempool meadow.">
+<meta name="twitter:description" content="Every bitcoin transaction waiting for a block, drawn as a bee in the live mempool meadow.">
 <meta name="twitter:image" content="https://nixonshock.com/beeteesea/scenes/beetc/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,7 +176,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 <script>if(window.self!==window.top){var _e=document.createElement('style');_e.textContent='.top .brand{display:none !important}.top .controls{margin-left:auto !important}';document.head.appendChild(_e);}</script>
 
 <div id="app">
-  <canvas id="meadow" role="img" aria-label="Animated meadow. Each new Bitcoin transaction appears as an insect flying left to right, from a gnat to a golden queen with her swarm, sized by how much bitcoin it moves."></canvas>
+  <canvas id="meadow" role="img" aria-label="Animated meadow. Each new Bitcoin transaction appears as a bee flying left to right, sized by how much bitcoin it moves."></canvas>
 
   <div class="top">
     <div class="brand">
@@ -269,17 +269,17 @@ function playBlip(type) {
   o.start(now); o.stop(now + du + 0.05);
 }
 
-/* ---------- tiers: value in BTC decides which insect you see ---------- */
+/* ---------- tiers: value in BTC decides which bee you see ---------- */
 const TIERS = [
-  { key: 'golden', name: 'Golden queen', range: '1,000+',       min: 1000,  L: 230, lo: 3,  hi: 4.4, speed: [14, 20],  band: [0.10, 0.36], wob: 10, wf: 0.8, n: 30, iconN: 9 },
-  { key: 'great',  name: 'Great swarm',  range: '100 – 1,000',  min: 100,   L: 170, lo: 2,  hi: 3,   speed: [18, 26],  band: [0.08, 0.42], wob: 12, wf: 0.9, n: 22, iconN: 7 },
-  { key: 'royal',  name: 'Royal swarm',  range: '10 – 100',     min: 10,    L: 120, lo: 1,  hi: 2,   speed: [22, 32],  band: [0.08, 0.5],  wob: 12, wf: 1.0, n: 11, iconN: 5 },
-  { key: 'queen',  name: 'Queen bee',    range: '1 – 10',       min: 1,     L: 74,  lo: 0,  hi: 1,   speed: [30, 42],  band: [0.10, 0.62], wob: 9,  wf: 1.1 },
-  { key: 'bumble', name: 'Bumblebee',    range: '0.1 – 1',      min: 0.1,   L: 46,  lo: -1, hi: 0,   speed: [44, 62],  band: [0.28, 0.85], wob: 12, wf: 1.5 },
-  { key: 'worker', name: 'Worker bee',   range: '0.01 – 0.1',   min: 0.01,  L: 28,  lo: -2, hi: -1,  speed: [60, 90],  band: [0.14, 0.9],  wob: 14, wf: 1.9 },
-  { key: 'fly',    name: 'Fly',          range: '0.001 – 0.01', min: 0.001, L: 16,  lo: -3, hi: -2,  speed: [70, 115], band: [0.4, 0.97],  wob: 20, wf: 3.2 },
-  { key: 'gnat',   name: 'Gnat',         range: 'under 0.001',  min: 0,     L: 6,   lo: -5, hi: -3,  speed: [28, 56],  band: [0.05, 0.97], wob: 16, wf: 2.6 }
-].map((t, i) => Object.assign({ idx: i, swarm: !!t.n }, t));
+  { key: 'golden', name: 'Whale bee',  range: '1,000+',       min: 1000,  L: 74, lo: 3,  hi: 4.4, speed: [14, 20],  band: [0.10, 0.36], wob: 10, wf: 0.8 },
+  { key: 'great',  name: 'Big bee',    range: '100 – 1,000',  min: 100,   L: 56, lo: 2,  hi: 3,   speed: [18, 26],  band: [0.08, 0.42], wob: 12, wf: 0.9 },
+  { key: 'royal',  name: 'Large bee',  range: '10 – 100',     min: 10,    L: 42, lo: 1,  hi: 2,   speed: [22, 32],  band: [0.08, 0.5],  wob: 12, wf: 1.0 },
+  { key: 'queen',  name: 'Medium bee', range: '1 – 10',       min: 1,     L: 30, lo: 0,  hi: 1,   speed: [30, 42],  band: [0.10, 0.62], wob: 9,  wf: 1.1 },
+  { key: 'bumble', name: 'Small bee',  range: '0.1 – 1',      min: 0.1,   L: 21, lo: -1, hi: 0,   speed: [44, 62],  band: [0.28, 0.85], wob: 12, wf: 1.5 },
+  { key: 'worker', name: 'Tiny bee',   range: '0.01 – 0.1',   min: 0.01,  L: 14, lo: -2, hi: -1,  speed: [60, 90],  band: [0.14, 0.9],  wob: 14, wf: 1.9 },
+  { key: 'fly',    name: 'Speck bee',  range: '0.001 – 0.01', min: 0.001, L: 9,  lo: -3, hi: -2,  speed: [70, 115], band: [0.4, 0.97],  wob: 20, wf: 3.2 },
+  { key: 'gnat',   name: 'Dust bee',   range: 'under 0.001',  min: 0,     L: 5,  lo: -5, hi: -3,  speed: [28, 56],  band: [0.05, 0.97], wob: 16, wf: 2.6 }
+].map((t, i) => Object.assign({ idx: i }, t));
 const tierOf = v => TIERS.find(t => v >= t.min) || TIERS[TIERS.length - 1];
 const randIn = T => Math.pow(10, rr(T.lo, T.key === 'golden' ? 3.9 : T.hi));
 
@@ -365,7 +365,7 @@ function genDecor() {
   shafts = Array.from({ length: 5 }, (_, i) => ({ i, ph: r() * TAU, sp: 0.12 + r() * 0.12 }));
 }
 
-/* ---------- transactions -> insects ---------- */
+/* ---------- transactions -> bees ---------- */
 function sampleValue() {
   const r = rnd(); let mu; const sd = 0.9;
   if (r < 0.91) mu = -2.4; else if (r < 0.98) mu = -0.4; else mu = 1.4;
@@ -385,7 +385,7 @@ function spawn(v, o) {
     txid: String(o.txid || hex(64)).replace(/[^0-9a-f]/gi, '').slice(0, 64),
     spd: rr(T.speed[0], T.speed[1]) * U * (0.7 + 0.6 * feeN),
     x: -size * 0.6, y: 0, cx: 0, cy: 0, tilt: 0, lane: rnd(),
-    r: Math.max(9, size * (T.swarm ? 0.3 : 0.5)),
+    r: Math.max(9, size * 0.5),
     confirmed: !!o.confirmed, ct: -9, born: simT
   };
   creatures.push(c);
@@ -404,7 +404,7 @@ function place(c, t) {
   const a1 = t * f + c.ph, a2 = t * f * 2.3 + c.ph * 1.7;
   c.cy = clamp(base + Math.sin(a1) * amp + Math.sin(a2) * amp * 0.4, flyTop + c.size * 0.2, flyBot - c.size * 0.1);
   const vy = amp * (f * Math.cos(a1) + 0.4 * 2.3 * f * Math.cos(a2));
-  c.tilt = clamp(Math.atan2(vy, c.spd), -0.5, 0.5) * (T.swarm ? 0.25 : 0.8);
+  c.tilt = clamp(Math.atan2(vy, c.spd), -0.5, 0.5) * 0.8;
   c.cx = c.x;
 }
 
@@ -446,7 +446,7 @@ function addSighting(c) {
   while (ul.children.length > 4) ul.lastChild.remove();
 }
 
-/* ---------- drawing: insects (all face right, origin at body centre) ---------- */
+/* ---------- drawing: bees (all face right, origin at body centre) ---------- */
 const HONEY = '#f6b81b', DARK = '#251a08', FUZZ = '#8a5e14';
 function hexPath(c, x, y, r, rot) { c.beginPath(); for (let i = 0; i < 6; i++) { const a = rot + i * TAU / 6, px = x + Math.cos(a) * r, py = y + Math.sin(a) * r; i ? c.lineTo(px, py) : c.moveTo(px, py); } c.closePath(); }
 function wing(x, y, len, wid, ang, a) {
@@ -468,70 +468,28 @@ function beeHead(L, hx, r) {
   ctx.moveTo(hx + r * 0.1 * L, -r * 0.9 * L); ctx.quadraticCurveTo(hx + r * 0.8 * L, -r * 2.4 * L, hx + r * 1.6 * L, -r * 2.2 * L);
   ctx.stroke();
 }
-function drawBee(L, t, ph, kind) {
-  const q = kind === 'queen' || kind === 'golden', bb = kind === 'bumble';
+function drawBee(L, t, ph) {
+  /* one bee shape for every tier — only the size changes */
   const f = Math.sin(t * 38 + ph);
-  if (kind === 'golden') {
-    const g = ctx.createRadialGradient(0, 0, L * 0.1, 0, 0, L * 0.95); g.addColorStop(0, 'rgba(255,215,80,.5)'); g.addColorStop(1, 'rgba(255,215,80,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, L * 0.95, 0, TAU); ctx.fill();
-  }
-  const wl = (bb ? 0.36 : q ? 0.4 : 0.42) * L, ww = wl * 0.28;
+  const wl = 0.42 * L, ww = wl * 0.28;
   wing(0.03 * L, -0.09 * L, wl, ww, -2.45 + f * 0.35, 0.45);
   legs(L, -0.02 * L);
-  const ax = q ? -0.27 : bb ? -0.2 : -0.2, rx = q ? 0.40 : bb ? 0.27 : 0.28, ry = q ? 0.15 : bb ? 0.23 : 0.17;
-  const base = kind === 'golden' ? '#ffcf33' : q ? '#f2a516' : bb ? '#f5c431' : HONEY;
-  ctx.fillStyle = col(base); ctx.beginPath(); ctx.ellipse(ax * L, 0.02 * L, rx * L, ry * L, 0, 0, TAU); ctx.fill();
-  ctx.save(); ctx.beginPath(); ctx.ellipse(ax * L, 0.02 * L, rx * L, ry * L, 0, 0, TAU); ctx.clip();
+  ctx.fillStyle = col(HONEY); ctx.beginPath(); ctx.ellipse(-0.2 * L, 0.02 * L, 0.28 * L, 0.17 * L, 0, 0, TAU); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.ellipse(-0.2 * L, 0.02 * L, 0.28 * L, 0.17 * L, 0, 0, TAU); ctx.clip();
   ctx.fillStyle = col(DARK);
-  const st = q ? [-0.12, -0.25, -0.38, -0.5] : bb ? [-0.12, -0.3] : [-0.1, -0.24, -0.38], sw = q ? 0.045 : bb ? 0.09 : 0.07;
-  for (const s of st) ctx.fillRect(s * L, -L * 0.3, sw * L, L * 0.6);
-  if (bb) { ctx.fillStyle = '#f3efe4'; ctx.fillRect(-0.47 * L, -L * 0.3, 0.14 * L, L * 0.6); }
+  for (const s of [-0.1, -0.24, -0.38]) ctx.fillRect(s * L, -L * 0.3, 0.07 * L, L * 0.6);
   ctx.restore();
-  if (!bb) { const tail = (ax - rx) * L; ctx.fillStyle = col(DARK); ctx.beginPath(); ctx.moveTo(tail + 0.02 * L, 0); ctx.lineTo(tail - 0.1 * L, 0.03 * L); ctx.lineTo(tail + 0.02 * L, 0.06 * L); ctx.closePath(); ctx.fill(); }
-  const thx = 0.1 * L, thr = (bb ? 0.2 : q ? 0.16 : 0.17) * L;
-  ctx.fillStyle = col(bb ? '#f5c431' : FUZZ); ctx.beginPath(); ctx.ellipse(thx, 0, thr, thr * 0.95, 0, 0, TAU); ctx.fill();
-  if (bb) { ctx.fillStyle = col(DARK); ctx.beginPath(); ctx.ellipse(thx - 0.02 * L, 0, thr * 0.35, thr * 0.9, 0, 0, TAU); ctx.fill(); }
+  const tail = -0.48 * L; ctx.fillStyle = col(DARK); ctx.beginPath(); ctx.moveTo(tail + 0.02 * L, 0); ctx.lineTo(tail - 0.1 * L, 0.03 * L); ctx.lineTo(tail + 0.02 * L, 0.06 * L); ctx.closePath(); ctx.fill();
+  const thx = 0.1 * L, thr = 0.17 * L;
+  ctx.fillStyle = col(FUZZ); ctx.beginPath(); ctx.ellipse(thx, 0, thr, thr * 0.95, 0, 0, TAU); ctx.fill();
   ctx.fillStyle = 'rgba(255,230,160,.32)'; ctx.beginPath(); ctx.ellipse(thx + 0.02 * L, -0.05 * L, thr * 0.6, thr * 0.4, 0, 0, TAU); ctx.fill();
   if (L > 20) {
     ctx.strokeStyle = 'rgba(255,225,150,.55)'; ctx.lineWidth = Math.max(0.6, L * 0.014); ctx.beginPath();
     for (let i = 0; i < 8; i++) { const a = -Math.PI + 0.2 + i * 0.4, ex = thx + Math.cos(a) * thr, ey = Math.sin(a) * thr * 0.95; ctx.moveTo(ex, ey); ctx.lineTo(ex + Math.cos(a) * 0.045 * L, ey + Math.sin(a) * 0.045 * L); }
     ctx.stroke();
   }
-  beeHead(L, (bb ? 0.34 : 0.31) * L, bb ? 0.115 : q ? 0.095 : 0.1);
-  if (q) {
-    const cx = 0.3 * L, cy = -0.08 * L, cw = 0.09 * L, ch = 0.11 * L;
-    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(cx - cw, cy); ctx.lineTo(cx - cw, cy - ch * 0.6); ctx.lineTo(cx - cw * 0.5, cy - ch * 0.2); ctx.lineTo(cx, cy - ch);
-    ctx.lineTo(cx + cw * 0.5, cy - ch * 0.2); ctx.lineTo(cx + cw, cy - ch * 0.6); ctx.lineTo(cx + cw, cy); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#a8741a'; ctx.lineWidth = Math.max(0.6, L * 0.012); ctx.stroke();
-    ctx.fillStyle = P.accent; ctx.beginPath(); ctx.arc(cx, cy - ch * 0.38, Math.max(0.8, L * 0.017), 0, TAU); ctx.fill();
-  }
+  beeHead(L, 0.31 * L, 0.1);
   wing(0.06 * L, -0.11 * L, wl * 1.05, ww * 1.05, -2.05 + f * 0.35, 0.62);
-}
-function drawFly(L, t, ph) {
-  const f = Math.sin(t * 46 + ph);
-  legs(L, -0.02 * L);
-  ctx.fillStyle = col('#2f3640'); ctx.beginPath(); ctx.ellipse(-0.2 * L, 0.02 * L, 0.3 * L, 0.15 * L, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = col('#454e5c'); ctx.beginPath(); ctx.ellipse(0.08 * L, 0, 0.2 * L, 0.16 * L, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.beginPath(); ctx.ellipse(-0.18 * L, -0.05 * L, 0.18 * L, 0.05 * L, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = col('#39414d'); ctx.beginPath(); ctx.arc(0.3 * L, 0.02 * L, 0.11 * L, 0, TAU); ctx.fill();
-  ctx.fillStyle = '#d23b3b'; ctx.beginPath(); ctx.ellipse(0.34 * L, -0.01 * L, 0.09 * L, 0.1 * L, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(0.36 * L, -0.04 * L, 0.025 * L, 0, TAU); ctx.fill();
-  wing(0.02 * L, -0.06 * L, 0.62 * L, 0.17 * L, -2.5 + f * 0.4, 0.38);
-  wing(0.05 * L, -0.07 * L, 0.6 * L, 0.16 * L, -2.0 + f * 0.4, 0.5);
-}
-function drawGnat(c, t) {
-  const r = Math.max(1.3, c.size * 0.24);
-  for (let i = 0; i < 4; i++) {
-    const a = t * 1.3 + c.ph + i * 1.7, ox = Math.cos(a) * c.size * (2.2 + 0.3 * i), oy = Math.sin(a * 1.4) * c.size * 1.8;
-    if (night) {
-      const p = 0.6 + 0.4 * Math.sin(t * 3 + c.ph + i);
-      ctx.fillStyle = rgba(P.glow, 0.2 * p); ctx.beginPath(); ctx.arc(ox, oy, r * 3.4, 0, TAU); ctx.fill();
-      ctx.fillStyle = rgba(P.glow, 0.95); ctx.beginPath(); ctx.arc(ox, oy, r, 0, TAU); ctx.fill();
-    } else {
-      ctx.fillStyle = 'rgba(38,38,28,.9)'; ctx.beginPath(); ctx.arc(ox, oy, r, 0, TAU); ctx.fill();
-      ctx.strokeStyle = 'rgba(60,70,80,.45)'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox - r * 1.6, oy - r * (1.4 + Math.sin(t * 40 + i))); ctx.stroke();
-    }
-  }
 }
 function drawMini(L, t, ph) {
   const f = Math.sin(t * 38 + ph);
@@ -540,35 +498,14 @@ function drawMini(L, t, ph) {
   ctx.fillStyle = col(DARK); ctx.fillRect(-0.22 * L, -0.13 * L, 0.07 * L, 0.26 * L); ctx.fillRect(-0.06 * L, -0.15 * L, 0.07 * L, 0.3 * L);
   ctx.beginPath(); ctx.arc(0.24 * L, 0, 0.11 * L, 0, TAU); ctx.fill();
 }
-function drawSwarm(c, t) {
-  const S = c.size, n = c.iconN || c.T.n, rx = S * 0.46, ry = S * 0.24, ol = Math.max(7, S * 0.075);
-  const g = ctx.createRadialGradient(0, 0, S * 0.05, 0, 0, S * 0.62);
-  g.addColorStop(0, rgba(P.glow, night ? 0.3 : 0.22)); g.addColorStop(1, rgba(P.glow, 0));
-  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, S * 0.62, 0, TAU); ctx.fill();
-  const RF = [0.55, 0.8, 1.0], RW = [1.6, 1.2, 0.9], items = [];
-  for (let i = 0; i < n; i++) {
-    const ring = i % 3, a = t * RW[ring] + i * 2.399, k = RF[ring];
-    items.push({ x: Math.cos(a) * rx * k, y: Math.sin(a) * ry * k + Math.sin(t * 2 + i) * S * 0.02, front: Math.sin(a) > 0, i });
-  }
-  const one = it => { ctx.save(); ctx.translate(it.x, it.y); if (it.front) ctx.scale(-1, 1); drawMini(ol, t, it.i * 0.9); ctx.restore(); };
-  for (const it of items) if (!it.front) one(it);
-  drawBee(S * 0.36, t, c.ph, c.T.key === 'golden' ? 'golden' : 'queen');
-  for (const it of items) if (it.front) one(it);
-}
 function drawCreature(c, t) {
   halo(c, t);
   ctx.save(); ctx.translate(c.cx, c.cy); ctx.rotate(c.tilt);
-  const k = c.T.key;
-  if (c.T.swarm) drawSwarm(c, t);
-  else if (k === 'queen') drawBee(c.size, t, c.ph, 'queen');
-  else if (k === 'bumble') drawBee(c.size, t, c.ph, 'bumble');
-  else if (k === 'worker') drawBee(c.size, t, c.ph, 'worker');
-  else if (k === 'fly') drawFly(c.size, t, c.ph);
-  else drawGnat(c, t);
+  drawBee(c.size, t, c.ph);
   ctx.restore();
 }
 function halo(c, t) {
-  const R = c.r * 1.9 + 6;
+  const R = Math.max(7, c.size * 0.9);
   if (!c.confirmed) {
     const pulse = 0.75 + 0.25 * Math.sin(t * 3 + c.ph), g = ctx.createRadialGradient(c.cx, c.cy, R * 0.2, c.cx, c.cy, R);
     g.addColorStop(0, rgba(P.accent, 0.4 * pulse)); g.addColorStop(1, rgba(P.accent, 0));
@@ -765,15 +702,9 @@ function drawIcons() {
     x.fillStyle = P.hillMid; x.fillRect(0, 26, 46, 4);
     ctx = x;
     try {
-      const sizes = { golden: 40, great: 36, royal: 32, queen: 32, bumble: 24, worker: 17, fly: 13, gnat: 5 };
-      const c = { T, size: sizes[T.key], seed: 4, ph: 0.6, iconN: T.iconN, r: 10 };
+      const sizes = { golden: 26, great: 23, royal: 20, queen: 17, bumble: 14, worker: 11, fly: 8, gnat: 5 };
       x.save(); x.translate(23, 14);
-      if (T.swarm) drawSwarm(c, 0.9);
-      else if (T.key === 'queen') drawBee(c.size, 0.4, 0.6, 'queen');
-      else if (T.key === 'bumble') drawBee(c.size, 0.4, 0.6, 'bumble');
-      else if (T.key === 'worker') drawBee(c.size, 0.4, 0.6, 'worker');
-      else if (T.key === 'fly') drawFly(c.size, 0.4, 0.6);
-      else drawGnat(c, 0.9);
+      drawBee(sizes[T.key], 0.4, 0.6);
       x.restore();
     } finally { ctx = main; }
     x.restore();
@@ -884,7 +815,7 @@ if (dcopy && daddr) dcopy.addEventListener('click', () => {
 /* legend */
 (function buildLegend() {
   const legend = $('#legend');
-  [['Royal', 'Queens and swarms', [0, 1, 2, 3]], ['Worker', 'Bees, flies and gnats', [4, 5, 6, 7]]].forEach(g => {
+  [['Big', 'Whale to medium transactions', [0, 1, 2, 3]], ['Small', 'Tiny to dust transactions', [4, 5, 6, 7]]].forEach(g => {
     const wrap = document.createElement('div'); wrap.className = 'grp'; wrap.title = g[1];
     const lab = document.createElement('span'); lab.className = 'grp-label'; lab.textContent = g[0]; wrap.appendChild(lab);
     g[2].forEach(i => {
@@ -964,7 +895,7 @@ function selectSource(which) {
   else { source = 'idle'; connectLive(); }
   $('#traffic').hidden = which !== 'demo';
   document.querySelectorAll('.tier').forEach(b => { b.disabled = source !== 'sim'; });
-  $('#hint').textContent = which === 'demo' ? 'Ranges are in BTC. Press a tier to send one. Space pauses.' : 'Ranges are in BTC. Hover an insect for details; double-click it to open the tx. 🔊 toggles sound. Space pauses.';
+  $('#hint').textContent = which === 'demo' ? 'Ranges are in BTC. Press a tier to send one. Space pauses.' : 'Ranges are in BTC. Hover a bee for details; double-click it to open the tx. 🔊 toggles sound. Space pauses.';
 }
 document.querySelectorAll('[data-src]').forEach(b => b.addEventListener('click', () => selectSource(b.dataset.src)));
 emptyDemo.addEventListener('click', () => selectSource('demo'));
