@@ -945,7 +945,11 @@ pauseBtn.addEventListener('click', () => setPaused(!paused));
 
 /* donate (⚡) */
 const dbtn = $('#dbtn'), dcard = $('#dcard'), dcopy = $('#dcopy'), daddr = $('#daddr');
-function setDonate(open) { dcard.hidden = !open; if (dbtn) dbtn.dataset.on = open ? '1' : '0'; }
+function setDonate(open) { dcard.hidden = !open; if (dbtn) dbtn.dataset.on = open ? '1' : '0';
+  const sw = document.getElementById('sightings');
+  if (sw) { if (open) { sw.dataset.wasHidden = String(sw.hidden); sw.hidden = true; }
+           else if ('wasHidden' in sw.dataset) { sw.hidden = sw.dataset.wasHidden === 'true'; delete sw.dataset.wasHidden; } }
+}
 if (dbtn) dbtn.addEventListener('click', e => { e.stopPropagation(); setDonate(dcard.hidden); });
 document.addEventListener('click', e => { if (dcard && !dcard.hidden && !e.target.closest('.ddon')) setDonate(false); });
 document.addEventListener('keydown', e => {
