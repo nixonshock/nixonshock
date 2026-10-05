@@ -233,11 +233,14 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .snd.on { background: rgba(255,150,40,0.16); border-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 760px) {
-  /* big movers stay on-screen: horizontal ticker strip under the header */
-  .sightings { left: 12px; right: 12px; top: 164px; width: auto; flex-direction: row; align-items: center; gap: 8px; }
-  .sightings h2 { flex: none; margin: 0; font-size: 9.5px; letter-spacing: 0.12em; white-space: nowrap; }
-  .sightings ul { flex-direction: row; gap: 6px; overflow-x: auto; pointer-events: auto; touch-action: pan-x; scrollbar-width: none; }
-  .sight { flex: none; }
+  /* big movers: compact top-right panel in the open sky under the header */
+  .sightings { left: auto; right: 12px; top: 62px; width: min(38vw, 140px); flex-direction: column; align-items: stretch; gap: 4px; }
+  .sightings h2 { margin: 0 2px; font-size: 8px; letter-spacing: 0.1em; }
+  .sightings ul { gap: 4px; }
+  .sightings li:nth-child(n + 4) { display: none; }   /* newest three only */
+  .sight { padding: 4px 7px; border-radius: 8px; gap: 6px; }
+  .sight b { font-size: 9.5px; }
+  .sight span { font-size: 9px; }
   .fees { display: none; }
   .stats .hint { display: none; }
   .toast { top: 150px; }
@@ -432,7 +435,8 @@ function layout() {
   bedY = Math.max(hy + 170, Math.round(H - dockH - 22));
   waterTop = hy + 20; waterBot = bedY - 6;
   $('#empty').style.top = Math.round(hy + (bedY - hy) * 0.38) + 'px';
-  const toast = $('#toast'); toast.style.top = Math.max(Math.round(hy * 0.5), innerWidth <= 760 ? 206 : 120) + 'px';
+  const toast = $('#toast'); toast.style.top = Math.max(Math.round(hy * 0.5), 120) + 'px';
+  const mv = $('#sightings'); if (mv) mv.style.top = innerWidth <= 760 ? Math.round($('.top').getBoundingClientRect().bottom + 10) + 'px' : '';
   genDecor();
 }
 function genDecor() {
