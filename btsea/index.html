@@ -158,7 +158,7 @@ body {
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* big movers */
-.sightings { position: absolute; right: 16px; top: 76px; width: 250px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.sightings { position: absolute; right: 16px; top: 176px; width: 250px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
 .sightings h2 { margin: 0 2px; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sky-ink); opacity: 0.75; font-weight: 600; }
 .sightings ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .sight { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding: 6px 10px; border-radius: 10px; animation: rise 0.5s ease-out both; }
@@ -195,6 +195,19 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .grp + .grp { padding-left: 8px; border-left: 1px solid var(--line); }
 .grp-label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-align: center; align-self: center; padding: 0 2px; }
 .sightings[hidden] { display: none; }
+/* mempool fee panel (top-right) */
+.fees { position: absolute; right: 16px; top: 64px; display: flex; flex-direction: column; gap: 7px; padding: 10px 12px; border-radius: 14px; pointer-events: none; }
+.fees .fh { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.fees .frow { display: flex; gap: 7px; }
+.fees .fee { display: flex; flex-direction: column; min-width: 84px; padding: 7px 10px 8px; border-radius: 10px; background: rgba(127,127,127,0.07); border: 1px solid var(--line); border-top: 3px solid var(--fcol, var(--muted)); }
+.fees .fee.l { --fcol: #2ebd85; }
+.fees .fee.m { --fcol: #f5a623; }
+.fees .fee.h { --fcol: #ec5a4a; }
+.fees .fee b { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg); opacity: 0.8; }
+.fees .fee .rate { font-family: var(--font-mono); font-size: 16px; font-weight: 680; font-variant-numeric: tabular-nums; color: var(--fg); line-height: 1.25; }
+.fees .fee .rate i { font-style: normal; }
+.fees .fee .rate small { font-size: 10px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+.fees .fee .usd { font-family: var(--font-mono); font-size: 11px; color: var(--fcol); font-weight: 600; font-variant-numeric: tabular-nums; }
 .twrap { display: inline-flex; align-items: center; gap: 4px; }
 .tier {
   flex: none; display: grid; grid-template-columns: auto 1fr; column-gap: 9px; align-items: center;
@@ -216,6 +229,7 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @media (max-width: 760px) {
   .sightings { display: none; }
+  .fees { display: none; }
   .stats .hint { display: none; }
   .toast { top: 150px; }
 }
@@ -248,6 +262,15 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   <div class="sightings" id="sightings" hidden>
     <h2>Big movers</h2>
     <ul id="sightList"></ul>
+  </div>
+
+  <div class="fees panel" id="fees" role="group" aria-label="Mempool fee estimates">
+    <span class="fh">Mempool fees</span>
+    <div class="frow">
+      <div class="fee l" id="fLow" title="Low priority · smallest typical txs"><b>Low</b><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></div>
+      <div class="fee m" id="fMed" title="Medium priority · average typical txs"><b>Medium</b><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></div>
+      <div class="fee h" id="fHigh" title="High priority · fastest typical txs"><b>High</b><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></div>
+    </div>
   </div>
 
   <div id="toast" class="toast panel" role="status" aria-live="polite"></div>
@@ -1005,6 +1028,26 @@ function updateStats() {
 }
 
 /* ---------- boot ---------- */
+/* Mempool fee estimates — fetched in the visitor's browser from mempool.space */
+function loadFees() {
+  Promise.all([
+    fetch('https://mempool.space/api/v1/fees/recommended').then(r => r.json()),
+    fetch('https://mempool.space/api/v1/prices').then(r => r.json())
+  ]).then(([f, p]) => {
+    const usd = (p && p.USD) || 0;
+    const map = { fLow: 'hourFee', fMed: 'halfHourFee', fHigh: 'fastestFee' };
+    for (const id in map) {
+      const rate = f[map[id]];
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const ri = el.querySelector('.rate i'); if (ri) ri.textContent = (rate != null) ? rate : '–';
+      const us = el.querySelector('.usd');
+      if (us) us.textContent = (rate != null && usd) ? '$' + ((rate * 140 / 1e8 * usd).toFixed(2)) : '$·';
+    }
+  }).catch(() => {});
+}
+loadFees();
+setInterval(loadFees, 60000);
 new MutationObserver(() => { themeDirty = true; }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { themeDirty = true; });
 let rsT = 0;
