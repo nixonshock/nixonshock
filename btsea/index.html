@@ -1018,14 +1018,20 @@ function updateStats() {
 /* ---------- boot ---------- */
 /* Mempool fee estimates — fetched in the visitor's browser from mempool.space */
 function loadFees() {
+  // Mirror mempool.space's fee panel: fractional sat/vB come from its per-block
+  // median-fee estimates (mempool-blocks), with whole-sat recommended as the fast cap.
   Promise.all([
+    fetch('https://mempool.space/api/v1/fees/mempool-blocks').then(r => r.json()),
     fetch('https://mempool.space/api/v1/fees/recommended').then(r => r.json()),
     fetch('https://mempool.space/api/v1/prices').then(r => r.json())
-  ]).then(([f, p]) => {
+  ]).then(([blocks, rec, p]) => {
     const usd = (p && p.USD) || 0;
-    const map = { fLow: 'hourFee', fMed: 'halfHourFee', fHigh: 'fastestFee' };
-    for (const id in map) {
-      const rate = f[map[id]];
+    const len = Array.isArray(blocks) ? blocks.length : 0;
+    const pick = i => (len && i < len && blocks[i]) ? blocks[i].medianFee : null;
+    const hi = Math.max((rec && rec.fastestFee) || 0, pick(0) || 0);
+    const tiers = { fHigh: hi, fMed: pick(1), fLow: pick(3) };
+    for (const id in tiers) {
+      const rate = tiers[id] != null ? tiers[id] : null;
       const el = document.getElementById(id);
       if (!el) continue;
       const ri = el.querySelector('.rate i'); if (ri) ri.textContent = (rate != null) ? Number(rate).toFixed(1) : '–';
