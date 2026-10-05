@@ -674,8 +674,10 @@ function petals(x, y, n, len, color, center, sz) {
 }
 function drawFlowers(far, t) {
   /* Batched: one path + one fill per flower kind, instead of ~6 fills per
-     flower. Identical pixels, a fraction of the canvas calls — the flowers
-     were the single biggest per-frame cost in the scene. */
+     flower — the flowers were the single biggest per-frame cost. Every shape is
+     preceded by a moveTo to its own start point, because arc()/ellipse() append
+     a connecting line from the current point: without that a batched path turns
+     into one flat blob. */
   const list = [];
   ctx.strokeStyle = P.stem; ctx.globalAlpha = far ? 0.65 : 1; ctx.lineWidth = far ? 1.3 : 1.8;
   ctx.beginPath();
@@ -685,22 +687,25 @@ function drawFlowers(far, t) {
     ctx.moveTo(f.x, f.y); ctx.quadraticCurveTo(f.x, f.y - f.h * 0.6, hx, hy);
     list.push({ hx, hy, sz: f.sz, kind: f.kind });
   }
-  ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.stroke();
+  const circ = (x, y, r) => { ctx.moveTo(x + r, y); ctx.arc(x, y, r, 0, TAU); };
+  const oval = (x, y, rx, ry, rot) => { ctx.moveTo(x + rx * Math.cos(rot), y + rx * Math.sin(rot)); ctx.ellipse(x, y, rx, ry, rot, 0, TAU); };
   const heads = (kind, paint, draw) => {
     ctx.fillStyle = paint; ctx.beginPath();
     for (const h of list) if (h.kind === kind) draw(h);
     ctx.fill();
   };
-  const ring = (h, n, len) => { for (let i = 0; i < n; i++) { const a = i * TAU / n; ctx.ellipse(h.hx + Math.cos(a) * len * 0.7, h.hy + Math.sin(a) * len * 0.7, len * 0.7, len * 0.32, a, 0, TAU); } };
+  const ring = (h, n, len) => { for (let i = 0; i < n; i++) { const a = i * TAU / n; oval(h.hx + Math.cos(a) * len * 0.7, h.hy + Math.sin(a) * len * 0.7, len * 0.7, len * 0.32, a); } };
   heads(0, P.f1, h => ring(h, 8, h.sz * 1.3));
-  heads(0, P.center, h => ctx.arc(h.hx, h.hy, h.sz * 0.55, 0, TAU));
-  heads(1, P.f2, h => { for (let i = 0; i < 4; i++) ctx.arc(h.hx + (i - 1.5) * h.sz * 0.45, h.hy + (i % 2) * h.sz * 0.2, h.sz * 0.8, 0, TAU); });
-  heads(1, '#2a1a1a', h => ctx.arc(h.hx, h.hy + h.sz * 0.1, h.sz * 0.25, 0, TAU));
-  heads(2, P.f3, h => { for (let i = 0; i < 5; i++) ctx.arc(h.hx + (i % 2 ? 1 : -1) * h.sz * 0.2, h.hy + i * h.sz * 0.75, h.sz * 0.5, 0, TAU); });
+  heads(0, P.center, h => circ(h.hx, h.hy, h.sz * 0.55));
+  heads(1, P.f2, h => { for (let i = 0; i < 4; i++) circ(h.hx + (i - 1.5) * h.sz * 0.45, h.hy + (i % 2) * h.sz * 0.2, h.sz * 0.8); });
+  heads(1, '#2a1a1a', h => circ(h.hx, h.hy + h.sz * 0.1, h.sz * 0.25));
+  heads(2, P.f3, h => { for (let i = 0; i < 5; i++) circ(h.hx + (i % 2 ? 1 : -1) * h.sz * 0.2, h.hy + i * h.sz * 0.75, h.sz * 0.5); });
   heads(3, P.f4, h => ring(h, 7, h.sz * 1.2));
-  heads(3, '#26356a', h => ctx.arc(h.hx, h.hy, h.sz * 0.9 * 0.55, 0, TAU));
-  heads(4, P.f5, h => ctx.arc(h.hx, h.hy, h.sz * 0.9, 0, TAU));
-  heads(4, 'rgba(255,255,255,.35)', h => { for (let i = 0; i < 5; i++) { const a = i * TAU / 5; ctx.arc(h.hx + Math.cos(a) * h.sz * 0.5, h.hy + Math.sin(a) * h.sz * 0.5, h.sz * 0.28, 0, TAU); } });
+  heads(3, '#26356a', h => circ(h.hx, h.hy, h.sz * 0.9 * 0.55));
+  heads(4, P.f5, h => circ(h.hx, h.hy, h.sz * 0.9));
+  heads(4, 'rgba(255,255,255,.35)', h => { for (let i = 0; i < 5; i++) { const a = i * TAU / 5; circ(h.hx + Math.cos(a) * h.sz * 0.5, h.hy + Math.sin(a) * h.sz * 0.5, h.sz * 0.28); } });
+  ctx.globalAlpha = 1;
 }
 function drawSparks() {
   for (const p of sparks) {
