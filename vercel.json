@@ -7,6 +7,9 @@
     { "source": "/bip11", "destination": "/bip110", "permanent": true },
     { "source": "/beeteasea", "destination": "/beeteesea", "permanent": false }
   ],
+  "rewrites": [
+    { "source": "/", "has": [{ "type": "host", "value": "beeteesea.nixonshock.com" }], "destination": "/beeteesea" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
