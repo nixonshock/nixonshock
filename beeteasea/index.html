@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en" data-theme="sea">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bee Tee Sea — Live Bitcoin Mempool</title>
+<meta name="description" content="Bee · Tee · Sea — the Bitcoin mempool, three ways. Watch every transaction waiting for a block: bees in a meadow, T-shirts on a factory line, or ships and sea creatures on the open water.">
+<link rel="canonical" href="https://nixonshock.com/beeteasea">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bee Tee Sea">
+<meta property="og:title" content="Bee Tee Sea — Live Bitcoin Mempool">
+<meta property="og:description" content="The Bitcoin mempool, three ways. Pick a theme and watch every transaction waiting for a block — live.">
+<meta property="og:url" content="https://nixonshock.com/beeteasea">
+<meta property="og:image" content="https://nixonshock.com/beeteasea/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bee Tee Sea — Live Bitcoin Mempool">
+<meta name="twitter:description" content="The Bitcoin mempool, three ways — bees, T-shirts, or the open sea. Live.">
+<meta name="twitter:image" content="https://nixonshock.com/beeteasea/og.png">
+<meta name="theme-color" content="#0b0e13">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23f7931a'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%230b0e13'%3EB%3C/text%3E%3C/svg%3E">
+<style>
+  *{box-sizing:border-box}
+  :root{
+    --bar:62px;
+    --bg:#0b0e13; --fg:#eef1f6; --muted:#98a0ad;
+    --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
+    --bee:#f0a83c; --tee:#e8534a; --sea:#2f8fd0; --cur:var(--sea);
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  }
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);
+    height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    flex:0 0 auto;height:var(--bar);display:flex;align-items:center;gap:6px;
+    padding:0 12px 0 16px;border-bottom:1px solid var(--line);
+    background:rgba(11,14,19,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    position:relative;z-index:5;
+  }
+  header::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;
+    background:var(--cur);opacity:.9;transition:background .25s;
+  }
+  .brand{display:flex;align-items:center;gap:2px;margin-right:auto;min-width:0}
+  .brand svg{width:20px;height:20px;margin-right:8px;flex:0 0 auto;opacity:.9}
+  .word{
+    font-size:clamp(15px,2.4vw,21px);font-weight:800;letter-spacing:-.02em;
+    color:var(--muted);background:none;border:0;padding:5px 7px;border-radius:9px;
+    cursor:pointer;font-family:inherit;transition:color .18s,background .18s,transform .18s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .word:hover{color:var(--fg)}
+  .word:active{transform:translateY(1px)}
+  .word[data-t="bee"]{--c:var(--bee)}
+  .word[data-t="tee"]{--c:var(--tee)}
+  .word[data-t="sea"]{--c:var(--sea)}
+  .word[aria-current="true"]{color:#0b0e13;background:var(--c);box-shadow:0 6px 20px -6px var(--c)}
+  .word .num{font:700 10px/1 var(--mono);opacity:.55;vertical-align:super;margin-left:2px}
+  .word[aria-current="true"] .num{opacity:.6}
+  .full{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;
+    font:600 12px/1 var(--sans);color:var(--muted);text-decoration:none;
+    border:1px solid var(--line2);border-radius:999px;padding:8px 13px;margin-left:8px;
+    transition:.18s;white-space:nowrap;
+  }
+  .full:hover{color:var(--fg);border-color:var(--fg)}
+  .stage{position:relative;flex:1 1 auto;min-height:0;background:var(--bg)}
+  #fr{
+    position:absolute;inset:0;width:100%;height:100%;border:0;display:block;
+    opacity:0;transition:opacity .45s ease;
+  }
+  #fr.on{opacity:1}
+  .boot{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    gap:10px;font:600 13px/1 var(--mono);color:var(--muted);letter-spacing:.04em;
+    transition:opacity .35s;
+  }
+  .boot.gone{opacity:0;pointer-events:none}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--cur);animation:p 1.1s ease-in-out infinite}
+  @keyframes p{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+  @media (max-width:560px){
+    :root{--bar:56px}
+    .full span{display:none}
+    .full{padding:8px 10px}
+    .word{padding:5px 4px}
+    .brand svg{display:none}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="#f7931a" stroke-width="2.5"/><text x="16" y="21.5" font-family="monospace" font-size="15" font-weight="700" text-anchor="middle" fill="#f7931a">B</text></svg>
+    <button class="word" data-t="bee" type="button">Bee<span class="num">1</span></button>
+    <button class="word" data-t="tee" type="button">Tee<span class="num">2</span></button>
+    <button class="word" data-t="sea" type="button">Sea<span class="num">3</span></button>
+  </div>
+  <a class="full" id="full" href="/btsea/" target="_blank" rel="noopener">Open full screen <span>↗</span></a>
+</header>
+<div class="stage">
+  <iframe id="fr" title="Live Bitcoin mempool animation" allow="autoplay"></iframe>
+  <div class="boot" id="boot"><span class="dot"></span> loading the mempool…</div>
+</div>
+<script>
+const THEMES = {
+  bee: { dir: 'beetc', name: 'Bee', tint: '#f0a83c' },
+  tee: { dir: 'bteec', name: 'Tee', tint: '#e8534a' },
+  sea: { dir: 'btsea', name: 'Sea', tint: '#2f8fd0' }
+};
+const ORDER = ['bee', 'tee', 'sea'];
+const root = document.documentElement;
+const fr = document.getElementById('fr');
+const boot = document.getElementById('boot');
+const full = document.getElementById('full');
+const words = Array.from(document.querySelectorAll('.word'));
+let current = null;
+
+function pick() {
+  const h = (location.hash || '').replace('#', '').toLowerCase();
+  const q = new URLSearchParams(location.search).get('theme');
+  const want = (q || h || '').toLowerCase();
+  return THEMES[want] ? want : 'sea';
+}
+
+function select(key, push) {
+  if (!THEMES[key]) key = 'sea';
+  if (key === current) return;
+  current = key;
+  const t = THEMES[key];
+  root.setAttribute('data-theme', key);
+  root.style.setProperty('--cur', t.tint);
+  words.forEach(function (w) { w.setAttribute('aria-current', w.dataset.t === key ? 'true' : 'false'); });
+  full.setAttribute('href', '/' + t.dir + '/');
+  document.title = t.name + ' · Bee Tee Sea — Live Bitcoin Mempool';
+  boot.classList.remove('gone');
+  fr.classList.remove('on');
+  // one canvas alive at a time: navigating the same iframe unloads the previous scene
+  fr.src = '/' + t.dir + '/';
+  if (push && history.replaceState) history.replaceState(null, '', '#' + key);
+}
+
+fr.addEventListener('load', function () {
+  boot.classList.add('gone');
+  requestAnimationFrame(function () { fr.classList.add('on'); });
+});
+
+words.forEach(function (w) {
+  w.addEventListener('click', function () { select(w.dataset.t, true); });
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  const i = ORDER.indexOf(current);
+  if (e.key === 'ArrowRight') select(ORDER[(i + 1) % ORDER.length], true);
+  else if (e.key === 'ArrowLeft') select(ORDER[(i + ORDER.length - 1) % ORDER.length], true);
+  else if (e.key >= '1' && e.key <= '3') select(ORDER[+e.key - 1], true);
+});
+
+window.addEventListener('hashchange', function () { select(pick(), false); });
+
+select(pick(), false);
+</script>
+</body>
+</html>
