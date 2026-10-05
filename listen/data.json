@@ -1,0 +1,123 @@
+[
+  {
+    "id": "mallers-stepping-down",
+    "title": "Stepping Down From Twenty One, The Fed Coin Flip & The AI Credit Bubble",
+    "guest": "Jack Mallers",
+    "podcast": "The Jack Mallers Show",
+    "date": "2026-07-28",
+    "minutes": 176,
+    "url": "https://pod.wave.co/podcast/the-jack-mallers-show/stepping-down-from-twenty-one-the-fed-coin-flip-the-ai-credit-bubble",
+    "topics": ["Macro", "Treasury", "Fed", "Entrepreneurship"],
+    "takeaway": "Mallers' first show since leaving 21 as CEO — an unusually honest post-mortem on why he stepped down (no board control), plus his read on the Fed coin-flip, the AI credit bubble, and a renewed mission to educate the world on Bitcoin."
+  },
+  {
+    "id": "saylor-forever-money",
+    "title": "Bitcoin is Forever Money",
+    "guest": "Michael Saylor",
+    "podcast": "The Peter McCormack Show (What Bitcoin Did)",
+    "date": "2024-05-25",
+    "minutes": 150,
+    "url": "https://www.whatbitcoindid.com/podcast/bitcoin-is-forever-money",
+    "topics": ["Treasury", "Corporate Adoption", "Ossification", "Regulation"],
+    "takeaway": "Saylor makes the case for bitcoin as the treasury asset that beats the S&P cost-of-capital, and argues the best thing bitcoin can do is stay boring: ossify, protect user rights, and not let regulation break it."
+  },
+  {
+    "id": "saylor-btc-100k",
+    "title": "Michael Saylor on BTC at $100K and the Future of MicroStrategy",
+    "guest": "Michael Saylor",
+    "podcast": "Galaxy Brains",
+    "date": "2024-12-11",
+    "minutes": 70,
+    "url": "https://www.galaxy.com/insights/podcasts/galaxy-brains/michael-saylor-on-btc-at-100-k-and-the-future-of-micro-strategy",
+    "topics": ["Macro", "Strategic Reserve", "Proof of Reserves"],
+    "takeaway": "Recorded right after bitcoin crossed $100k: Saylor on the strategic-reserve push, why public proof-of-reserves matters, and how MicroStrategy keeps issuing equity to stack sats."
+  },
+  {
+    "id": "saylor-future-diamandis",
+    "title": "The Future of Bitcoin w/ Michael Saylor",
+    "guest": "Michael Saylor",
+    "podcast": "Moonshots with Peter Diamandis",
+    "date": "2024-03-20",
+    "minutes": 90,
+    "url": "https://www.diamandis.com/podcast/michael-saylor-future-of-bitcoin",
+    "topics": ["Investing", "Store of Value", "Halving"],
+    "takeaway": "Saylor on why bitcoin will never fail, responsible 'hard asset' allocation for long-term holders, and what to expect from the halving cycle."
+  },
+  {
+    "id": "mallers-xxi",
+    "title": "BTC235: Jack Mallers on XXI and Strike Borrowing & Lending",
+    "guest": "Jack Mallers",
+    "podcast": "The Investor's Podcast — Bitcoin Fundamentals",
+    "date": "2025-03-10",
+    "minutes": 88,
+    "url": "https://podwise.ai/episodes/4067793",
+    "topics": ["Treasury", "Borrowing", "Macro"],
+    "takeaway": "Mallers on Twenty One (the publicly traded vehicle for investing in bitcoin), over-collateralized Strike lending with no rehypothecation, and why bitcoin is the collapse-proof answer to the unraveling post-WWII monetary order."
+  },
+  {
+    "id": "mallers-tftc-nfl",
+    "title": "#222: Beefing with the NFL",
+    "guest": "Jack Mallers",
+    "podcast": "TFTC — Tales from the Crypt (Marty Bent & Matt Odell)",
+    "date": "2022-01-20",
+    "minutes": 95,
+    "url": "https://tapesearch.com/episode/222-beefing-with-the-nfl-with-jack-mallers/2Toe5uhb4Gjpa4DJBqJTyN",
+    "topics": ["Lightning", "Payments", "Adoption"],
+    "takeaway": "Mallers on athletes getting paid in sats, Strike global remittance, the state of the Lightning Network, and routing around the traditional rails."
+  },
+  {
+    "id": "pysh-hyperinflation",
+    "title": "Is Hyperinflation Coming? With Preston Pysh",
+    "guest": "Preston Pysh",
+    "podcast": "What Bitcoin Did",
+    "date": "2022-05-01",
+    "minutes": 92,
+    "url": "https://noderunners.network/en/media/podcasts/what-bitcoin-did/is-hyperinflation-coming-with-preston-pysh/68891",
+    "topics": ["Macro", "Debt Cycle", "Inflation"],
+    "takeaway": "Pysh on the end of the long-term debt cycle: credit that only works via ever-increasing dollar debasement, and how a Bitcoin standard changes the economic order."
+  },
+  {
+    "id": "pysh-fiat-money",
+    "title": "99. How Fiat Money Works",
+    "guest": "Preston Pysh",
+    "podcast": "The Bitcoin Standard Podcast",
+    "date": "2021-08-01",
+    "minutes": 95,
+    "url": "https://fountain.fm/episode/7ADflykIo7KSTBPq4Qmv",
+    "topics": ["Fiat Standard", "Austrian Economics"],
+    "takeaway": "A deep dive with Saifedean on The Fiat Standard — how fiat 'solved' gold's space problem, got captured by governments, and now destroys wealth through inflation and kills economic calculation."
+  },
+  {
+    "id": "odell-stacking-sats",
+    "title": "126. Staying Humble & Stacking Sats with Matt Odell",
+    "guest": "Matt Odell",
+    "podcast": "The Bitcoin Standard Podcast",
+    "date": "2022-08-16",
+    "minutes": 133,
+    "url": "https://thebitcoinstandardpodcast.buzzsprout.com/1849151/episodes/11145666-126-staying-humble-stacking-sats-with-matt-odell",
+    "topics": ["Self-Custody", "Cold Storage", "Security"],
+    "takeaway": "Odell on shrinking the attack surface for self-custody: minimize internet-connected signing, consider multisig for big stacks, and the overwhelming case against trading — stay humble and stack."
+  },
+  {
+    "id": "odell-privacy",
+    "title": "BTC044: Bitcoin Privacy w/ Matt Odell",
+    "guest": "Matt Odell",
+    "podcast": "The Investor's Podcast — Bitcoin Fundamentals",
+    "date": "2021-09-22",
+    "minutes": 75,
+    "url": "https://www.theinvestorspodcast.com/bitcoin-fundamentals/bitcoin-privacy-w-matt-odell",
+    "topics": ["Privacy", "Lightning", "Mining"],
+    "takeaway": "Odell on layered Bitcoin privacy, why big social platforms are a sovereignty threat, and what Lightning and mining privacy actually look like in practice."
+  },
+  {
+    "id": "rabbit-hole-recap",
+    "title": "Rabbit Hole Recap — weekly series",
+    "guest": "Matt Odell & Marty Bent",
+    "podcast": "Rabbit Hole Recap",
+    "date": "2026-09-06",
+    "minutes": 90,
+    "url": "https://podcasts.apple.com/us/podcast/rabbit-hole-recap/id1622698349",
+    "topics": ["News", "Self-Custody", "Hardware"],
+    "takeaway": "A steady weekly calibration: ODELL and Marty recap the week's bitcoin news — self-custody, hardware, protocol, and industry drama — with the signal-to-noise you expect from these two."
+  }
+]

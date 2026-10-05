@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listen — Bitcoiners' Podcast Directory — nixonshock.com</title>
+<meta name="description" content="A curated directory of high-signal bitcoin podcasts: the guest, the episode, the key takeaway, and one tap to listen. Filter by bitcoiner or topic.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nixonshock.com/listen/">
+<meta property="og:title" content="Listen — Bitcoiners' Podcast Directory">
+<meta property="og:description" content="A curated directory of high-signal bitcoin podcasts: the guest, the episode, the key takeaway, and one tap to listen. Filter by bitcoiner or topic.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Listen — Bitcoiners' Podcast Directory">
+<meta name="twitter:description" content="A curated directory of high-signal bitcoin podcasts. Filter by bitcoiner or topic.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { theme: { extend: { colors: { bitcoin: { orange: '#f7931a', dark: '#0b0b12', card: 'var(--card-bg)' } } } } };</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root {
+  --bg: #09090f;
+  --surface: #11111a;
+  --surface2: #181825;
+  --border: #1e1e30;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --text-muted: #6b7280;
+  --orange: #f7931a;
+  --orange-dim: rgba(247,147,26,0.12);
+  --orange-glow: rgba(247,147,26,0.06);
+  --green: #34d399;
+  --red: #fb7185;
+  --card-bg: #11111a;
+  --input-bg: #16162a;
+}
+[data-theme="light"] {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-dim: #64748b;
+  --text-muted: #94a3b8;
+  --orange-dim: rgba(247,147,26,0.08);
+  --orange-glow: rgba(247,147,26,0.03);
+  --card-bg: #ffffff;
+  --input-bg: #f1f5f9;
+}
+.theme-btn { cursor: pointer; background: none; border: none; padding: 6px; border-radius: 8px; color: var(--text-dim); transition: all 0.2s; line-height: 1; }
+.theme-btn:hover { color: #f7931a; background: rgba(247,147,26,0.1); }
+.theme-btn svg { width: 18px; height: 18px; display: block; }
+[data-theme="light"] nav a[href="/"] img { filter: invert(1); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+/* active nav link highlight (self-contained, independent of Tailwind config timing) */
+nav a.text-bitcoin-orange { color: #f7931a !important; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6; overflow-x: hidden;
+}
+::selection { background: rgba(247,147,26,0.3); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* hero */
+.hero { padding: 108px 20px 40px; text-align: center; position: relative; }
+.hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(247,147,26,0.04) 0%, transparent 60%); pointer-events: none; }
+.hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; }
+.hero h1 span { background: linear-gradient(135deg, var(--orange) 0%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero p { font-size: 15px; color: var(--text-dim); max-width: 620px; margin: 0 auto; line-height: 1.7; }
+.hero .badge { display: inline-flex; align-items: center; gap: 6px; background: var(--orange-dim); border: 1px solid rgba(247,147,26,0.2); padding: 4px 14px; border-radius: 999px; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--orange); margin-bottom: 16px; }
+
+/* controls */
+.controls { max-width: 1152px; margin: 0 auto; padding: 0 16px 18px; }
+@media (min-width: 640px) { .controls { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .controls { padding-left: 32px; padding-right: 32px; } }
+.controls-inner { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.search-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 200px; position: relative; }
+.search-box input {
+  width: 100%; padding: 10px 16px 10px 40px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-size: 14px; outline: none; transition: border-color 0.2s;
+}
+.search-box input:focus { border-color: var(--orange); }
+.search-box .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
+.sort-select { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 13px; outline: none; cursor: pointer; }
+.sort-select:focus { border-color: var(--orange); }
+
+.chip-group-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin: 14px 0 8px; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 999px; font-size: 11px;
+  font-family: 'JetBrains Mono', monospace; cursor: pointer;
+  transition: all 0.2s; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); user-select: none;
+}
+.chip:hover { border-color: var(--orange); color: var(--text); }
+.chip.active { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+.chip.active .count { opacity: 1; }
+.chip .count { font-size: 10px; opacity: 0.5; }
+
+/* results + grid */
+.results-bar { max-width: 1152px; margin: 0 auto; padding: 4px 16px 12px; }
+@media (min-width: 640px) { .results-bar { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .results-bar { padding-left: 32px; padding-right: 32px; } }
+.results-count { font-size: 13px; color: var(--text-dim); }
+.results-count strong { color: var(--text); }
+
+.grid { max-width: 1152px; margin: 0 auto; padding: 0 16px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+@media (min-width: 640px) { .grid { padding-left: 24px; padding-right: 24px; } }
+@media (min-width: 1024px) { .grid { padding-left: 32px; padding-right: 32px; } }
+
+/* episode card */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; position: relative;
+  transition: all 0.2s; display: flex; flex-direction: column;
+}
+.card:hover { border-color: rgba(247,147,26,0.3); box-shadow: 0 0 30px rgba(247,147,26,0.05); }
+.card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.card-meta .m { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; }
+.card-meta .m b { color: var(--text-dim); font-weight: 500; }
+.card-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--text); text-decoration: none; display: block; }
+.card-title:hover { color: var(--orange); }
+.card-title .arr { color: var(--orange); font-weight: 600; }
+.card-byline { margin-top: 6px; font-size: 12px; color: var(--text-dim); }
+.card-byline .guest { color: var(--orange); font-weight: 600; }
+.card-byline .pod { color: var(--text-muted); }
+.card-takeaway { margin-top: 10px; font-size: 12.5px; color: var(--text-dim); line-height: 1.55; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.card-tag { font-size: 9.5px; font-family: 'JetBrains Mono', monospace; padding: 2px 8px; border-radius: 999px; background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* empty state */
+.empty-state { max-width: 1152px; margin: 0 auto; padding: 60px 16px; text-align: center; }
+.empty-state .icon { font-size: 40px; margin-bottom: 16px; opacity: 0.3; }
+.empty-state h3 { font-size: 18px; margin-bottom: 6px; }
+.empty-state p { font-size: 14px; color: var(--text-dim); }
+.empty-state .clear-btn { margin-top: 16px; padding: 8px 20px; border-radius: 8px; background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(247,147,26,0.2); cursor: pointer; font-size: 12px; }
+
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; gap: 12px; }
+  .controls-inner { padding: 14px; }
+  .card:hover { border-color: var(--border); box-shadow: none; }
+}
+</style>
+<!-- critical: nav styles + theme init (loads before Tailwind) -->
+<style>
+/* Nav critical — works before Tailwind CDN arrives */
+nav.fixed { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(9,9,15,0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.theme-btn { cursor: pointer; background: none; border: none; padding: 6px; border-radius: 8px; color: var(--text-dim); transition: all 0.2s; line-height: 1; }
+.theme-btn:hover { color: #f7931a; background: rgba(247,147,26,0.1); }
+.theme-btn svg { width: 18px; height: 18px; display: block; }
+[data-theme="light"] nav a[href="/"] img { filter: invert(1); }
+</style>
+<script>try{var t=localStorage.getItem('nixonshock-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var m={dark:'Light',light:'Dark'};document.body&&document.body.setAttribute('data-theme-ready','1')}catch(e){}</script>
+</head>
+<body>
+<nav class="fixed top-0 left-0 right-0 z-50 bg-bitcoin-dark/90 backdrop-blur-md border-b border-white/5">
+ <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+ <div class="flex items-center justify-between h-16">
+ <a href="/" class="flex items-center">
+ <img src="/nixonshock_logo.svg" alt="nixonshock" class="h-8">
+ </a>
+ <div class="hidden md:flex items-center gap-6 text-sm">
+ <a href="/learn/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Learn</a>
+ <a href="/books/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Books</a>
+ <a href="/listen/" class="text-gray-400 hover:text-bitcoin-orange transition-colors text-bitcoin-orange">Listen</a>
+ <a href="/apps/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Apps</a>
+ <a href="/btsea/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">BTSea</a>
+ <a href="/freedom/" class="text-gray-400 hover:text-bitcoin-orange transition-colors ">Freedom</a>
+ <button class="theme-btn" id="theme-btn-desktop" aria-label="Toggle theme">
+ <svg id="theme-icon-desktop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+ </button>
+ </div>
+ <button class="md:hidden text-gray-400 hover:text-white p-2" id="menu-btn">
+ <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+ </button>
+ </div>
+ </div>
+ <div id="mobile-menu" class="hidden md:hidden border-t border-white/5 bg-bitcoin-dark/95 backdrop-blur-md">
+ <div class="px-4 py-4 space-y-3">
+ <a href="/learn/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Learn</a>
+ <a href="/books/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Books</a>
+ <a href="/listen/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors text-bitcoin-orange">Listen</a>
+ <a href="/apps/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Apps</a>
+ <a href="/btsea/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">BTSea</a>
+ <a href="/freedom/" class="block text-gray-400 hover:text-bitcoin-orange transition-colors ">Freedom</a>
+ <button class="theme-btn w-full flex items-center justify-center gap-2 text-gray-400 hover:text-bitcoin-orange py-2" id="theme-btn-mobile">
+ <svg id="theme-icon-mobile" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+ <span id="theme-label" class="text-sm">Light</span>
+ </button>
+ </div>
+ </div>
+</nav>
+
+
+<header class="hero">
+  <span class="badge">🎙 Bitcoiners' Podcast Directory</span>
+  <h1><span>Listen</span> to Bitcoin, curated.</h1>
+  <p>A hand-picked directory of high-signal bitcoin conversations — the guest, the episode, the one key takeaway, and one tap to listen. Filter by bitcoiner or topic.</p>
+</header>
+
+<section class="controls">
+  <div class="controls-inner">
+    <div class="search-row">
+      <div class="search-box">
+        <span class="icon">🔍</span>
+        <input type="text" id="search" placeholder="Search by guest, podcast, topic, or takeaway…" autocomplete="off">
+      </div>
+      <select class="sort-select" id="sort">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="name">Title A–Z</option>
+      </select>
+    </div>
+    <div class="chip-group-label">By bitcoiner</div>
+    <div class="chips" id="guestChips"></div>
+    <div class="chip-group-label">By topic</div>
+    <div class="chips" id="topicChips"></div>
+  </div>
+</section>
+
+<div class="results-bar"><span class="results-count" id="count">Loading…</span></div>
+
+<main class="grid" id="grid" aria-live="polite"></main>
+
+<div class="empty-state" id="empty" style="display:none">
+  <div class="icon">🫥</div>
+  <h3>No episodes match</h3>
+  <p>Try clearing a filter or searching something else.</p>
+  <button class="clear-btn" id="clearAll">Clear all filters</button>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const grid = $('grid'), countEl = $('count'), empty = $('empty');
+  const searchEl = $('search'), sortEl = $('sort');
+  const guestChipsEl = $('guestChips'), topicChipsEl = $('topicChips');
+
+  let episodes = [];
+  const state = { guest: null, topic: null, q: '', sort: 'newest' };
+
+  function readURL() {
+    const p = new URLSearchParams(location.search);
+    state.guest = p.get('guest') || null;
+    state.topic = p.get('topic') || null;
+    state.q = p.get('q') || '';
+    state.sort = p.get('sort') || 'newest';
+  }
+  function saveURL() {
+    const p = new URLSearchParams();
+    if (state.guest) p.set('guest', state.guest);
+    if (state.topic) p.set('topic', state.topic);
+    if (state.q) p.set('q', state.q);
+    if (state.sort !== 'newest') p.set('sort', state.sort);
+    history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p.toString() : ''));
+  }
+
+  function fmtDate(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+  function fmtMin(n) {
+    if (!n) return '';
+    const h = Math.floor(n / 60), m = n % 60;
+    return h ? h + 'h ' + (m ? m + 'm' : '') : n + 'm';
+  }
+  function esc(s) {
+    return s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  function buildChips() {
+    const guests = {}, topics = {};
+    episodes.forEach(e => { guests[e.guest] = (guests[e.guest] || 0) + 1; e.topics.forEach(t => topics[t] = (topics[t] || 0) + 1); });
+    const mk = (el, list, key, cur) => {
+      el.innerHTML = '';
+      Object.entries(list).sort((a, b) => b[1] - a[1]).forEach(([name, n]) => {
+        const b = document.createElement('button');
+        b.className = 'chip' + (cur === name ? ' active' : '');
+        b.type = 'button';
+        b.dataset.key = name;
+        b.innerHTML = esc(name) + ' <span class="count">' + n + '</span>';
+        b.addEventListener('click', () => {
+          state[key] = state[key] === name ? null : name;
+          saveURL(); buildChips(); applyFilters();
+        });
+        el.appendChild(b);
+      });
+    };
+    mk(guestChipsEl, guests, 'guest', state.guest);
+    mk(topicChipsEl, topics, 'topic', state.topic);
+  }
+
+  function applyFilters() {
+    searchEl.value = state.q;
+    sortEl.value = state.sort;
+    const q = state.q.toLowerCase();
+    let list = episodes.filter(e => {
+      if (state.guest && e.guest !== state.guest) return false;
+      if (state.topic && !e.topics.includes(state.topic)) return false;
+      if (q) {
+        const hay = (e.title + ' ' + e.guest + ' ' + e.podcast + ' ' + e.takeaway + ' ' + e.topics.join(' ')).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    if (state.sort === 'newest') list = [...list].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    else if (state.sort === 'oldest') list = [...list].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    else list = [...list].sort((a, b) => a.title.localeCompare(b.title));
+    render(list);
+  }
+
+  function render(list) {
+    countEl.innerHTML = '<strong>' + list.length + '</strong> episode' + (list.length === 1 ? '' : 's');
+    grid.innerHTML = '';
+    empty.style.display = list.length ? 'none' : 'block';
+    list.forEach(e => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      const tags = e.topics.map(t => '<span class="card-tag">' + esc(t) + '</span>').join('');
+      card.innerHTML =
+        '<div class="card-meta">' +
+          '<span class="m">📅 <b>' + fmtDate(e.date) + '</b></span>' +
+          (e.minutes ? '<span class="m">⏱ <b>' + fmtMin(e.minutes) + '</b></span>' : '') +
+        '</div>' +
+        '<a class="card-title" href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.title) + ' <span class="arr">↗</span></a>' +
+        '<div class="card-byline"><span class="guest">' + esc(e.guest) + '</span> <span class="pod">· ' + esc(e.podcast) + '</span></div>' +
+        '<p class="card-takeaway">' + esc(e.takeaway) + '</p>' +
+        '<div class="card-tags">' + tags + '</div>';
+      grid.appendChild(card);
+    });
+  }
+
+  $('clearAll').addEventListener('click', () => {
+    state.guest = null; state.topic = null; state.q = ''; state.sort = 'newest';
+    saveURL(); buildChips(); applyFilters();
+  });
+  searchEl.addEventListener('input', () => { state.q = searchEl.value; saveURL(); applyFilters(); });
+  sortEl.addEventListener('change', () => { state.sort = sortEl.value; saveURL(); applyFilters(); });
+
+  fetch('/listen/data.json')
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => { episodes = data; readURL(); buildChips(); applyFilters(); })
+    .catch(err => {
+      countEl.innerHTML = '<strong>Failed to load episodes</strong> (' + err.message + ')';
+    });
+})();
+</script>
+</body>
+</html>
