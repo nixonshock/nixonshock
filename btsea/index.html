@@ -1028,7 +1028,7 @@ function loadFees() {
       const rate = f[map[id]];
       const el = document.getElementById(id);
       if (!el) continue;
-      const ri = el.querySelector('.rate i'); if (ri) ri.textContent = (rate != null) ? rate : '–';
+      const ri = el.querySelector('.rate i'); if (ri) ri.textContent = (rate != null) ? Number(rate).toFixed(1) : '–';
       const us = el.querySelector('.usd');
       if (us) us.textContent = (rate != null && usd) ? '$' + ((rate * 140 / 1e8 * usd).toFixed(2)) : '$·';
     }
