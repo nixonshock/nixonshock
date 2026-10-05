@@ -278,7 +278,7 @@ const TIERS = [
   { key: 'bumble', name: 'Small bee',  range: '0.1 – 1',      min: 0.1,   L: 21, lo: -1, hi: 0,   speed: [44, 62],  band: [0.28, 0.85], wob: 12, wf: 1.5 },
   { key: 'worker', name: 'Tiny bee',   range: '0.01 – 0.1',   min: 0.01,  L: 14, lo: -2, hi: -1,  speed: [60, 90],  band: [0.14, 0.9],  wob: 14, wf: 1.9 },
   { key: 'fly',    name: 'Speck bee',  range: '0.001 – 0.01', min: 0.001, L: 9,  lo: -3, hi: -2,  speed: [70, 115], band: [0.4, 0.97],  wob: 20, wf: 3.2 },
-  { key: 'gnat',   name: 'Dust bee',   range: 'under 0.001',  min: 0,     L: 5,  lo: -5, hi: -3,  speed: [28, 56],  band: [0.05, 0.97], wob: 16, wf: 2.6 }
+  { key: 'gnat',   name: 'Dust bee',   range: 'under 0.001',  min: 0,     L: 5,  lo: -5, hi: -3,  speed: [95, 150], band: [0.05, 0.97], wob: 16, wf: 2.6 }
 ].map((t, i) => Object.assign({ idx: i }, t));
 const tierOf = v => TIERS.find(t => v >= t.min) || TIERS[TIERS.length - 1];
 const randIn = T => Math.pow(10, rr(T.lo, T.key === 'golden' ? 3.9 : T.hi));
