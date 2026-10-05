@@ -4,19 +4,85 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/bip11", "destination": "/bip110", "permanent": true },
-    { "source": "/beeteasea", "destination": "/beeteesea", "permanent": false }
+    {
+      "source": "/btsea",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/btsea/(.*)",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/beetc",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/beetc/(.*)",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/bteec",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/bteec/(.*)",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/bteac",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/bteac/(.*)",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/bip11",
+      "destination": "/bip110",
+      "permanent": true
+    },
+    {
+      "source": "/beeteasea",
+      "destination": "/beeteesea",
+      "permanent": false
+    }
   ],
   "rewrites": [
-    { "source": "/", "has": [{ "type": "host", "value": "beeteesea.nixonshock.com" }], "destination": "/beeteesea" }
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "beeteesea.nixonshock.com"
+        }
+      ],
+      "destination": "/beeteesea"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]

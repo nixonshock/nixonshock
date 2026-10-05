@@ -61,8 +61,10 @@
   @keyframes p{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
   @media (max-width:560px){
     .ttl{left:14px;top:12px;max-width:84vw}
-    .ttl h1{gap:.22em}
-    .ttl p{font-size:12.5px}
+    /* 22px keeps "Bee Tee Sea" clear of the scene's Pause/Donate pills (which sit top-right) */
+    .ttl h1{gap:.22em;font-size:22px}
+    /* 52vw keeps the tagline clear of the scene's movers panel (top-right, ~140px wide) */
+    .ttl p{font-size:12.5px;max-width:52vw}
   }
 </style>
 </head>
@@ -82,11 +84,11 @@
 
 <script>
 const THEMES = {
-  bee: { dir: 'beetc', name: 'Bee',
+  bee: { dir: 'beeteesea/scenes/beetc', name: 'Bee',
          tag: 'Bitcoin Mempool Meadow — every transaction waiting for a block, flying by how much bitcoin it moves.' },
-  tee: { dir: 'bteec', name: 'Tee',
+  tee: { dir: 'beeteesea/scenes/bteec', name: 'Tee',
          tag: 'Bitcoin Mempool Factory — every transaction waiting for a block, printed and shipped by how much bitcoin it moves.' },
-  sea: { dir: 'btsea', name: 'Sea',
+  sea: { dir: 'beeteesea/scenes/btsea', name: 'Sea',
          tag: 'Bitcoin Mempool Ocean — every transaction waiting for a block, drawn by how much bitcoin it moves.' }
 };
 const ORDER = ['bee', 'tee', 'sea'];
