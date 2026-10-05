@@ -359,6 +359,22 @@ function readTheme() {
         rock: g('--rock'), foam: g('--foam'), plankton: g('--plankton'), accent: g('--accent') };
   night = g('--is-night') === '1';
 }
+const DAY_PALETTE = {'bg':'#dff0ee','fg':'#0f2f3a','muted':'#44646d','panel':'rgba(247, 252, 250, 0.82)','panel-solid':'#f6fbf9','line':'rgba(15, 47, 58, 0.16)','accent':'#d96a00','sky-ink':'#0d3040','sky-top':'#7cc5d6','sky-bot':'#fbe3c0','sun':'#fff6dc','cloud':'#ffffff','island':'#2f6f6a','is-night':'0','sea-a':'#35aab5','sea-b':'#12708c','sea-c':'#0a3d5c','bed':'#0b3550','bed2':'#14587a','weed':'#2f9a7a','rock':'#17475f','foam':'#f6fffb','plankton':'#f4fff8'};
+const NIGHT_PALETTE = {'bg':'#050c17','fg':'#e3eef3','muted':'#93acb7','panel':'rgba(7, 18, 32, 0.8)','panel-solid':'#08121f','line':'rgba(227, 238, 243, 0.16)','accent':'#ffa13d','sky-ink':'#e6f1f6','sky-top':'#040913','sky-bot':'#1d3558','sun':'#eef1f7','cloud':'#6f8cb4','island':'#0a1626','is-night':'1','sea-a':'#17507a','sea-b':'#0b2c4d','sea-c':'#040f20','bed':'#030b16','bed2':'#08203a','weed':'#1d6f5e','rock':'#0a2236','foam':'#a9cbe0','plankton':'#6ff0df'};
+let sceneNight = null;
+// Scene day/night follows the VISITOR'S LOCAL clock, not the OS color scheme.
+function applySceneByTime() {
+  const h = new Date().getHours();
+  const isNight = h < 6 || h >= 19;            // day 06:00 – 18:59
+  const pal = isNight ? NIGHT_PALETTE : DAY_PALETTE;
+  for (const k in pal) document.documentElement.style.setProperty('--' + k, pal[k]);
+  document.documentElement.style.colorScheme = isNight ? 'dark' : 'light';
+  const changed = sceneNight !== isNight;
+  sceneNight = isNight;
+  return changed;
+}
+applySceneByTime();
+setInterval(() => { if (applySceneByTime()) themeDirty = true; }, 60000);
 const tone = c => night ? mix(c, '#0a1830', 0.42) : c;
 
 /* ---------- geometry ---------- */
