@@ -233,7 +233,11 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .snd.on { background: rgba(255,150,40,0.16); border-color: var(--accent); color: var(--accent); }
 
 @media (max-width: 760px) {
-  .sightings { display: none; }
+  /* big movers stay on-screen: horizontal ticker strip under the header */
+  .sightings { left: 12px; right: 12px; top: 164px; width: auto; flex-direction: row; align-items: center; gap: 8px; }
+  .sightings h2 { flex: none; margin: 0; font-size: 9.5px; letter-spacing: 0.12em; white-space: nowrap; }
+  .sightings ul { flex-direction: row; gap: 6px; overflow-x: auto; pointer-events: auto; touch-action: pan-x; scrollbar-width: none; }
+  .sight { flex: none; }
   .fees { display: none; }
   .stats .hint { display: none; }
   .toast { top: 150px; }
@@ -430,7 +434,7 @@ function layout() {
   bedY = Math.max(hy + 240, Math.round(H - dockH - 22));
   waterTop = hy + 16; waterBot = bedY - 16;
   $('#empty').style.top = Math.round(hy + (bedY - hy) * 0.42) + 'px';
-  const toast = $('#toast'); toast.style.top = Math.max(Math.round(hy * 0.5), 96) + 'px';
+  const toast = $('#toast'); toast.style.top = Math.max(Math.round(hy * 0.5), innerWidth <= 760 ? 206 : 96) + 'px';
   genDecor();
 }
 function genDecor() {
