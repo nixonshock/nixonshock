@@ -201,6 +201,19 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .fees .fee.l { --fcol: #2ebd85; }
 .fees .fee.m { --fcol: #f5a623; }
 .fees .fee.h { --fcol: #ec5a4a; }
+/* donate (⚡) */
+.ddon { position: relative; display: inline-flex; }
+.bolt { font-size: 15px; line-height: 1; color: var(--accent); }
+.bolt:hover { border-color: var(--accent); }
+.donate { position: absolute; right: 0; top: calc(100% + 10px); width: 232px; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; }
+.donate[hidden] { display: none; }
+.donate .dh { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.donate img { width: 148px; height: 148px; border-radius: 12px; background: #fff; padding: 8px; border: 1px solid var(--line); align-self: center; display: block; }
+.donate .dcap { font-size: 10.5px; color: var(--muted); text-align: center; }
+.donate .daddr { display: flex; align-items: center; gap: 8px; background: rgba(127,127,127,0.07); border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px; }
+.donate .daddr code { font-family: var(--font-mono); font-size: 11px; color: var(--fg); word-break: break-all; flex: 1; }
+.donate .daddr .btn { flex: none; padding: 5px 10px; font-size: 12px; }
+.donate .dnote { font-size: 10px; color: var(--muted); text-align: center; line-height: 1.5; }
 .twrap { display: inline-flex; align-items: center; gap: 4px; }
 .tier {
   flex: none; display: grid; grid-template-columns: auto 1fr; column-gap: 9px; align-items: center;
@@ -252,6 +265,16 @@ button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         <span class="fee h" id="fHigh" title="High priority fee"><span class="t">High</span><span class="rate"><i>–</i><small>sat/vB</small></span><span class="usd">$·</span></span>
       </div>
       <button id="pause" class="btn panel" type="button" data-on="0" title="Pause or resume">Pause <span class="kbd">Space</span></button>
+      <span class="ddon">
+        <button id="dbtn" class="btn panel bolt" type="button" data-on="0" aria-label="Donate" title="Send a few sats">⚡</button>
+        <div class="donate panel" id="dcard" hidden role="dialog" aria-label="Donate">
+          <span class="dh">Support the ocean ⚡</span>
+          <img src="donate-qr.png" alt="Scan to pay nixonshock@coinos.io" width="148" height="148">
+          <div class="dcap">Scan, or copy the Lightning address</div>
+          <div class="daddr"><code id="daddr">nixonshock@coinos.io</code><button id="dcopy" class="btn panel" type="button">Copy</button></div>
+          <div class="dnote">Any Lightning wallet · min 1,000 sats</div>
+        </div>
+      </span>
     </div>
   </div>
 
@@ -919,6 +942,21 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('keyup', e => { if (e.code === 'Space') e.preventDefault(); });
 pauseBtn.addEventListener('click', () => setPaused(!paused));
+
+/* donate (⚡) */
+const dbtn = $('#dbtn'), dcard = $('#dcard'), dcopy = $('#dcopy'), daddr = $('#daddr');
+function setDonate(open) { dcard.hidden = !open; if (dbtn) dbtn.dataset.on = open ? '1' : '0'; }
+if (dbtn) dbtn.addEventListener('click', e => { e.stopPropagation(); setDonate(dcard.hidden); });
+document.addEventListener('click', e => { if (dcard && !dcard.hidden && !e.target.closest('.ddon')) setDonate(false); });
+document.addEventListener('keydown', e => {
+  if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !e.altKey && dcard) setDonate(dcard.hidden);
+});
+if (dcopy && daddr) dcopy.addEventListener('click', () => {
+  const done = () => { const t = dcopy.textContent; dcopy.textContent = 'Copied ✓'; dcopy.style.color = 'var(--green)'; setTimeout(() => { dcopy.textContent = t; dcopy.style.color = ''; }, 1800); };
+  const text = daddr.textContent.trim();
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done);
+  else { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (err) {} document.body.removeChild(ta); done(); }
+});
 
 /* legend */
 (function buildLegend() {
