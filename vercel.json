@@ -4,8 +4,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/bip11", "destination": "/bip110", "permanent": true },
-    { "source": "/", "destination": "/btsea/", "permanent": true, "has": [{ "type": "host", "value": "btsea.nixonshock.com" }] }
+    { "source": "/bip11", "destination": "/bip110", "permanent": true }
   ],
   "headers": [
     {
