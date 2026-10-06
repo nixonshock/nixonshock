@@ -75,6 +75,16 @@
         }
       ],
       "destination": "/matrix"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "fight.nixonshock.com"
+        }
+      ],
+      "destination": "/fight"
     }
   ],
   "headers": [

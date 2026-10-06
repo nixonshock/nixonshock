@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#02040a">
+<title>FIGHT &mdash; the price action, as digital rain</title>
+<meta name="description" content="The battle for the bitcoin price, live. Bulls (the good guys) against bears (the bad guys) &mdash; green and red digital rain pour over the battlefield, and the price action decides who takes ground.">
+<link rel="canonical" href="https://fight.nixonshock.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="nixonshock">
+<meta property="og:title" content="FIGHT &mdash; the price action, as digital rain">
+<meta property="og:description" content="Bulls vs bears, live. The bitcoin price action is the war; the digital rain is the battlefield.">
+<meta property="og:url" content="https://fight.nixonshock.com/">
+<meta property="og:image" content="https://nixonshock.com/fight/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://nixonshock.com/fight/og.png">
+<meta name="twitter:title" content="FIGHT &mdash; the price action, as digital rain">
+<meta name="twitter:description" content="Bulls vs bears, live. The bitcoin price action is the war; the digital rain is the battlefield.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2302040a'/%3E%3Ctext x='16' y='24' font-family='monospace' font-size='21' font-weight='700' text-anchor='middle' fill='%2300ff5a'%3EF%3C/text%3E%3C/svg%3E">
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:#02040a;color:#9dffb5;overflow:hidden;
+    font:13px/1.4 ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+    -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+    --grn:#00ff5a;--red:#ff2b45;--ink:#c8ffd6;--dim:#4f8f66;
+  }
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block}
+  [hidden]{display:none!important}
+
+  .panel{background:rgba(3,10,8,.72);border:1px solid rgba(0,255,90,.18);border-radius:12px;
+         -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+
+  /* ---- the battle bar (fighting-game health bar) ---- */
+  #battle{position:fixed;top:10px;left:12px;right:12px;z-index:4;display:flex;align-items:center;gap:10px;
+          padding:8px 12px}
+  #battle .lb{font-size:11px;letter-spacing:.16em;font-weight:700;white-space:nowrap}
+  #battle .lb.bear{color:var(--red)}
+  #battle .lb.bull{color:var(--grn)}
+  #battle .lb b{font-weight:700}
+  #battle .track{position:relative;flex:1;height:10px;border-radius:6px;overflow:hidden;
+                 background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+  #battle .fill{position:absolute;top:0;bottom:0;transition:none}
+  #battle .red{left:0;background:linear-gradient(90deg,#5c0b18,var(--red));box-shadow:0 0 12px rgba(255,43,69,.6)}
+  #battle .grn{right:0;background:linear-gradient(270deg,#0b5c2c,var(--grn));box-shadow:0 0 12px rgba(0,255,90,.55)}
+  #battle .mark{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;box-shadow:0 0 10px #fff}
+
+  /* ---- brand ---- */
+  .brand{position:fixed;left:16px;top:66px;z-index:4;pointer-events:none;max-width:min(420px,60vw)}
+  .brand h1{margin:0;font-size:clamp(24px,4vw,40px);line-height:1;font-weight:800;letter-spacing:.14em;
+            color:var(--ink);text-shadow:0 0 16px rgba(0,255,90,.45)}
+  .brand h1 .g{color:var(--grn)}
+  .brand h1 .r{color:var(--red)}
+  .brand p{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:#7fd39a;opacity:.95}
+  .brand .vs{color:var(--dim)}
+
+  /* ---- controls ---- */
+  .ctrls{position:fixed;right:16px;top:66px;z-index:5;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{font:inherit;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;padding:7px 12px;border-radius:999px;
+       background:rgba(3,10,8,.72);border:1px solid rgba(0,255,90,.22)}
+  .btn:hover{border-color:var(--grn);color:#fff}
+  .btn[data-on="1"]{background:var(--grn);color:#02120a;border-color:var(--grn)}
+  .btn:focus-visible{outline:2px solid var(--grn);outline-offset:2px}
+
+  /* ---- dock ---- */
+  .dock{position:fixed;left:16px;right:16px;bottom:14px;z-index:4;display:flex;justify-content:space-between;
+        align-items:flex-end;gap:12px;pointer-events:none}
+  .dock>*{pointer-events:auto}
+  .stats{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:9px 14px;max-width:100%}
+  .stats .px{font-size:clamp(20px,3vw,28px);font-weight:800;color:var(--ink);line-height:1;
+             text-shadow:0 0 14px rgba(0,255,90,.35);font-variant-numeric:tabular-nums}
+  .stats .px.up{color:var(--grn)} .stats .px.dn{color:var(--red)}
+  .stats .k{color:var(--dim);font-size:11px}
+  .stats .k b{color:var(--ink);font-weight:600}
+  .src{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:p 1.3s ease-in-out infinite}
+  .dot.off{background:var(--red)}
+  @keyframes p{0%,100%{opacity:.35}50%{opacity:1}}
+  .legend{padding:8px 12px;font-size:11px;line-height:1.65;color:#5fa377;text-align:right;white-space:nowrap}
+  .legend b{color:var(--ink);font-weight:600}
+  .legend .sw{display:inline-block;width:8px;height:8px;border-radius:2px;vertical-align:middle;margin-right:5px}
+
+  /* ---- donate ---- */
+  .donate{position:fixed;right:16px;top:112px;z-index:6;width:min(268px,calc(100vw - 32px));
+          padding:14px;display:flex;flex-direction:column;gap:10px}
+  .donate .dh{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .donate img{width:150px;height:150px;border-radius:10px;background:#fff;padding:8px;align-self:center;display:block}
+  .donate .addr{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);
+                border:1px solid rgba(0,255,90,.18);border-radius:9px;padding:7px 9px}
+  .donate code{font-size:11px;color:var(--ink);word-break:break-all;flex:1}
+  .donate .mini{font-size:12px;padding:5px 9px;flex:none}
+  .donate .note{font-size:10.5px;color:var(--dim);text-align:center}
+
+  #paused{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:3;pointer-events:none;
+          font-size:clamp(20px,4vw,34px);letter-spacing:.5em;color:var(--ink);text-shadow:0 0 18px var(--grn)}
+  body.paused #paused{display:flex}
+  #toast{position:fixed;left:50%;bottom:120px;transform:translate(-50%,8px);z-index:6;padding:7px 14px;border-radius:999px;
+         background:rgba(3,10,8,.9);border:1px solid rgba(0,255,90,.25);color:var(--ink);font-size:12px;
+         opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  @media (max-width:720px){
+    #battle{padding:7px 10px;gap:7px}
+    #battle .lb{font-size:9.5px;letter-spacing:.1em}
+    .brand{top:58px;left:12px;max-width:70vw}
+    .brand h1{font-size:22px;letter-spacing:.1em}
+    .brand p{font-size:11px;max-width:64vw}
+    .ctrls{top:58px;right:12px;gap:6px}
+    .btn{padding:6px 10px;font-size:11px}
+    .dock{left:12px;right:12px;bottom:10px;flex-direction:column;align-items:stretch;gap:8px}
+    .legend{display:none}
+    .stats{gap:4px 14px;padding:8px 11px}
+    .donate{top:auto;bottom:120px;right:12px;left:12px;width:auto}
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="battle" class="panel">
+  <span class="lb bear">&#9660; BEARS <b id="bp">50</b>%</span>
+  <div class="track">
+    <div class="fill red" id="rf" style="width:50%"></div>
+    <div class="fill grn" id="gf" style="width:50%"></div>
+    <div class="mark" id="mk" style="left:calc(50% - 1px)"></div>
+  </div>
+  <span class="lb bull"><b id="up">50</b>% BULLS &#9650;</span>
+</div>
+
+<div class="brand">
+  <h1><span class="r">FIGHT</span><span class="vs"> / </span><span class="g">THE BATTLE</span></h1>
+  <p>Bulls <span class="vs">(the good guys)</span> vs bears <span class="vs">(the bad guys)</span>.<br>
+     The price action is the war &mdash; the green and red rain is the battlefield.</p>
+</div>
+
+<div class="ctrls">
+  <button class="btn" id="pauseBtn" type="button">Pause [space]</button>
+  <button class="btn" id="soundBtn" type="button">Sound [s]</button>
+  <button class="btn" id="donateBtn" type="button">&#9889; Donate</button>
+</div>
+
+<div class="donate panel" id="dcard" hidden role="dialog" aria-label="Donate">
+  <div class="dh">Feed the good guys</div>
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAeoAAAHqAQAAAADjFjCXAAAEIklEQVR4nO2dTY6jSBCFvxiQvASpD+CjwA3mSKM50twAjlIHaAmWlhJFL/KHZKpXYKnK7RcLq8B8wkihl+SLjCxzLsT81xUahAsXLly4cOHChT8XtxQtsLaY9ZvZyGbAZrC2MPeb2bjmS8fn3V34u+G4uzuDu7svjafDpcmH8VwAuuMl7u7TSz+78K/G1yRfNrKZ/3sPQPcw6AI2rm19SdTEZ95d+Hvh7f9PzNY4w0cbYP3hBk1wCK0D2JPvLlx4Fd3DzO4Pi4I3281tXO1T0n3PHy/8u+NZ6zoH1vobZ705rDc32Mznu0etq33ll3524V+Mz2Zm1gPDAjauN7cRsBFgWBq3fz5agC1OYZ96d+Fvhketq+Rr7jHm+8McAj73DQ6P7KF0xwraSz+78K/Cs3OyANC4T507gwd86kKUOZ+6gE809XUu50T46YhZR5csOAYPpI+FlHrQpEz0pfF8qKwTfjaSai1QfUxZ9aLC0YV83W4pK+uEn466GBEj1F9QhtlSlogDrrJO+PnIWpfyqh5IuyyCExClz/O3yjrhFyKlD/kdbvDyhrc05S8qwUv6p6wTfjaic2IANny0MPc/W2Brid5wv+Bz3wTmeyhUk/2Tl3524V+F1yNsMkg4uCSHyW2a0uq9Tvi1SJMG8uubL5ATLg+4Udw6r9/1lHXCz0f1Xpemr81B1yjSlz28Xf+UdcLPxe4SR5krw2c8N3VJCVOVgt1hUdYJPxvZr/vkofgUL8h+sftxhqusE346DmZwObt7I51nI2+BNPSqDiv8WiSt83Csje1alw3iMsPNpVplnfCzkeew+aXtNyWIvV6xLwaQ1gm/ivvUBWzsHhabcsxuaQ4xWxuHVBtLj2Js43ne3YW/G145J/kwVH5dXtqUDrPqoRFW+LPwLhBlbr6ndziz+8OSfRLbE29u1qsiJvxS1N4ce8d1mS8Ug3i373abRVon/DzuU2yKyFOFab3V4yoAw0eLjUDq0X7e3YW/G175JfEwGiRdkbmlXLnXwTSHFX4tdpc4l7nSaFotVPcyh4jRqTYh/FJkRy4vY0/FCMiLTPKUtuoW00on4dciZd1CWdUEaRlxSbOodaV5TFon/Bp+2F1n7WGYIG8xEeL64mgJz3//hNkAVst92y/97MK/Cq86Duva2G6QLHXRTGtOhD8P3/fqdF9K4YvccQ2b+RTrZW3cFCVVM77Djxf+qviQ7ROze8DG3B4R9xRLuya25Zz8OuGXop5NlLbDuhW23hI2ImXqoRFW+Kn4tFfn8F+Ls7bBhim0NvhmzvojwNrjsLWxUfEpdxf+nvhvtM6zX5J30tl7tNOqTvX+C78W+/C577deFSgA9nJ/YuQSC78WdTZRdjfxw+5ilI2d9j3tlHXCT4fpv9cJFy5cuHDhwoX/Efgvib5qBUGP0TMAAAAASUVORK5CYII=" alt="Lightning donation QR code">
+  <div class="addr"><code id="lnaddr">nixonshock@coinos.io</code>
+    <button class="btn mini" id="copyBtn" type="button">Copy</button></div>
+  <div class="note">any amount, over Lightning &#9889;</div>
+</div>
+
+<div class="dock">
+  <div class="stats panel">
+    <span class="px" id="px">&mdash;</span>
+    <span class="k">24H <b id="chg">&mdash;</b></span>
+    <span class="k">HIGH <b id="hi">&mdash;</b></span>
+    <span class="k">LOW <b id="lo">&mdash;</b></span>
+    <span class="k src"><i class="dot" id="sdot"></i><b id="src">connecting&hellip;</b></span>
+  </div>
+  <div class="legend panel">
+    <div><span class="sw" style="background:var(--grn)"></span><b>BULLS</b> hold the green ground</div>
+    <div><span class="sw" style="background:var(--red)"></span><b>BEARS</b> hold the red ground</div>
+    <div>the bright line is the <b>front</b> &mdash; the price pushes it</div>
+    <div><b>space</b> pause &nbsp; <b>s</b> sound &nbsp; <b>d</b> donate</div>
+  </div>
+</div>
+
+<div id="paused">PAUSED</div>
+<div id="toast"></div>
+
+<script>
+(() => {
+"use strict";
+
+/* ============================ config ============================ */
+const GLYPHS = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789\u20bf$+=*<>:.";
+const MAX_DROPS = 1200, MAX_SPARKS = 700;
+const DEMO = new URLSearchParams(location.search).has("demo");
+const COINBASE_WS = "wss://ws-feed.exchange.coinbase.com";
+const $ = id => document.getElementById(id);
+
+/* ============================ canvas ============================ */
+const cv = $("c"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, CELL = 18, COLS = 0;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  CELL = W < 640 ? 13 : 18;
+  COLS = Math.max(8, Math.floor(W / CELL));
+  spawnBurst();
+}
+addEventListener("resize", resize);
+
+/* ============================ state ============================ */
+let drops = [], sparks = [];
+let price = null, open24 = null, high24 = null, low24 = null;
+let bullShare = 0.5, shownShare = 0.5, surge = 0, surgeSide = 0;
+let paused = false, sim = false;
+let flashText = null, lastTick = 0;
+const hist = [];               // [{t,p}] rolling price history
+const rnd = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const rg = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
+
+function frontX() { return (1 - shownShare) * W; }   // bulls hold the RIGHT of the front
+
+/* ============================ drops ============================ */
+function sideAt(x) { return x < frontX() ? 1 : 0; }  // 1 = bear (red, left), 0 = bull (green, right)
+
+function makeDrop(lane) {
+  const x = lane * CELL + CELL / 2;
+  const big = Math.random() < 0.04;
+  const len = 6 + (Math.random() * 14 | 0);
+  return {
+    x, side: sideAt(x),
+    y: -Math.random() * H,
+    v: rnd(70, 210), len,
+    size: big ? CELL + 3 : CELL - 2,
+    glyphs: Array.from({ length: len }, rg),
+    tick: 0, flash: 0, big
+  };
+}
+function spawnBurst() {
+  drops = [];
+  for (let i = 0; i < COLS * 1.2; i++) drops.push(makeDrop((Math.random() * COLS) | 0));
+}
+
+/* ============================ price feed ============================ */
+function onPrice(p, t) {
+  if (!isFinite(p) || p <= 0) return;
+  price = p;
+  if (t - lastTick > 100) { /* keep a tick log */ }
+  lastTick = t;
+  hist.push({ t, p });
+  while (hist.length > 4000 || (hist.length > 2 && t - hist[0].t > 300000)) hist.shift();
+}
+
+function chgOver(ms) {
+  if (hist.length < 2) return 0;
+  const t = hist[hist.length - 1].t, p = price;
+  let ref = hist[0];
+  for (let i = hist.length - 1; i >= 0; i--) { if (t - hist[i].t >= ms) { ref = hist[i]; break; } }
+  return ref.p > 0 ? (p - ref.p) / ref.p : 0;
+}
+
+function setSource(s, ok) { $("src").textContent = s; $("sdot").classList.toggle("off", !ok); }
+
+let ws = null, wsBackoff = 1000, lastMsg = 0, restTimer = null;
+function connectWS() {
+  if (DEMO) return;
+  try { ws = new WebSocket(COINBASE_WS); } catch (e) { return fallbackRest(); }
+  setSource("connecting\u2026", true);
+  ws.onopen = () => {
+    wsBackoff = 1000;
+    ws.send(JSON.stringify({ type: "subscribe", product_ids: ["BTC-USD"], channels: ["ticker"] }));
+    setSource("COINBASE \u00b7 LIVE", true);
+  };
+  ws.onmessage = ev => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.type === "ticker" && m.price) {
+      lastMsg = Date.now();
+      open24 = +m.open_24h || open24; high24 = +m.high_24h || high24; low24 = +m.low_24h || low24;
+      onPrice(+m.price, Date.now());
+    }
+  };
+  ws.onclose = () => { setSource("reconnecting\u2026", false); setTimeout(connectWS, wsBackoff); wsBackoff = Math.min(wsBackoff * 2, 15000); };
+  ws.onerror = () => { try { ws.close(); } catch (e) {} };
+}
+
+// REST fallback: only used when the socket goes quiet (some networks block WS)
+async function pollRest() {
+  if (DEMO || paused) { restTimer = setTimeout(pollRest, 5000); return; }
+  if (Date.now() - lastMsg < 20000) { restTimer = setTimeout(pollRest, 5000); return; }
+  try {
+    const r = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot", { cache: "no-store" });
+    const j = await r.json();
+    if (j && j.data && j.data.amount) { onPrice(+j.data.amount, Date.now()); setSource("COINBASE \u00b7 REST", true); }
+  } catch (e) {
+    try {
+      const r = await fetch("https://mempool.space/api/v1/prices", { cache: "no-store" });
+      const j = await r.json();
+      if (j && j.USD) { onPrice(+j.USD, Date.now()); setSource("MEMPOOL.SPACE", true); }
+    } catch (e2) { setSource("feed offline \u00b7 sim", false); }
+  }
+  restTimer = setTimeout(pollRest, 5000);
+}
+
+function startDemo() {
+  sim = true;
+  setSource("SIM \u00b7 ?demo", false);
+  let p = 85500 + rnd(-800, 800), drift = rnd(-12, 12);
+  open24 = p - rnd(-900, 900);
+  high24 = p + 700; low24 = p - 700;
+  setInterval(() => {
+    drift += rnd(-9, 9); drift = clamp(drift, -60, 60);
+    p = Math.max(1000, p + drift + rnd(-22, 22));
+    high24 = Math.max(high24, p); low24 = Math.min(low24, p);
+    onPrice(p, Date.now());
+  }, 400);
+}
+
+/* ============================ battle math ============================ */
+function updateBattle(dt) {
+  const chg24 = (open24 && price) ? (price - open24) / open24 : 0;
+  const chg60 = chgOver(60000), chg300 = chgOver(300000);
+  // who is winning: the day sets the bias, the last few minutes throw the punches
+  let target = 0.5 + chg24 * 8 + chg300 * 80 + chg60 * 150;
+  target = clamp(target, 0.07, 0.93);
+  const before = shownShare;
+  shownShare += (target - shownShare) * Math.min(1, dt / 2.6);   // the front sweeps, it does not teleport
+
+  // surge: a fast push from either side lights up the battlefield
+  const speed = Math.abs(shownShare - before) / Math.max(dt, 0.001);
+  if (speed > 0.02) surge = clamp(surge + speed * 1.6, 0, 1.15);
+  surgeSide = shownShare >= before ? 0 : 1;
+  surge *= Math.exp(-dt / 1.4);
+
+  if (flashText) { flashText.t -= dt / 1.8; if (flashText.t <= 0) flashText = null; }
+  if (surge > 0.85 && (!flashText || flashText.t < 0.35)) {
+    flashText = { t: 1, wire: shownShare >= 0.5 };
+  }
+
+  // the DOM health bar mirrors the battlefield
+  const bs = Math.round(shownShare * 100);
+  $("up").textContent = bs; $("bp").textContent = 100 - bs;
+  $("rf").style.width = (100 - bs) + "%";
+  $("gf").style.width = bs + "%";
+  $("mk").style.left = "calc(" + (100 - bs) + "% - 1px)";
+}
+
+/* ============================ render ============================ */
+function burst(x, y, n, col) {
+  for (let i = 0; i < n && sparks.length < MAX_SPARKS; i++) {
+    const a = rnd(-Math.PI, Math.PI), s = rnd(30, 220);
+    sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 40, life: rnd(0.3, 0.9), col });
+  }
+}
+
+function update(dt) {
+  const fx = frontX(), winning = shownShare >= 0.5 ? 0 : 1;   // 0 bull wins, 1 bear wins
+  const boost = 1 + surge * 0.9;
+
+  for (let i = drops.length - 1; i >= 0; i--) {
+    const d = drops[i];
+    const side = sideAt(d.x);
+    if (side !== d.side) {                       // the front swept past this lane: ground captured
+      d.side = side; d.flash = 1;
+      if (Math.random() < 0.25) burst(d.x, d.y, 2, side ? "#ff2b45" : "#00ff5a");
+    }
+    const own = (d.side === winning);
+    d.y += d.v * (own ? boost : 1 / boost) * dt;
+    d.tick += dt;
+    if (d.tick > 0.085) { d.tick = 0; for (let k = 0; k < 2; k++) d.glyphs[(Math.random() * d.len) | 0] = rg(); }
+    if (d.flash > 0) d.flash = Math.max(0, d.flash - dt * 3.2);
+
+    if (d.y - d.len * d.size > H + 40) { if (drops.length > COLS) drops.splice(i, 1); else { d.y = -d.len * d.size; d.glyphs = Array.from({ length: d.len }, rg); } }
+  }
+  // keep the field populated as the width changes
+  while (drops.length < COLS) drops.push(makeDrop((Math.random() * COLS) | 0));
+
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i];
+    s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 260 * dt; s.life -= dt;
+    if (s.life <= 0) sparks.splice(i, 1);
+  }
+  // the front itself throws off sparks while the fighting is hot
+  if (Math.random() < 0.25 + surge * 0.6) burst(fx, rnd(0, H), 1, winning ? "#ff2b45" : "#00ff5a");
+}
+
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = "#02040a";
+  ctx.fillRect(0, 0, W, H);
+  const fx = frontX();
+  const winning = shownShare >= 0.5 ? 0 : 1;
+
+  // ground: red on the left, green on the right
+  ctx.fillStyle = "rgba(255,43,69,0.030)"; ctx.fillRect(0, 0, fx, H);
+  ctx.fillStyle = "rgba(0,255,90,0.030)"; ctx.fillRect(fx, 0, W - fx, H);
+
+  // the rain
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (let i = 0; i < drops.length; i++) {
+    const d = drops[i], bull = d.side === 0;
+    const body = bull ? "0,255,90" : "255,43,69";
+    ctx.font = d.size + "px ui-monospace,'SF Mono',Menlo,Consolas,'Courier New',monospace";
+    for (let k = 0; k < d.len; k++) {
+      const y = d.y - k * d.size;
+      if (y < -d.size || y > H + d.size) continue;
+      const a = 1 - k / d.len;
+      if (k === 0) {
+        ctx.fillStyle = bull ? "#e8ffee" : "#ffe2e6";
+        ctx.shadowColor = bull ? "#00ff5a" : "#ff2b45";
+        ctx.shadowBlur = (d.big ? 16 : 9) * (1 + d.flash * 0.9 + surge * 0.5);
+      } else {
+        ctx.fillStyle = "rgba(" + body + "," + (0.72 * a * a + 0.03).toFixed(3) + ")";
+        ctx.shadowBlur = 0;
+      }
+      ctx.fillText(d.glyphs[k], d.x, y);
+    }
+    ctx.shadowBlur = 0;
+    if (d.flash > 0.02) {
+      ctx.fillStyle = "rgba(255,255,255," + (d.flash * 0.9).toFixed(3) + ")";
+      ctx.fillText(d.glyphs[0], d.x, d.y);
+    }
+  }
+
+  // sparks
+  ctx.lineCap = "round";
+  for (let i = 0; i < sparks.length; i++) {
+    const s = sparks[i];
+    ctx.strokeStyle = s.col; ctx.globalAlpha = clamp(s.life, 0, 1);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x - s.vx * 0.02, s.y - s.vy * 0.02); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // the front line
+  const col = winning ? "#ff2b45" : "#00ff5a";
+  const g = ctx.createLinearGradient(fx - 30, 0, fx + 30, 0);
+  g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(0.5, col); g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.globalAlpha = 0.14 + surge * 0.18; ctx.fillStyle = g; ctx.fillRect(fx - 30, 0, 60, H); ctx.globalAlpha = 1;
+  ctx.fillStyle = "#fff"; ctx.shadowColor = col; ctx.shadowBlur = 16 + surge * 22;
+  ctx.fillRect(fx - 1, 0, 2.4, H);
+  ctx.shadowBlur = 0;
+
+  // the price, tagged to the front (the thing they are fighting over)
+  if (price) drawPriceTag(fx, H * 0.60, winning);
+
+  // surge callout
+  if (flashText) {
+    ctx.globalAlpha = clamp(flashText.t, 0, 1);
+    ctx.font = "800 " + Math.min(46, W * 0.05) + "px ui-monospace,Menlo,monospace";
+    ctx.fillStyle = flashText.wire ? "#00ff5a" : "#ff2b45";
+    ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 24;
+    ctx.textAlign = "center";
+    ctx.fillText(flashText.wire ? "BULLS ADVANCE" : "BEARS ADVANCE", W / 2, H * 0.30);
+    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  }
+}
+
+function drawPriceTag(fx, y, winning) {
+  const txt = price.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  const arrow = (open24 && price >= open24) ? "\u25b2" : "\u25bc";
+  ctx.font = "800 15px ui-monospace,Menlo,monospace";
+  const w = ctx.measureText(arrow + " $" + txt).width + 22;
+  let x = fx - w / 2; x = clamp(x, 6, W - w - 6);
+  const col = winning ? "#ff2b45" : "#00ff5a";
+  ctx.fillStyle = "rgba(2,4,10,.86)";
+  ctx.strokeStyle = col; ctx.lineWidth = 1;
+  roundRect(x, y - 15, w, 30, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = col; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.shadowColor = col; ctx.shadowBlur = 10;
+  ctx.fillText(arrow + " $" + txt, x + w / 2, y);
+  ctx.shadowBlur = 0;
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+/* ============================ HUD ============================ */
+function updateHud() {
+  if (!price) return;
+  const up = !open24 || price >= open24;
+  const px = $("px");
+  px.textContent = "$" + price.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  px.className = "px " + (up ? "up" : "dn");
+  if (open24) {
+    const c = (price - open24) / open24 * 100;
+    $("chg").textContent = (c >= 0 ? "+" : "") + c.toFixed(2) + "%";
+  }
+  if (high24) $("hi").textContent = "$" + high24.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  if (low24) $("lo").textContent = "$" + low24.toLocaleString("en-US", { maximumFractionDigits: 0 });
+}
+
+/* ============================ sound ============================ */
+let audio = null, soundOn = false;
+function ensureAudio() {
+  if (audio) { if (audio.state === "suspended") audio.resume(); return audio; }
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+  audio = new AC(); return audio;
+}
+function clash(strong) {
+  if (!audio || !soundOn || audio.state !== "running") return;
+  const t = audio.currentTime + 0.01;
+  const o = audio.createOscillator(), g = audio.createGain();
+  o.type = strong ? "square" : "triangle";
+  o.frequency.setValueAtTime(strong ? 220 : 660, t);
+  o.frequency.exponentialRampToValueAtTime(strong ? 60 : 300, t + (strong ? 0.22 : 0.08));
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(strong ? 0.12 : 0.045, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + (strong ? 0.26 : 0.1));
+  o.connect(g); g.connect(audio.destination); o.start(t); o.stop(t + 0.3);
+}
+
+/* ============================ frame ============================ */
+let lastFrame = performance.now(), soundGate = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - lastFrame) / 1000); lastFrame = now;
+  if (!paused) {
+    updateBattle(dt);
+    update(dt);
+    soundGate -= dt;
+    if (surge > 0.7 && soundGate <= 0) { clash(surge > 1.0); soundGate = 0.1; }
+  }
+  draw();
+  updateHud();
+  requestAnimationFrame(frame);
+}
+
+/* ============================ controls ============================ */
+function toast(msg) {
+  const el = $("toast"); el.textContent = msg; el.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("on"), 1400);
+}
+$("copyBtn").addEventListener("click", () => {
+  const a = $("lnaddr").textContent.trim();
+  const done = () => toast("Lightning address copied");
+  if (navigator.clipboard) navigator.clipboard.writeText(a).then(done, () => toast(a));
+  else toast(a);
+});
+function togglePause() { paused = !paused; document.body.classList.toggle("paused", paused); }
+$("pauseBtn").addEventListener("click", togglePause);
+function toggleSound() {
+  const first = !audio; const ac = ensureAudio();
+  if (!ac) return;
+  if (first) soundOn = true; else soundOn = !soundOn;
+  $("soundBtn").dataset.on = soundOn ? "1" : "0";
+  $("soundBtn").textContent = "Sound " + (soundOn ? "on" : "off");
+  if (soundOn) clash(false);
+}
+$("soundBtn").addEventListener("click", toggleSound);
+function setDonate(open) { $("dcard").hidden = !open; $("donateBtn").dataset.on = open ? "1" : "0"; }
+$("donateBtn").addEventListener("click", e => { e.stopPropagation(); setDonate($("dcard").hidden); });
+document.addEventListener("click", e => { if (!$("dcard").hidden && !e.target.closest("#dcard,#donateBtn")) setDonate(false); });
+addEventListener("keydown", e => {
+  if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.code === "Space") { e.preventDefault(); togglePause(); }
+  else if (e.key === "s" || e.key === "S") toggleSound();
+  else if (e.key === "d" || e.key === "D") setDonate($("dcard").hidden);
+});
+addEventListener("pointerdown", () => ensureAudio(), { once: true });
+
+/* ============================ boot ============================ */
+resize();
+requestAnimationFrame(frame);
+if (DEMO) startDemo();
+else { connectWS(); setTimeout(pollRest, 6000); }
+setTimeout(() => { if (!price && !sim) startDemo(); }, 12000);   // nothing came through: show it anyway, labelled SIM
+})();
+</script>
+</body>
+</html>
