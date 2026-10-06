@@ -219,6 +219,7 @@
     if (cv) return;
     cv = document.createElement('canvas');
     cv.className = 'dnf';
+    cv.style.display = 'none';               // never show a stale/idle canvas
     document.body.appendChild(cv);
     ctx = cv.getContext('2d');
     resize();
@@ -256,6 +257,7 @@
 
   function fireShower(amount) {
     ensureCanvas();
+    cv.style.display = 'block';              // visible only while it's actually raining
     if (!boltDim) buildSprites();
     if (raf) { cancelAnimationFrame(raf); raf = null; }
     var W = window.innerWidth, H = window.innerHeight;
@@ -357,6 +359,7 @@
         raf = requestAnimationFrame(frame);
       } else {
         ctx.clearRect(0, 0, cv.width, cv.height);
+        cv.style.display = 'none';           // fully hide once the rain is over
         raf = null; banner = null; flash = null;
         if (state.pending && statusEl) {
           statusEl.textContent = '✅ Payment received — thank you!';
