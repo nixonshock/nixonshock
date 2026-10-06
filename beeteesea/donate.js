@@ -5,6 +5,10 @@
  *   3. donation history under the card
  * Picks up donations by polling the Pi backend; every open page fires the
  * shower at the same moment (the site multiplies the impact automatically).
+ *
+ * REGRESSION GUARD: the live card is only built once the backend answers
+ * /health OK. Until then (or if the backend is ever unreachable) the original
+ * static markup is left exactly as-is, so the page is never worse than before.
  */
 (function () {
   'use strict';
@@ -77,58 +81,75 @@
     return Math.floor(d / 86400) + 'd ago';
   }
 
-  /* ---------------- rebuild card ---------------- */
+  /* ---------------- card elements (assigned by buildCard) ---------------- */
+  var $, amtInput, getBtn, invWrap, srcImg, statusEl, boltEl, cpyBtn, backBtn, histList, amtSel;
+
   var originalHeader = (function () {
     var h = card.querySelector('.dh'); return h ? h.textContent : '';
   })();
   if (!originalHeader) originalHeader = 'Support this livestream ⚡';
 
-  var amtSel = PRESETS[1]; // default 1,000
-  card.innerHTML =
-    '<span class="dh">' + esc(originalHeader) + '</span>' +
-    '<div class="dnf-amt">' + PRESETS.map(function (p) {
-      return '<button type="button" data-p="' + p + '">' +
-        (p >= 1000 ? (p / 1000) + 'k' : p) + '</button>';
-    }).join('') + '</div>' +
-    '<div class="dnf-row">' +
-      '<input type="number" min="1" max="1000000" placeholder="Custom (sats)" aria-label="Donation amount in sats">' +
-      '<button type="button" class="dnf-get" id="dnfGet">Get invoice</button>' +
-    '</div>' +
-    '<div class="dnf-inv" id="dnfInv">' +
-      '<img alt="Scan to pay" width="148" height="148">' +
-      '<div class="dnf-status" id="dnfStatus">Creating invoice…</div>' +
-      '<div class="dnf-copy"><code id="dnfBolt"></code><button type="button" id="dnfCpy">Copy</button></div>' +
-      '<button type="button" class="btn panel" id="dnfBack">New donation</button>' +
-    '</div>' +
-    '<div class="dnf-hist" id="dnfHist">' +
-      '<div class="dnf-hlabel">Recent donations</div>' +
-      '<div class="dnf-hlist" id="dnfHistList"><span class="dnf-empty">Loading…</span></div>' +
-    '</div>';
+  /* Build the live card. Only called once the backend is confirmed healthy,
+   * so the original static markup is left untouched otherwise. */
+  function buildCard() {
+    amtSel = PRESETS[1]; // default 1,000
+    card.innerHTML =
+      '<span class="dh">' + esc(originalHeader) + '</span>' +
+      '<div class="dnf-amt">' + PRESETS.map(function (p) {
+        return '<button type="button" data-p="' + p + '">' +
+          (p >= 1000 ? (p / 1000) + 'k' : p) + '</button>';
+      }).join('') + '</div>' +
+      '<div class="dnf-row">' +
+        '<input type="number" min="1" max="1000000" placeholder="Custom (sats)" aria-label="Donation amount in sats">' +
+        '<button type="button" class="dnf-get" id="dnfGet">Get invoice</button>' +
+      '</div>' +
+      '<div class="dnf-inv" id="dnfInv">' +
+        '<img alt="Scan to pay" width="148" height="148">' +
+        '<div class="dnf-status" id="dnfStatus">Creating invoice…</div>' +
+        '<div class="dnf-copy"><code id="dnfBolt"></code><button type="button" id="dnfCpy">Copy</button></div>' +
+        '<button type="button" class="btn panel" id="dnfBack">New donation</button>' +
+      '</div>' +
+      '<div class="dnf-hist" id="dnfHist">' +
+        '<div class="dnf-hlabel">Recent donations</div>' +
+        '<div class="dnf-hlist" id="dnfHistList"><span class="dnf-empty">Loading…</span></div>' +
+      '</div>';
 
-  var $ = function (s) { return card.querySelector(s.charAt(0) === '#' || s.charAt(0) === '.' ? s : '#' + s); };
-  var amtInput = card.querySelector('.dnf-row input');
-  var getBtn = $('dnfGet'), invWrap = $('dnfInv'), srcImg = invWrap.querySelector('img'),
-      statusEl = $('dnfStatus'), boltEl = $('dnfBolt'), cpyBtn = $('dnfCpy'), backBtn = $('dnfBack'),
-      histList = $('dnfHistList');
+    $ = function (s) { return card.querySelector(s.charAt(0) === '#' || s.charAt(0) === '.' ? s : '#' + s); };
+    amtInput = card.querySelector('.dnf-row input');
+    getBtn = $('dnfGet'); invWrap = $('dnfInv'); srcImg = invWrap.querySelector('img');
+    statusEl = $('dnfStatus'); boltEl = $('dnfBolt'); cpyBtn = $('dnfCpy'); backBtn = $('dnfBack');
+    histList = $('dnfHistList');
 
-  card.querySelectorAll('.dnf-amt button').forEach(function (b) {
-    b.addEventListener('click', function () {
-      card.querySelectorAll('.dnf-amt button').forEach(function (x) { x.classList.remove('active'); });
-      b.classList.add('active');
-      amtSel = parseInt(b.dataset.p, 10);
-      amtInput.value = '';
+    card.querySelectorAll('.dnf-amt button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        card.querySelectorAll('.dnf-amt button').forEach(function (x) { x.classList.remove('active'); });
+        b.classList.add('active');
+        amtSel = parseInt(b.dataset.p, 10);
+        amtInput.value = '';
+      });
     });
-  });
-  amtInput.addEventListener('input', function () { amtSel = parseInt(amtInput.value, 10) || 0; });
-  amtInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doInvoice(); });
-  getBtn.addEventListener('click', doInvoice);
-  backBtn.addEventListener('click', function () { invWrap.style.display = 'none'; state.pending = null; });
-  cpyBtn.addEventListener('click', function () {
-    var t = boltEl.textContent; if (!t) return;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(t).then(flashCpy);
-    } else { flashCpy(); }
-  });
+    amtInput.addEventListener('input', function () { amtSel = parseInt(amtInput.value, 10) || 0; });
+    amtInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doInvoice(); });
+    getBtn.addEventListener('click', doInvoice);
+    backBtn.addEventListener('click', function () { invWrap.style.display = 'none'; state.pending = null; });
+    cpyBtn.addEventListener('click', function () {
+      var t = boltEl.textContent; if (!t) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(flashCpy);
+      } else { flashCpy(); }
+    });
+
+    // seed last-id so switching scenes / refresh never replays old donations
+    var seenStart = parseInt(localStorage.getItem(LAST_KEY) || '0', 10);
+    api('latest').then(function (res) {
+      if (res && res.id) {
+        if (!seenStart) localStorage.setItem(LAST_KEY, String(res.id));
+        refreshHistory();
+      }
+    });
+    setInterval(poll, POLL_MS);
+  }
+
   function flashCpy() { var t = cpyBtn.textContent; cpyBtn.textContent = 'Copied ✓'; setTimeout(function () { cpyBtn.textContent = t; }, 1600); }
 
   function doInvoice() {
@@ -155,6 +176,7 @@
 
   /* ---------------- history ---------------- */
   function renderHistory(items) {
+    if (!histList) return;
     if (!items || !items.length) { histList.innerHTML = '<span class="dnf-empty">No donations yet — be the first ⚡</span>'; return; }
     histList.innerHTML = items.slice(0, 12).map(function (d) {
       return '<div class="dnf-hitem"><b>⚡ ' + (d.amount || 0).toLocaleString() + ' sats</b><time>' + esc(ago(d.ts)) + '</time></div>';
@@ -246,7 +268,6 @@
       if (spawned < total) {
         var toSpawn = Math.floor(rate * dt);
         var n = Math.min(toSpawn, total - spawned);
-        var span = 0.45 + Math.min(n, 80) / 320;          // spread spawn tops
         for (var i = 0; i < n; i++) bolts.push(makeBolt(-0.15 * window.innerHeight, 0.25 * window.innerHeight));
         spawned += n;
       }
@@ -301,7 +322,6 @@
   }
 
   /* ---------------- poller ---------------- */
-  var recorded = {};
   function poll() {
     api('latest').then(function (res) {
       if (!res || !res.id) return;
@@ -333,13 +353,15 @@
     o.start(t); o.stop(t + 0.32);
   }
 
-  // boot: seed last-id so switching scenes / refresh never replays old donations
-  var seenStart = parseInt(localStorage.getItem(LAST_KEY) || '0', 10);
-  api('latest').then(function (res) {
-    if (res && res.id) {
-      if (!seenStart) localStorage.setItem(LAST_KEY, String(res.id));
-      refreshHistory();
-    }
-  });
-  setInterval(poll, POLL_MS);
+  /* ---------------- boot ----------------
+   * Only upgrade the card once the backend answers /health OK. If it is not
+   * reachable (or the site is deployed ahead of the backend), the original
+   * static markup stays in place and we retry quietly — zero regression. */
+  function boot() {
+    api('health').then(function (res) {
+      if (res && res.status === 'ok') { buildCard(); }
+      else { setTimeout(boot, 20000); }
+    });
+  }
+  boot();
 })();
