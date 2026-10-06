@@ -310,11 +310,30 @@
 
       if (banner && now < banner.born + banner.life) {
         var ba = 1 - Math.max(0, (now - banner.born - banner.life + 700) / 700);
-        ctx.font = '700 ' + Math.round(W * (amount >= 1000 ? 0.05 : 0.04)) + 'px "Bricolage Grotesque", system-ui, sans-serif';
+        var isNarrow = W < 640;                      // phones: keep the amount legible
+        var fz = Math.round(W * (amount >= 1000 ? 0.05 : 0.04));
+        if (isNarrow) fz = Math.max(26, fz);         // never shrink below readability
+        ctx.font = '700 ' + fz + 'px "Bricolage Grotesque", system-ui, sans-serif';
         ctx.textAlign = 'center';
+        var bx = W / 2, by = H * 0.16;
+        // contrast chip so the amount reads over any busy scene (mainly phones)
+        if (isNarrow) {
+          var tw = ctx.measureText(banner.text).width;
+          var r = fz * 0.55, x0 = bx - tw / 2 - r, y0 = by - fz * 0.92 - r;
+          var wpx = tw + r * 2, hpx = fz * 1.15 + r;
+          ctx.fillStyle = 'rgba(0,0,0,' + (0.55 * ba).toFixed(2) + ')';
+          ctx.beginPath();
+          ctx.moveTo(x0 + r, y0);
+          ctx.arcTo(x0 + wpx, y0, x0 + wpx, y0 + hpx, r);
+          ctx.arcTo(x0 + wpx, y0 + hpx, x0, y0 + hpx, r);
+          ctx.arcTo(x0, y0 + hpx, x0, y0, r);
+          ctx.arcTo(x0, y0, x0 + wpx, y0, r);
+          ctx.closePath();
+          ctx.fill();
+        }
         ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 12;
         ctx.fillStyle = 'rgba(255,255,255,' + ba.toFixed(3) + ')';
-        ctx.fillText(banner.text, W / 2, H * 0.16);
+        ctx.fillText(banner.text, bx, by);
         ctx.shadowBlur = 0;
       }
 
