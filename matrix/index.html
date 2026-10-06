@@ -203,7 +203,7 @@
       if (d.y - d.len * d.size > H + 40) drops.splice(i, 1);
     }
     if (scan.active) {
-      scan.y += 260 * dt;
+      scan.y += (H + 100) / 5 * dt;   // full top->bottom block sweep in ~5s regardless of height
       if (scan.y > H + 60) scan.active = false;
     }
   }
