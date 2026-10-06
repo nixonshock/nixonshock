@@ -44,7 +44,7 @@
         'border-radius:9px;background:var(--accent,#ffd54a);color:#1a1a1a;cursor:pointer;}\n' +
       '.dnf-get:disabled{opacity:.5;cursor:wait;}\n' +
       '.dnf-inv{display:none;flex-direction:column;gap:8px;align-items:center;margin-top:2px;}\n' +
-      '.dnf-inv img{width:148px;height:148px;border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line,rgba(127,127,127,.35));}\n' +
+      '.dnf-inv img{width:min(100%,260px);height:auto;aspect-ratio:1/1;border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line,rgba(127,127,127,.35));}\n' +
       '.dnf-status{font-size:11px;color:var(--muted,#9aa);text-align:center;min-height:14px;}\n' +
       '.dnf-status.paid{color:#3ddc84;font-weight:700;}\n' +
       '.dnf-copy{display:flex;gap:6px;align-items:center;width:100%;}\n' +
@@ -165,7 +165,7 @@
       getBtn.disabled = false;
       if (!res || !res.bolt11) { statusEl.textContent = 'Could not create invoice — try again.'; return; }
       state.pending = { amount: res.amount };
-      srcImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&qzone=2&data=' + encodeURIComponent(res.bolt11);
+      srcImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=480x480&qzone=4&data=' + encodeURIComponent(res.bolt11);
       srcImg.style.visibility = 'visible';
       boltEl.textContent = res.bolt11;
       cpyBtn.style.visibility = 'visible';
