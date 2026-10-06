@@ -186,12 +186,12 @@
   }
 
   /* ---------------- lightning rain (Matrix-style bolt columns) ----------------
-   * Every donation rains lightning bolts down the screen, scaled by amount:
-   *   1 sat    → one column, a single fall, a soft flash — still unmistakably alive
-   *   21 sats  → a few columns
-   *   100 sats → a light curtain
-   *   1k sats  → most of the screen, denser + brighter (a real storm)
-   *   10k+     → full-width sustained thunderstorm for ~6.5s
+   * Every donation rains lightning bolts down the screen, and the NUMBER OF RAINS
+   * tracks the gift: 1 sat → 1 column, 5 sats → 5 columns, 21 sats → 21 columns
+   * (literally one bolt-column per sat, up to one screenful).
+   * Past that, the surplus escalates DENSITY + duration instead of column count:
+   *   100 sats → every column gets a longer trail;  1k → a heavy storm;
+   *   10k+     → a ~6.5s full-width thunderstorm with a bright screen flash.
    * Columns keep dropping top-to-bottom for the duration, so a big gift reads as a
    * storm rather than one wave. Bolt glyphs are pre-rendered sprites (2 variants)
    * and blitted with a fading trail — cheap, and the trail is what reads as "Matrix".
@@ -248,9 +248,13 @@
     amount = Math.max(1, amount | 0);
     var intensity = Math.min(1, Math.log10(amount + 1) / 4);   // 1sat≈.08 .. 10k=1
     var maxCols = Math.max(1, Math.floor(W / 26));
-    var nCols = Math.min(maxCols, Math.max(1, Math.round(Math.sqrt(amount))));
-    var trail = Math.max(5, Math.min(34, Math.round(Math.sqrt(amount)) + 4));
-    trail = Math.max(5, Math.min(trail, Math.floor(1300 / nCols)));  // cap glyphs/frame
+    // Literal mapping for small gifts — 1 sat = 1 rain, 5 sats = 5 rains, 21 = 21 rains.
+    // Once the columns fill one screenful, the surplus escalates DENSITY (trail length)
+    // + duration instead, so 100 / 1k / 10k keep growing visually.
+    var nCols = Math.min(maxCols, Math.max(1, amount));
+    var overflow = Math.max(0, amount - nCols);
+    var dens = Math.min(1, Math.log10(overflow + 1) / 4.2);    // 0 while amount <= maxCols
+    var trail = Math.max(3, Math.min(Math.round(3 + 22 * dens), Math.floor(1300 / nCols)));
     var dur = Math.min(1.1 + amount / 420, 6.5);               // seconds of rain
     var gw = Math.max(18, Math.min(36, (W / nCols) * 0.5));   // glyph width — keep bolts obvious
     var gh = Math.round(gw * 1.6);
