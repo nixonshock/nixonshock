@@ -17,7 +17,6 @@
   var BASE = localStorage.getItem('donateApiBase') || 'https://relay.taila67aa4.ts.net/api/donate';
   var LAST_KEY = 'beeteesea_last_donation_id';
   var POLL_MS = 4000;
-  var CAP = 650;               // never spawn more bolts than this at once-scale
   var PRESETS = [100, 1000, 10000, 50000];
 
   var card = document.getElementById('dcard');
@@ -186,8 +185,19 @@
     api('history').then(function (res) { if (res && res.history) renderHistory(res.history); });
   }
 
-  /* ---------------- lightning shower ---------------- */
-  var cv = null, ctx = null, raf = null, bolts = [], banner = null, flash = null;
+  /* ---------------- lightning rain (Matrix-style bolt columns) ----------------
+   * Every donation rains lightning bolts down the screen, scaled by amount:
+   *   1 sat    → one column, a single fall, a soft flash — still unmistakably alive
+   *   21 sats  → a few columns
+   *   100 sats → a light curtain
+   *   1k sats  → most of the screen, denser + brighter (a real storm)
+   *   10k+     → full-width sustained thunderstorm for ~6.5s
+   * Columns keep dropping top-to-bottom for the duration, so a big gift reads as a
+   * storm rather than one wave. Bolt glyphs are pre-rendered sprites (2 variants)
+   * and blitted with a fading trail — cheap, and the trail is what reads as "Matrix".
+   */
+  var cv = null, ctx = null, raf = null, banner = null, flash = null;
+  var boltDim = null, boltHot = null;
 
   function ensureCanvas() {
     if (cv) return;
@@ -204,109 +214,107 @@
     cv.height = Math.floor(window.innerHeight * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  function makeBolt(yLo, yHi) {
-    var w = window.innerWidth, h = window.innerHeight;
-    var sx = Math.random() * w;
-    var top = yLo + Math.random() * (yHi - yLo);
-    var len = h * (0.55 + Math.random() * 0.5);
-    var segs = 9 + Math.floor(Math.random() * 6);
-    var pts = []; var x = sx, y = top;
-    pts.push([x, y]);
-    for (var i = 0; i < segs; i++) {
-      x += (Math.random() - 0.5) * 2 * Math.max(6, w * 0.013);
-      y += len / segs * (0.75 + Math.random() * 0.5);
-      pts.push([x, y]);
+
+  // Pre-render two bolt glyphs (hot white head + gold body). Blitting sprites is
+  // far cheaper than stroking a path per bolt per frame.
+  function buildSprites() {
+    function mk(fill, glow, sz) {
+      var c = document.createElement('canvas');
+      c.width = sz; c.height = Math.round(sz * 1.7);
+      var g = c.getContext('2d');
+      var P = [[0.56, 0], [0.14, 0.56], [0.45, 0.56], [0.30, 1], [0.86, 0.40], [0.54, 0.40], [0.74, 0]];
+      g.beginPath();
+      for (var i = 0; i < P.length; i++) {
+        var x = P[i][0] * c.width, y = P[i][1] * c.height;
+        if (i) g.lineTo(x, y); else g.moveTo(x, y);
+      }
+      g.closePath();
+      g.shadowColor = glow; g.shadowBlur = Math.max(4, sz * 0.6);
+      g.fillStyle = fill; g.fill(); g.fill();   // double fill deepens the bloom
+      g.shadowBlur = 0; g.fill();
+      return c;
     }
-    return { pts: pts, vel: h * (0.45 + Math.random() * 0.85), w: w, h: h, born: performance.now(), flick: Math.random() * 6.28 };
+    boltDim = mk('rgba(255,198,64,0.95)', 'rgba(255,198,64,0.85)', 16);
+    boltHot = mk('rgba(255,255,255,1)', 'rgba(255,214,90,1)', 16);
   }
-  function drawBolt(b, alpha) {
-    var p = b.pts;
-    ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]);
-    for (var i = 1; i < p.length; i++) ctx.lineTo(p[i][0], p[i][1]);
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(255,212,80,' + (0.22 * alpha).toFixed(3) + ')';
-    ctx.lineWidth = 7; ctx.stroke();                       // glow
-    ctx.strokeStyle = 'rgba(255,255,255,' + (0.95 * alpha).toFixed(3) + ')';
-    ctx.lineWidth = 1.6; ctx.stroke();                     // hot core
-    ctx.beginPath(); ctx.moveTo(p[p.length - 1][0], p[p.length - 1][1] + 2);
-    ctx.lineTo(p[p.length - 1][0], p[p.length - 1][1] + hlen(b)); // ground tail
-    ctx.strokeStyle = 'rgba(255,212,80,' + (0.16 * alpha).toFixed(3) + ')';
-    ctx.lineWidth = 3; ctx.stroke();
-  }
-  function hlen(b) { return 8 + Math.random() * 14; }
 
   function fireShower(amount) {
     ensureCanvas();
+    if (!boltDim) buildSprites();
     if (raf) { cancelAnimationFrame(raf); raf = null; }
+    var W = window.innerWidth, H = window.innerHeight;
     ctx.clearRect(0, 0, cv.width, cv.height);
-    var total = Math.min(amount, CAP);
-    var scaled = amount > CAP;
-    var dur = amount <= 60 ? 0.9 : Math.min(0.8 + amount / 420, 6.5);
-    var rate = Math.max(total / Math.max(dur, 0.4), amount <= 60 ? total : 30); // bolts/sec
-    var spawned = 0;
+
+    amount = Math.max(1, amount | 0);
+    var intensity = Math.min(1, Math.log10(amount + 1) / 4);   // 1sat≈.08 .. 10k=1
+    var maxCols = Math.max(1, Math.floor(W / 26));
+    var nCols = Math.min(maxCols, Math.max(1, Math.round(Math.sqrt(amount))));
+    var trail = Math.max(5, Math.min(34, Math.round(Math.sqrt(amount)) + 4));
+    trail = Math.max(5, Math.min(trail, Math.floor(1300 / nCols)));  // cap glyphs/frame
+    var dur = Math.min(1.1 + amount / 420, 6.5);               // seconds of rain
+    var gw = Math.max(18, Math.min(36, (W / nCols) * 0.5));   // glyph width — keep bolts obvious
+    var gh = Math.round(gw * 1.6);
+    var cell = gh * 0.86;
+    var speedMin = H * (0.45 + 0.30 * intensity);
+    var speedMax = H * (0.85 + 0.65 * intensity);
     var start = performance.now();
-    var bannerText = '⚡ ' + amount.toLocaleString() + ' sats' + (scaled ? ' donated' : '');
-    var flashLeft = 2;      // flash pulses at the start
-    banner = { text: bannerText, born: start, life: 2600 };
-    flash = { end: start + 520, a: 0.9 };
+    var endMs = start + dur * 1000;
+    var slot = W / nCols;
+    var colsArr = [];
+    for (var i = 0; i < nCols; i++) {
+      colsArr.push({
+        x: slot * i + Math.random() * Math.max(0, slot - gw),
+        y: -Math.random() * H * 0.8,
+        len: Math.max(4, Math.round(trail * (0.7 + Math.random() * 0.6))),
+        spd: speedMin + Math.random() * (speedMax - speedMin),
+        boost: 0.5 + 0.5 * intensity,
+        hot: Math.random() < 0.35,
+      });
+    }
+    var bannerText = '⚡ ' + amount.toLocaleString() + (amount === 1 ? ' sat' : ' sats');
+    banner = { text: bannerText, born: start, life: amount >= 1000 ? 3000 : 2200 };
+    flash = { end: start + (220 + 640 * intensity), a: 0.30 + 0.55 * intensity };
 
     function frame(now) {
       var dt = Math.min((now - (frame._last || now)) / 1000, 0.05);
       frame._last = now;
-      var t = (now - start) / 1000;
       ctx.clearRect(0, 0, cv.width, cv.height);
 
-      // screen flash pulses
       if (flash && now < flash.end) {
-        var fa = flash.a * (1 - (now - start) / flash.end);
+        var fa = flash.a * (1 - (now - start) / (flash.end - start));
         ctx.fillStyle = 'rgba(255,214,90,' + fa.toFixed(3) + ')';
         ctx.fillRect(0, 0, cv.width, cv.height);
-        if (flashLeft > 1) { ctx.fillStyle = 'rgba(255,214,90,' + (fa * 0.45).toFixed(3) + ')'; ctx.fillRect(0, 0, cv.width, cv.height); }
       }
 
-      // spawn new bolts
-      if (spawned < total) {
-        var toSpawn = Math.floor(rate * dt);
-        var n = Math.min(toSpawn, total - spawned);
-        for (var i = 0; i < n; i++) bolts.push(makeBolt(-0.15 * window.innerHeight, 0.25 * window.innerHeight));
-        spawned += n;
-      }
-
-      // move + fade bolts
-      var keep = [];
-      for (var j = 0; j < bolts.length; j++) {
-        var b = bolts[j];
-        var age = (now - b.born) / 1000;
-        var move = b.vel * age;
-        var bottom = b.pts[b.pts.length - 1][1] + move;
-        if (bottom < -20) continue;                       // not in screen yet
-        if (bottom > b.h * 1.35) continue;                // fell fully past screen
-        var fadeIn = Math.min(age / 0.06, 1);             // ramp up over a few frames
-        var gone = Math.max(0, (bottom - b.h * 1.02) / (b.h * 0.35));  // fade as it reaches the floor
-        var alpha = fadeIn * (1 - gone);
-        if (alpha > 0.02) {
-          ctx.save();
-          ctx.translate(0, move);
-          ctx.globalAlpha = alpha;
-          drawBolt(b, 0.7 + 0.3 * Math.sin(b.flick + now * 0.03));
-          ctx.restore();
+      var alive = 0;
+      for (var ci = 0; ci < colsArr.length; ci++) {
+        var c = colsArr[ci];
+        c.y += c.spd * dt;
+        for (var k = 0; k < c.len; k++) {
+          var y = c.y - k * cell;
+          if (y < -gh || y > H + gh) continue;
+          ctx.globalAlpha = Math.max(0, 1 - k / c.len) * c.boost;
+          ctx.drawImage(k === 0 ? (c.hot ? boltHot : boltDim) : boltDim, c.x, y, gw, gh);
         }
-        keep.push(b);
+        ctx.globalAlpha = 1;
+        if (c.y - c.len * cell > H) {                  // column fully past the bottom
+          if (now < endMs) { c.y = -Math.random() * H * 0.4; c.len = Math.max(4, Math.round(trail * (0.7 + Math.random() * 0.6))); }
+          else continue;
+        }
+        alive++;
       }
-      bolts = keep;
 
-      // banner
       if (banner && now < banner.born + banner.life) {
         var ba = 1 - Math.max(0, (now - banner.born - banner.life + 700) / 700);
-        ctx.font = '700 ' + Math.round(window.innerWidth * 0.035) + 'px "Bricolage Grotesque", system-ui, sans-serif';
+        ctx.font = '700 ' + Math.round(W * (amount >= 1000 ? 0.05 : 0.04)) + 'px "Bricolage Grotesque", system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 12;
         ctx.fillStyle = 'rgba(255,255,255,' + ba.toFixed(3) + ')';
-        ctx.fillText(banner.text, window.innerWidth / 2, window.innerHeight * 0.16);
+        ctx.fillText(banner.text, W / 2, H * 0.16);
         ctx.shadowBlur = 0;
       }
 
-      if (t < dur + 2.5 || bolts.length) {            // keep a beat after spawning ends
+      if (alive > 0 || now < endMs + 1500) {
         raf = requestAnimationFrame(frame);
       } else {
         ctx.clearRect(0, 0, cv.width, cv.height);
