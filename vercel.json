@@ -67,7 +67,7 @@
       "destination": "/beeteesea"
     },
     {
-      "source": "/(.*)",
+      "source": "/",
       "has": [
         {
           "type": "host",
