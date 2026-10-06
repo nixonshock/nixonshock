@@ -71,6 +71,16 @@
       "has": [
         {
           "type": "host",
+          "value": "matrix.nixonshock.com"
+        }
+      ],
+      "destination": "/matrix"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
           "value": "beeteesea.nixonshock.com"
         }
       ],
@@ -85,16 +95,6 @@
         }
       ],
       "destination": "/battle"
-    },
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "matrix.nixonshock.com"
-        }
-      ],
-      "destination": "/matrix"
     }
   ],
   "headers": [
