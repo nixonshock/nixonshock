@@ -22,8 +22,12 @@ header{display:flex;align-items:center;justify-content:space-between;gap:16px;fl
 .ticker{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .price{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;transition:color .25s}
 .price.up{color:var(--green)}.price.down{color:var(--red)}
-.chg{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
-.chg.up{color:var(--green)}.chg.down{color:var(--red)}
+.bh{display:flex;align-items:baseline;gap:7px;text-align:center;min-width:120px}
+.bh .bhL{font-size:12px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.bh .bhL::after{content:":"}
+.bh b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.bh.flash b{animation:bhflash 1.6s ease-out 1}
+@keyframes bhflash{0%{color:var(--gold);transform:scale(1.18)}100%{color:inherit;transform:none}}
 .status{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:#777}
 .dot.live{background:var(--green);box-shadow:0 0 8px var(--green)}
@@ -65,10 +69,10 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
       <h1>🐵 Monkey King vs Demons <small>猴王大战魔人</small></h1>
       <p>Bitcoin 1-minute candles decide who falls. Green = bulls strike, red = bears strike.</p>
     </div>
+    <div class="bh"><span class="bhL">Block</span><b id="sBlock">—</b></div>
     <div>
       <div class="ticker">
         <span class="price" id="price">—</span>
-        <span class="chg" id="chg"></span>
       </div>
       <div class="status"><span class="dot wait" id="dot"></span><span id="status">Connecting…</span></div>
     </div>
@@ -138,7 +142,7 @@ const SOURCES = [
 /* ───────── DOM ───────── */
 const arena = document.getElementById('arena'), A = arena.getContext('2d');
 const chartCv = document.getElementById('chart'), C = chartCv.getContext('2d');
-const elPrice = document.getElementById('price'), elChg = document.getElementById('chg');
+const elPrice = document.getElementById('price');
 const elDot = document.getElementById('dot'), elStatus = document.getElementById('status');
 const elLog = document.getElementById('log'), elNote = document.getElementById('chartnote');
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -256,11 +260,6 @@ function setPrice(p) {
   }
   lastPrice = p;
   elPrice.textContent = money.format(p);
-  if (cur) {
-    const d = (p - cur.o) / cur.o;
-    elChg.textContent = pctFmt(d) + ' this minute';
-    elChg.className = 'chg ' + (d >= 0 ? 'up' : 'down');
-  }
 }
 
 /* ───────── feeds ───────── */
@@ -859,5 +858,38 @@ if (DEMO) runDemo(); else startFeed(0);
 </script>
 
 <script src="/beeteesea/donate.js"></script>
+<script>
+/* Live Bitcoin block height in the header (mempool.space, falling back to
+   blockstream.info). Polls on load + every 30s + on tab refocus; flashes gold
+   when a new block lands. Same sources/cadence as the beeteesea scenes. */
+(function () {
+  var el = document.getElementById('sBlock');
+  if (!el) return;
+  var SRC = [
+    'https://mempool.space/api/blocks/tip/height',
+    'https://blockstream.info/api/blocks/tip/height'
+  ];
+  var POLL_MS = 30000, seen = null;
+  function grp(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  function paint(h) {
+    if (!h) return;
+    var first = seen === null; seen = h;
+    if (el.textContent !== grp(h)) {
+      el.textContent = grp(h);
+      if (!first) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+    }
+  }
+  function next(i) {
+    if (i >= SRC.length) return;
+    fetch(SRC[i], { signal: AbortSignal.timeout(7000) })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(paint, function () { next(i + 1); });
+  }
+  function poll() { next(0); }
+  poll();
+  setInterval(poll, POLL_MS);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
+})();
+</script>
 </body>
 </html>
