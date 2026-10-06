@@ -50,11 +50,21 @@
       "permanent": true
     },
     {
-      "source": "/beeteasea",
-      "destination": "/beeteesea",
-      "permanent": false
-    }
-  ],
+        "source": "/beeteasea",
+        "destination": "/beeteesea",
+        "permanent": false
+      },
+      {
+        "source": "/fight",
+        "destination": "/battle",
+        "permanent": true
+      },
+      {
+        "source": "/fight/(.*)",
+        "destination": "/battle",
+        "permanent": true
+      }
+    ],
   "rewrites": [
     {
       "source": "/",
@@ -84,7 +94,7 @@
           "value": "battle.nixonshock.com"
         }
       ],
-      "destination": "/fight"
+      "destination": "/battle"
     }
   ],
   "headers": [
