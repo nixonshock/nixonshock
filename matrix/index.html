@@ -31,6 +31,24 @@
   #paused{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:28px;
        letter-spacing:.4em;color:#9dffb5;text-shadow:0 0 14px #00ff41;pointer-events:none;z-index:3}
   body.paused #paused{display:flex}
+
+  /* donate + music controls (shared /beeteesea/donate.js surface) */
+  [hidden]{display:none!important}
+  :root{--line:rgba(0,255,80,.35);--fg:#d8ffe0;--accent:#00ff41;--muted:#0a8f2a;--font-mono:"Courier New",monospace}
+  .controls{position:fixed;right:14px;top:12px;display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;z-index:4}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font:inherit;font-weight:700;font-size:12px;color:#d8ffe0;cursor:pointer;border:1px solid rgba(0,255,80,.35);background:rgba(0,20,6,.45);text-shadow:0 0 6px #00ff41;letter-spacing:.06em}
+  .btn:hover{border-color:#00ff41}
+  .btn[data-on="1"]{background:#00ff41;color:#001505;text-shadow:none;border-color:#00ff41}
+  .panel{background:rgba(0,14,4,.92);border:1px solid rgba(0,255,80,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;font-weight:500;padding:1px 6px;border:1px solid currentColor;border-radius:5px;opacity:.65}
+  .ddon{position:relative;display:inline-flex}
+  .donate{position:absolute;right:0;top:calc(100% + 10px);width:232px;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;z-index:40;box-shadow:0 14px 34px rgba(0,0,0,.7);color:var(--fg)}
+  .donate .dh{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .donate img{border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line);align-self:center;display:block}
+  /* prominent current-block readout */
+  #curblock{position:fixed;left:14px;bottom:12px;font-size:11px;letter-spacing:.12em;color:#0a8f2a;line-height:1.4;text-shadow:0 0 6px #00ff41;pointer-events:none;user-select:none;z-index:2}
+  #curblock b{display:block;font-size:32px;font-weight:700;color:#d8ffe0;letter-spacing:.02em}
+  @media(max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
 </style>
 </head>
 <body>
@@ -51,6 +69,17 @@
   [SPACE] pause
 </div>
 <div id="paused">PAUSED</div>
+
+<div class="top"><div class="controls">
+  <span class="ddon">
+    <button id="dbtn" class="btn panel" type="button" data-on="0" aria-label="Donate" title="Send a few sats">Donate <span class="kbd">d</span></button>
+    <div class="donate panel" id="dcard" hidden role="dialog" aria-label="Donate">
+      <span class="dh">Support the digital rain ⚡</span>
+    </div>
+  </span>
+</div></div>
+
+<div id="curblock">CURRENT BLOCK <b id="blk2">—</b></div>
 
 <script>
 (() => {
@@ -144,6 +173,7 @@
     scan.active = true; scan.y = -40;
     scan.label = "BLOCK " + height + (txCount ? "  //  " + txCount.toLocaleString() + " TX" : "");
     $("blk").textContent = "#" + height;
+    const b2 = document.getElementById("blk2"); if (b2) b2.textContent = height;
   }
 
   // ---------- render ----------
@@ -401,7 +431,10 @@
       if (m.blocks && firstBlocks) {          // initial backlog: show height only, no animation
         firstBlocks = false;
         const b = m.blocks[m.blocks.length - 1];
-        if (b) $("blk").textContent = "#" + b.height;
+        if (b) {
+          $("blk").textContent = "#" + b.height;
+          const b2 = document.getElementById("blk2"); if (b2) b2.textContent = b.height;
+        }
       }
       if (m["mempool-txids"] && m["mempool-txids"].added) {
         for (const id of m["mempool-txids"].added) {
@@ -454,5 +487,22 @@
   if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); }
 })();
 </script>
+
+<script>
+/* matrix donate button — toggles #dcard. The live card, music control and the
+   lightning rain all mount via /beeteesea/donate.js (same beeteesea surface). */
+(function () {
+  var dbtn = document.getElementById('dbtn'), dcard = document.getElementById('dcard');
+  if (!dbtn || !dcard) return;
+  function setDonate(open) { dcard.hidden = !open; dbtn.dataset.on = open ? '1' : '0'; }
+  dbtn.addEventListener('click', function (e) { e.stopPropagation(); setDonate(dcard.hidden); });
+  document.addEventListener('click', function (e) { if (!dcard.hidden && !e.target.closest('.ddon')) setDonate(false); });
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !e.altKey) setDonate(dcard.hidden);
+  });
+})();
+</script>
+
+<script src="/beeteesea/donate.js"></script>
 </body>
 </html>
