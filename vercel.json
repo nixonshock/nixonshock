@@ -65,6 +65,16 @@
         }
       ],
       "destination": "/beeteesea"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "matrix.nixonshock.com"
+        }
+      ],
+      "destination": "/matrix"
     }
   ],
   "headers": [
