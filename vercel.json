@@ -81,7 +81,7 @@
       "has": [
         {
           "type": "host",
-          "value": "fight.nixonshock.com"
+          "value": "battle.nixonshock.com"
         }
       ],
       "destination": "/fight"
