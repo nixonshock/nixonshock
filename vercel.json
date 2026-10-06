@@ -63,6 +63,17 @@
         "source": "/fight/(.*)",
         "destination": "/battle",
         "permanent": true
+      },
+      {
+        "source": "/(.*)",
+        "has": [
+          {
+            "type": "host",
+            "value": "matrix.nixonshock.com"
+          }
+        ],
+        "destination": "https://www.nixonshock.com/matrix",
+        "permanent": true
       }
     ],
   "rewrites": [
@@ -75,16 +86,6 @@
         }
       ],
       "destination": "/beeteesea"
-    },
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "matrix.nixonshock.com"
-        }
-      ],
-      "destination": "/matrix"
     },
     {
       "source": "/",
