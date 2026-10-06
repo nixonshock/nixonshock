@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="Matrix Mempool — the live Bitcoin mempool as digital rain. Every transaction waiting for a block, falling as code; the big ones carry their amount.">
+<link rel="canonical" href="https://matrix.nixonshock.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="nixonshock">
+<meta property="og:title" content="Matrix Mempool — the live Bitcoin mempool as digital rain">
+<meta property="og:description" content="Every transaction waiting for a block, falling as code. The big ones carry their amount.">
+<meta property="og:url" content="https://matrix.nixonshock.com/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Ctext x='4' y='24' font-family='monospace' font-size='22' font-weight='700' fill='%2300ff41'%3E%EF%BC%B1%3C/text%3E%3C/svg%3E">
+<!-- Vercel Web Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<title>Matrix Mempool</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Courier New",monospace;color:#00ff41}
+  canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+  #hud{position:fixed;left:14px;top:12px;font-size:12px;line-height:1.5;letter-spacing:.06em;
+       color:#00c832;text-shadow:0 0 6px #00ff41;pointer-events:none;user-select:none;z-index:2}
+  #hud b{color:#9dffb5;font-weight:normal}
+  #sndbtn{display:inline-block;pointer-events:auto;cursor:pointer;padding:2px 0;border-bottom:1px dotted #00c832}
+  #sndbtn:hover b{color:#fff;text-shadow:0 0 8px #00ff41}
+  #legend{position:fixed;right:14px;bottom:12px;font-size:11px;line-height:1.6;text-align:right;
+       color:#0a8f2a;pointer-events:none;user-select:none;z-index:2}
+  #paused{position:fixed;inset:0;display:none;align-items:center;justify-content:center;font-size:28px;
+       letter-spacing:.4em;color:#9dffb5;text-shadow:0 0 14px #00ff41;pointer-events:none;z-index:3}
+  body.paused #paused{display:flex}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div>MEMPOOL // <b id="st">connecting…</b></div>
+  <div>TX SEEN <b id="n">0</b> &nbsp; SHOWN ≥ <b>0.01 BTC</b> <b id="big">0</b></div>
+  <div>LAST BLOCK <b id="blk">—</b></div>
+  <div id="sndbtn" role="button" tabindex="0" title="Click to turn sound on / off">SOUND <b id="snd">click to enable</b></div>
+</div>
+<div id="legend">
+  ≥ 0.01 BTC &nbsp;green amount<br>
+  ≥ 1 BTC &nbsp;bright white<br>
+  ≥ 10 BTC &nbsp;gold<br>
+  &lt; 0.01 BTC &nbsp;rain only<br>
+  click amount &nbsp;open on mempool.space<br>
+  [S] sound on/off &nbsp; [1] [2] [3] preview sounds<br>
+  [SPACE] pause
+</div>
+<div id="paused">PAUSED</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- config ----------
+  const THRESHOLD = 0.01;                      // BTC: amounts shown at or above this
+  const WS_URL   = "wss://mempool.space/api/v1/ws";
+  const API      = "https://mempool.space/api";
+  const DEMO     = new URLSearchParams(location.search).has("demo");
+  const GLYPHS   = "ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789:.=*+-<>¦";
+  const MAX_DROPS = 900;
+
+  // ---------- canvas ----------
+  const cv = document.getElementById("c");
+  const ctx = cv.getContext("2d");
+  let W = 0, H = 0, DPR = 1, CELL = 18, COLS = 0;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    CELL = W < 600 ? 14 : 18;
+    COLS = Math.floor(W / CELL);
+    laneBusy = new Float64Array(COLS);
+  }
+  let laneBusy = new Float64Array(1);
+  addEventListener("resize", resize);
+  resize();
+
+  // ---------- state ----------
+  const drops = [];
+  let paused = false;
+  let hovered = null;
+  let seen = 0, shown = 0;
+  const known = new Set();
+  const scan = { y: -1, active: false, label: "" };   // block-found scan line
+
+  const $ = id => document.getElementById(id);
+  const setStatus = s => { $("st").textContent = s; };
+
+  const rg = () => GLYPHS[(Math.random() * GLYPHS.length) | 0];
+
+  // ---------- drops ----------
+  function pickLane(wide) {
+    // choose a lane that is not currently occupied near the top
+    for (let t = 0; t < 12; t++) {
+      const c = (Math.random() * (COLS - (wide ? 3 : 0))) | 0;
+      if (laneBusy[c] < performance.now()) return c;
+    }
+    return (Math.random() * COLS) | 0;
+  }
+
+  function spawn(btc, txid) {
+    if (drops.length >= MAX_DROPS) drops.shift();
+    const labeled = btc >= THRESHOLD;
+    const big = btc >= 10, mid = btc >= 1;
+    const len = labeled ? 10 + Math.min(18, Math.log10(btc * 10 + 1) * 8 | 0) : 5 + (Math.random() * 10 | 0);
+    const lane = pickLane(labeled);
+    const speed = labeled ? 70 + Math.random() * 40 : 90 + Math.random() * 160;   // px/s
+    const size = labeled ? CELL + (big ? 4 : mid ? 2 : 0) : CELL - 2;
+    laneBusy[lane] = performance.now() + (labeled ? 1800 : 300);
+    drops.push({
+      x: lane * CELL + CELL / 2,
+      y: -Math.random() * 60,
+      v: speed,
+      len,
+      size,
+      glyphs: Array.from({ length: len }, rg),
+      tick: 0,
+      label: labeled ? btc.toFixed(2) : null,
+      tier: big ? 2 : mid ? 1 : 0,
+      labeled,
+      txid: labeled ? (txid || null) : null,
+      box: null
+    });
+    if (labeled) {
+      shown++; $("big").textContent = "(" + shown + ")";
+      sfx(big ? 2 : mid ? 1 : 0, lane * CELL + CELL / 2);
+    }
+  }
+
+  function ingest(id, sats) {
+    if (id) { if (known.has(id)) return; known.add(id); if (known.size > 6000) known.delete(known.values().next().value); }
+    seen++; $("n").textContent = seen;
+    spawn(sats / 1e8, id);
+  }
+
+  // ---------- block found ----------
+  function blockFound(height, txCount) {
+    scan.active = true; scan.y = -40;
+    scan.label = "BLOCK " + height + (txCount ? "  //  " + txCount.toLocaleString() + " TX" : "");
+    $("blk").textContent = "#" + height;
+  }
+
+  // ---------- render ----------
+  const COLORS = [
+    { head: "#d8ffe0", body: [0, 255, 65],  glow: "#00ff41" },   // < 1 BTC
+    { head: "#ffffff", body: [190, 255, 210], glow: "#b8ffd0" }, // >= 1
+    { head: "#fff6c8", body: [255, 200, 40], glow: "#ffc828" }   // >= 10
+  ];
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!paused) update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  function update(dt) {
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i];
+      if (d !== hovered) d.y += d.v * dt;        // hovered amount holds still so it is easy to click
+      d.tick += dt;
+      if (d.tick > 0.09) {                       // flicker a couple of trail glyphs
+        d.tick = 0;
+        for (let k = 0; k < 2; k++) d.glyphs[(Math.random() * d.len) | 0] = rg();
+      }
+      if (d.y - d.len * d.size > H + 40) drops.splice(i, 1);
+    }
+    if (scan.active) {
+      scan.y += 260 * dt;
+      if (scan.y > H + 60) scan.active = false;
+    }
+  }
+
+  function draw() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // trails
+    for (const d of drops) {
+      const col = COLORS[d.tier];
+      ctx.font = d.size + "px 'Courier New',monospace";
+      for (let k = 0; k < d.len; k++) {
+        const y = d.y - k * d.size;
+        if (y < -d.size || y > H + d.size) continue;
+        const a = 1 - k / d.len;
+        if (k === 0) {
+          ctx.fillStyle = col.head;
+          ctx.shadowColor = col.glow; ctx.shadowBlur = d.labeled ? 14 : 8;
+        } else {
+          const [r, g, b] = col.body;
+          ctx.fillStyle = `rgba(${r},${g},${b},${(d.labeled ? 0.85 : 0.6) * a * a + 0.03})`;
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillText(d.glyphs[k], d.x, y);
+      }
+    }
+    ctx.shadowBlur = 0;
+
+    // amount labels on top (only >= threshold)
+    for (const d of drops) {
+      if (!d.label || d.y < 0 || d.y > H + 20) continue;
+      const col = COLORS[d.tier];
+      const fs = d.size + 2;
+      ctx.font = "bold " + fs + "px 'Courier New',monospace";
+      const text = d.label;
+      const w = ctx.measureText(text).width + 10;
+      let x = d.x + CELL * 0.9 + w / 2;
+      if (x + w / 2 > W - 4) x = d.x - CELL * 0.9 - w / 2;
+      ctx.fillStyle = "rgba(0,0,0,.82)";
+      ctx.fillRect(x - w / 2, d.y - fs * 0.7, w, fs * 1.4);
+      d.box = d.txid ? { x: x - w / 2 - 4, y: d.y - fs * 0.7 - 4, w: w + 8, h: fs * 1.4 + 8 } : null;
+      if (d === hovered) {
+        ctx.strokeStyle = col.head; ctx.lineWidth = 1;
+        ctx.strokeRect(x - w / 2, d.y - fs * 0.7, w, fs * 1.4);
+      }
+      ctx.fillStyle = col.head;
+      ctx.shadowColor = col.glow; ctx.shadowBlur = 10;
+      ctx.fillText(text, x, d.y + 1);
+      ctx.shadowBlur = 0;
+    }
+
+    // block scan line
+    if (scan.active) {
+      const g = ctx.createLinearGradient(0, scan.y - 90, 0, scan.y);
+      g.addColorStop(0, "rgba(0,255,65,0)");
+      g.addColorStop(1, "rgba(0,255,65,.28)");
+      ctx.fillStyle = g; ctx.fillRect(0, scan.y - 90, W, 90);
+      ctx.fillStyle = "#d8ffe0";
+      ctx.shadowColor = "#00ff41"; ctx.shadowBlur = 18;
+      ctx.fillRect(0, scan.y, W, 2);
+      ctx.font = "bold 20px 'Courier New',monospace";
+      ctx.fillText(scan.label, W / 2, scan.y - 18);
+      ctx.shadowBlur = 0;
+    }
+  }
+  requestAnimationFrame(frame);
+
+  // ---------- sound (synthesised with Web Audio, no files) ----------
+  // tier 0: >= 0.01 BTC -> short digital blip
+  // tier 1: >= 1 BTC    -> rising saw arpeggio with echo
+  // tier 2: >= 10 BTC   -> deep sub drop + noise whoosh + glassy shimmer
+  let audio = null, soundOn = true, lastBlip = 0;
+
+  function soundHud() {
+    $("snd").textContent = !audio ? "click to enable" : soundOn ? "on" : "off";
+  }
+
+  function ensureAudio() {
+    if (audio) { if (audio.ac.state === "suspended") audio.ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ac = new AC();
+    const master = ac.createGain(); master.gain.value = 0.6;
+    const comp = ac.createDynamicsCompressor();
+    master.connect(comp); comp.connect(ac.destination);
+    const delay = ac.createDelay(1); delay.delayTime.value = 0.19;
+    const fb = ac.createGain(); fb.gain.value = 0.38;
+    const wet = ac.createGain(); wet.gain.value = 0.45;
+    delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
+    const nb = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+    const nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    audio = { ac, master, delay, nb };
+    soundHud();
+  }
+
+  function tone(o) {
+    const ac = audio.ac;
+    const osc = ac.createOscillator();
+    osc.type = o.type || "sine";
+    osc.frequency.setValueAtTime(o.f, o.t);
+    if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, o.t + o.d);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, o.t);
+    g.gain.exponentialRampToValueAtTime(o.g, o.t + (o.a || 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, o.t + o.d);
+    osc.connect(g);
+    let node = g;
+    if (o.lp) { const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = o.lp; node.connect(f); node = f; }
+    if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = o.pan || 0; node.connect(p); node = p; }
+    node.connect(audio.master);
+    if (o.echo) node.connect(audio.delay);
+    osc.start(o.t); osc.stop(o.t + o.d + 0.05);
+  }
+
+  function whoosh(t, d, f1, f2, gain, pan) {
+    const ac = audio.ac;
+    const src = ac.createBufferSource(); src.buffer = audio.nb;
+    const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(f1, t); bp.frequency.exponentialRampToValueAtTime(f2, t + d);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + d * 0.35);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    src.connect(bp); bp.connect(g);
+    let node = g;
+    if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = pan || 0; node.connect(p); node = p; }
+    node.connect(audio.master);
+    node.connect(audio.delay);
+    src.start(t); src.stop(t + d + 0.05);
+  }
+
+  function sfx(tier, x, force) {
+    if (!audio || !soundOn || (paused && !force)) return;
+    const ac = audio.ac;
+    if (ac.state !== "running") return;
+    const t = ac.currentTime + 0.01;
+    const pan = Math.max(-0.8, Math.min(0.8, (x / W) * 2 - 1));
+    if (tier === 0) {
+      if (!force && t - lastBlip < 0.12) return;
+      lastBlip = t;
+      tone({ f: 1400, f2: 2100, t, d: 0.07, type: "triangle", g: 0.08, pan });
+      tone({ f: 2100, t: t + 0.07, d: 0.09, type: "sine", g: 0.05, pan });
+    } else if (tier === 1) {
+      [392, 587, 784, 1175].forEach((f, i) =>
+        tone({ f, t: t + i * 0.06, d: 0.2, type: "sawtooth", g: 0.06, pan, echo: true, lp: 3200, a: 0.005 }));
+    } else {
+      tone({ f: 110, f2: 38, t, d: 1.6, type: "sine", g: 0.35, a: 0.03 });
+      tone({ f: 220, f2: 55, t, d: 1.3, type: "sawtooth", g: 0.09, lp: 600, echo: true, a: 0.05 });
+      whoosh(t, 1.1, 300, 6000, 0.14, pan);
+      [1568, 2349, 3136].forEach((f, i) =>
+        tone({ f, t: t + 0.25 + i * 0.09, d: 0.7, type: "sine", g: 0.035, pan, echo: true, a: 0.02 }));
+    }
+  }
+
+  // the first click/press only enables audio (browsers need a gesture); later ones toggle it
+  function toggleSound() {
+    const first = !audio;
+    ensureAudio();
+    if (!first) soundOn = !soundOn;
+    soundHud();
+    if (soundOn && audio) setTimeout(() => sfx(0, 40, true), 60);   // small blip as feedback
+  }
+  const sndBtn = $("sndbtn");
+  sndBtn.addEventListener("pointerdown", e => e.stopPropagation());
+  sndBtn.addEventListener("click", toggleSound);
+
+  // any other click enables audio, since browsers only allow it after a user gesture
+  addEventListener("pointerdown", ensureAudio);
+
+  // ---------- keyboard / tap ----------
+  function togglePause() { paused = !paused; document.body.classList.toggle("paused", paused); }
+  addEventListener("keydown", e => {
+    if (e.code === "KeyS") { toggleSound(); return; }
+    ensureAudio();
+    if (e.code === "Space") { e.preventDefault(); togglePause(); }
+    else if (e.key >= "1" && e.key <= "3") sfx(+e.key - 1, W / 2, true);   // preview the 3 sounds
+  });
+  addEventListener("dblclick", togglePause);
+
+  // ---------- click an amount -> transaction page on mempool.space ----------
+  function hit(ev) {
+    const px = ev.clientX, py = ev.clientY;
+    for (let i = drops.length - 1; i >= 0; i--) {          // newest on top
+      const b = drops[i].box;
+      if (b && px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) return drops[i];
+    }
+    return null;
+  }
+  cv.addEventListener("mousemove", ev => {
+    hovered = hit(ev);
+    cv.style.cursor = hovered ? "pointer" : "default";
+  });
+  cv.addEventListener("mouseleave", () => { hovered = null; cv.style.cursor = "default"; });
+  cv.addEventListener("click", ev => {
+    const d = hit(ev);
+    if (d && d.txid) window.open("https://mempool.space/tx/" + d.txid, "_blank", "noopener");
+  });
+
+  // ---------- data: mempool.space ----------
+  // 1) WebSocket: new blocks + a stream of new txids
+  // 2) /mempool/recent poll: txs with their total output value
+  // 3) txids not covered by (2) are looked up one by one (rate-limited) so big ones are never missed
+  let ws, backoff = 1000, firstBlocks = true;
+  const lookupQ = [];
+  let primed = false;
+  let lookups = 0;
+
+  function connect() {
+    setStatus("connecting…");
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+      backoff = 1000; firstBlocks = true;
+      ws.send(JSON.stringify({ action: "init" }));
+      ws.send(JSON.stringify({ action: "want", data: ["blocks"] }));
+      ws.send(JSON.stringify({ "track-mempool-txids": true }));
+      setStatus("listening");
+    };
+    ws.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.block) { blockFound(m.block.height, m.block.tx_count); }
+      if (m.blocks && firstBlocks) {          // initial backlog: show height only, no animation
+        firstBlocks = false;
+        const b = m.blocks[m.blocks.length - 1];
+        if (b) $("blk").textContent = "#" + b.height;
+      }
+      if (m["mempool-txids"] && m["mempool-txids"].added) {
+        for (const id of m["mempool-txids"].added) {
+          if (known.has(id) || lookupQ.includes(id)) continue;
+          if (lookupQ.length > 80) lookupQ.shift();
+          lookupQ.push(id);
+        }
+      }
+    };
+    ws.onclose = () => { setStatus("reconnecting…"); setTimeout(connect, backoff); backoff = Math.min(backoff * 2, 15000); };
+    ws.onerror = () => { try { ws.close(); } catch {} };
+  }
+
+  async function pollRecent() {
+    try {
+      const r = await fetch(API + "/mempool/recent");
+      if (r.ok) {
+        const list = await r.json();
+        if (!primed) { primed = true; for (const t of list) known.add(t.txid); }   // first batch is old: skip it
+        else for (const t of list) ingest(t.txid, t.value);
+      }
+    } catch {}
+    setTimeout(pollRecent, 2000);
+  }
+
+  async function lookupLoop() {
+    if (lookupQ.length && lookups < 3) {
+      const id = lookupQ.shift();
+      if (!known.has(id)) {
+        lookups++;
+        fetch(API + "/tx/" + id).then(r => r.ok ? r.json() : null).then(t => {
+          if (t && t.vout) ingest(id, t.vout.reduce((s, o) => s + (o.value || 0), 0));
+        }).catch(() => {}).finally(() => { lookups--; });
+      }
+    }
+    setTimeout(lookupLoop, 350);
+  }
+
+  // ---------- demo mode (?demo) ----------
+  function demo() {
+    setStatus("demo");
+    setInterval(() => {
+      const r = Math.random();
+      const btc = r < 0.55 ? Math.random() * 0.009 : r < 0.92 ? 0.01 + Math.random() * 0.99 : r < 0.99 ? 1 + Math.random() * 12 : 10 + Math.random() * 300;
+      seen++; $("n").textContent = seen; spawn(btc);
+    }, 90);
+    setInterval(() => blockFound(900000 + ((Math.random() * 1000) | 0), 2000 + ((Math.random() * 1500) | 0)), 25000);
+  }
+
+  if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); }
+})();
+</script>
+</body>
+</html>
