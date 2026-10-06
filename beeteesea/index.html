@@ -52,6 +52,27 @@
   .w:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:3px}
   .ttl p{margin:8px 0 0;max-width:38ch;font-size:13.5px;line-height:1.35;color:var(--ink);opacity:.82}
 
+  /* Current block height — sits in the title row, just right of the three words.
+     Filled by /beeteesea/blockheight.js; --ink/--acc are adopted from the live scene. */
+  .bh{
+    /* sits level with the words: centred on the title line, margin box trimmed back to the
+       line height so it never pushes the tagline down — it overhangs the line slightly. */
+    align-self:center;margin:-.21em 0 -.21em .6em;
+    padding-left:.62em;border-left:1px solid rgba(127,127,127,.45);
+    display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;
+    pointer-events:none;
+  }
+  .bh-l{
+    font-size:clamp(9px,.34em,12px);font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    opacity:.55;line-height:1;white-space:nowrap;
+  }
+  .bh b{
+    font:inherit;font-weight:780;font-variant-numeric:tabular-nums;line-height:1;
+    display:inline-block;transition:color .3s;
+  }
+  .bh.flash b{animation:bh-flash 1.6s ease-out 1}
+  @keyframes bh-flash{0%{color:var(--acc);transform:scale(1.14)}100%{color:inherit;transform:none}}
+
   .boot{
     position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:9px;
     font:600 12px/1 ui-monospace,Menlo,Consolas,monospace;color:var(--ink);opacity:.5;
@@ -63,9 +84,11 @@
   @media (max-width:560px){
     .ttl{left:14px;top:12px;max-width:84vw}
     /* 22px keeps "Bee Tee Sea" clear of the scene's Pause/Donate pills (which sit top-right) */
-    .ttl h1{gap:.22em;font-size:22px}
+    .ttl h1{gap:.22em;font-size:22px;flex-wrap:wrap}
     /* 52vw keeps the tagline clear of the scene's movers panel (top-right, ~140px wide) */
     .ttl p{font-size:12.5px;max-width:52vw}
+    /* block height drops to its own line so it never crowds those top-right pills */
+    .bh{flex-basis:100%;margin:7px 0 0;padding-left:0;border-left:0}
   }
 </style>
 </head>
@@ -77,6 +100,9 @@
     <button class="w" data-t="bee" type="button">Bee</button>
     <button class="w" data-t="tee" type="button">Tee</button>
     <button class="w" data-t="sea" type="button">Sea</button>
+    <span class="bh" id="bh" role="status" aria-live="off" title="Height of the latest Bitcoin block — refreshes every 30s">
+      <span class="bh-l">block height</span><b id="sBlock">—</b>
+    </span>
   </h1>
   <p id="tag">Bitcoin Mempool Ocean — every transaction waiting for a block, drawn by how much bitcoin it moves.</p>
 </div>
@@ -152,5 +178,6 @@ window.addEventListener('hashchange', function () { select(pick(), false); });
 
 select(pick(), false);
 </script>
+<script src="/beeteesea/blockheight.js" defer></script>
 </body>
 </html>
