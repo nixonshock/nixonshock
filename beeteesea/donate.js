@@ -15,9 +15,9 @@
 
   // API base. Production = Tailscale funnel. Override via localStorage for local testing.
   var BASE = localStorage.getItem('donateApiBase') || 'https://relay.taila67aa4.ts.net/api/donate';
-  var LAST_KEY = 'beeteesea_last_donation_id';
-  var POLL_MS = 4000;
+  var POLL_MS = 3000;
   var PRESETS = [100, 1000, 10000, 50000];
+  var CATCHUP_S = 12;          // replay a donation younger than this on first contact
 
   var card = document.getElementById('dcard');
   if (!card) return;
@@ -79,7 +79,16 @@
 
   /* ---------------- helpers ---------------- */
   function api(path, opts) {
-    return fetch(BASE.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, ''), opts)
+    var url = BASE.replace(/\/+$/, '') + '/' + path.replace(/^\/+/, '');
+    var o = opts || {};
+    if (!o.method || o.method === 'GET') {
+      // No caching, ever: a cached /latest freezes a viewer's donation id and the
+      // rain silently stops for them. no-store + a unique query defeats browser
+      // HTTP cache and any intermediary proxy alike.
+      o = Object.assign({}, o, { cache: 'no-store' });
+      url += (url.indexOf('?') < 0 ? '?' : '&') + '_=' + Date.now();
+    }
+    return fetch(url, o)
       .then(function (r) { return r.json().catch(function () { return {}; }); })
       .catch(function () { return null; });
   }
@@ -151,15 +160,9 @@
       } else { flashCpy(); }
     });
 
-    // seed last-id so switching scenes / refresh never replays old donations
-    var seenStart = parseInt(localStorage.getItem(LAST_KEY) || '0', 10);
-    api('latest').then(function (res) {
-      if (res && res.id) {
-        if (!seenStart) localStorage.setItem(LAST_KEY, String(res.id));
-        refreshHistory();
-      }
-    });
-    setInterval(poll, POLL_MS);
+    // History only. The donation watcher is started once at init, independent of
+    // this health gate, so the rain keeps working even if the card cannot be built.
+    refreshHistory();
   }
 
   function flashCpy() { var t = cpyBtn.textContent; cpyBtn.textContent = 'Copied ✓'; setTimeout(function () { cpyBtn.textContent = t; }, 1600); }
@@ -355,7 +358,7 @@
       } else {
         ctx.clearRect(0, 0, cv.width, cv.height);
         raf = null; banner = null; flash = null;
-        if (state.pending) {
+        if (state.pending && statusEl) {
           statusEl.textContent = '✅ Payment received — thank you!';
           statusEl.classList.add('paid');
           state.pending = null;
@@ -365,19 +368,50 @@
     raf = requestAnimationFrame(frame);
   }
 
-  /* ---------------- poller ---------------- */
-  function poll() {
+  /* ---------------- donation watcher ----------------
+   * Reliability rules, learned the hard way:
+   *  - The "last seen donation" lives in THIS PAGE's memory, never localStorage.
+   *    localStorage is shared by every tab and every scene on this origin, so a
+   *    shared id meant only the FIRST tab to poll consumed the donation and every
+   *    other open screen stayed dry. Per-page state = every screen rains.
+   *  - The watcher starts at module init, NOT behind the /health gate, so a backend
+   *    restart or a flaky health check can never switch the rain off.
+   *  - Poll immediately (not after the first interval), re-poll on tab focus to
+   *    defeat background-timer throttling, and never let anything cache /latest.
+   *  - On first contact, replay a donation that is only a few seconds old, so a
+   *    screen opened slightly late still shows the impact.
+   */
+  var lastId = -1;                       // -1 = not yet seeded
+
+  function rain(amount) {
+    if (window.BEETEESEA_NO_SOUND !== true) { try { playThunder(amount); } catch (e) {} }
+    fireShower(amount);
+    refreshHistory();
+  }
+
+  function pollOnce() {
     api('latest').then(function (res) {
-      if (!res || !res.id) return;
-      var last = parseInt(localStorage.getItem(LAST_KEY) || '0', 10);
-      if (res.id > last) {
-        localStorage.setItem(LAST_KEY, String(res.id));
-        if (window.BEETEESEA_NO_SOUND !== true) {
-          try { playThunder(res.amount); } catch (e) {}
+      if (!res || typeof res.id !== 'number') return;   // transient: retry next tick
+      if (lastId < 0) {
+        lastId = res.id;                                // baseline — a stale id never fires
+        if (res.id > 0 && res.ts) {
+          var age = Math.floor(Date.now() / 1000 - res.ts);   // tolerant of float ts
+          if (age >= 0 && age <= CATCHUP_S) rain(res.amount || 0);
         }
-        fireShower(res.amount || 0);
-        refreshHistory();
+        return;
       }
+      if (res.id > lastId) {
+        lastId = res.id;
+        rain(res.amount || 0);
+      }
+    });
+  }
+
+  function startWatcher() {
+    pollOnce();
+    setInterval(pollOnce, POLL_MS);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) pollOnce();                 // catch up after throttling
     });
   }
   function playThunder(amount) {
@@ -474,5 +508,6 @@
       else { setTimeout(boot, 20000); }
     });
   }
+  startWatcher();   // always on: the rain must not depend on the card building
   boot();
 })();
