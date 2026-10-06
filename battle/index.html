@@ -15,17 +15,17 @@ html,body{margin:0}
 body{background:radial-gradient(1200px 600px at 50% -200px,#1b2a4d,var(--bg));color:var(--text);min-height:100vh;
   font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif}
 .wrap{max-width:1100px;margin:0 auto;padding:16px}
-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:12px}
 .brand h1{margin:0;font-size:20px;letter-spacing:.2px}
 .brand h1 small{color:var(--gold);font-weight:600;margin-left:6px}
 .brand p{margin:2px 0 0;color:var(--mute);font-size:13px}
 .ticker{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.price{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;transition:color .25s}
+.price{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;transition:color .25s}
 .price.up{color:var(--green)}.price.down{color:var(--red)}
 .bh{display:flex;align-items:baseline;gap:7px;text-align:center;min-width:120px}
 .bh .bhL{font-size:12px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.1em}
 .bh .bhL::after{content:":"}
-.bh b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.bh b{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
 .bh.flash b{animation:bhflash 1.6s ease-out 1}
 @keyframes bhflash{0%{color:var(--gold);transform:scale(1.18)}100%{color:inherit;transform:none}}
 .status{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
