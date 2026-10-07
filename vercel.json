@@ -50,21 +50,32 @@
       "permanent": true
     },
     {
-        "source": "/beeteasea",
-        "destination": "/beeteesea",
-        "permanent": false
-      },
-      {
-        "source": "/fight",
-        "destination": "/battle",
-        "permanent": true
-      },
-      {
-        "source": "/fight/(.*)",
-        "destination": "/battle",
-        "permanent": true
-      }
-    ],
+      "source": "/beeteasea",
+      "destination": "/beeteesea",
+      "permanent": false
+    },
+    {
+      "source": "/fight",
+      "destination": "/battle",
+      "permanent": true
+    },
+    {
+      "source": "/fight/(.*)",
+      "destination": "/battle",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://www.nixonshock.com/matrix/$1",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "matrix.nixonshock.com"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/",
