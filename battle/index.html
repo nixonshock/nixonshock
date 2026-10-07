@@ -60,13 +60,17 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
 .donate .dh{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-weight:700}
 .donate img{border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line);align-self:center;display:block}
 @media(max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
+.themebar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.tbtn{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(17,26,46,.55);color:var(--text);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+.tbtn:hover{border-color:var(--mute)}
+.tbtn[aria-pressed="true"]{background:var(--gold);color:#0a0e1a;border-color:var(--gold)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <h1>🐵 Monkey King vs Demons <small>猴王大战魔人</small></h1>
+      <h1 id="ttl">🐵 Monkey King vs Demons <small>猴王大战魔人</small></h1>
       <p>Bitcoin 1-minute candles decide who falls. Green = bulls strike, red = bears strike.</p>
     </div>
     <div class="bh"><span class="bhL">Block</span><b id="sBlock">—</b></div>
@@ -86,6 +90,8 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
     </div>
   </header>
 
+  <nav class="themebar" id="themebar" aria-label="Choose a battle theme"></nav>
+
   <div class="card"><canvas id="arena"></canvas></div>
 
   <div class="grid">
@@ -101,17 +107,12 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
 
   <details>
     <summary>How the fight works</summary>
-    <ul>
-      <li><b>While a minute is open</b>, the tug-of-war follows price versus that minute's open. Above the open, the Monkey King's army pushes the demons back; below it, the demons push forward.</li>
-      <li><b>When the minute closes</b>, that candle settles the round. Green candle: a demon falls. Red candle: a hero falls. Bigger candle bodies mean bigger beams, and 2.2x the usual body size or more is a multi-kill. A tiny candle is a standoff.</li>
-      <li><b>When one army is wiped out</b>, the other wins the war and the Immortal Peaches revive everyone for the next one.</li>
-      <li>Every visit starts with both armies at full strength (7 vs 7). The chart and battle log still show the recent candles.</li>
-    </ul>
+    <ul id="how"></ul>
   </details>
 
   <footer>
     For fun only, not financial advice. Prices from public exchange feeds (Binance, with Kraken as backup).
-    The warriors are original illustrations inspired by the classic novel <i>Journey to the West</i>.
+    <span id="credit"></span>
   </footer>
 </div>
 
@@ -173,16 +174,19 @@ function classify(c) {
 }
 
 function addLog(res, extra) {
-  let cls, txt;
-  if (res.dir > 0) { cls = 'g'; txt = '🟢 ' + pctFmt(res.pct) + ' · ' + (res.kills > 1 ? res.kills + ' demons slain' : 'a demon falls'); }
-  else if (res.dir < 0) { cls = 'r'; txt = '🔴 ' + pctFmt(res.pct) + ' · ' + (res.kills > 1 ? res.kills + ' heroes slain' : 'a hero falls'); }
-  else { cls = 'n'; txt = '⚪ ' + pctFmt(res.pct) + ' · standoff'; }
-  if (extra) txt += ' · ' + extra;
-  logs.unshift({ t: res.c.t, cls, txt });
+  logs.unshift({ t: res.c.t, dir: res.dir, pct: res.pct, kills: res.kills, extra: extra || '' });
   if (logs.length > 14) logs.pop();
 }
+function logLine(l) {
+  const T = theme.txt; let cls, txt;
+  if (l.dir > 0) { cls = 'g'; txt = '🟢 ' + pctFmt(l.pct) + ' · ' + (l.kills > 1 ? l.kills + ' ' + T.foeN + ' slain' : 'a ' + T.foe1 + ' falls'); }
+  else if (l.dir < 0) { cls = 'r'; txt = '🔴 ' + pctFmt(l.pct) + ' · ' + (l.kills > 1 ? l.kills + ' ' + T.heroN + ' slain' : 'a ' + T.hero1 + ' falls'); }
+  else { cls = 'n'; txt = '⚪ ' + pctFmt(l.pct) + ' · standoff'; }
+  if (l.extra) txt += ' · ' + l.extra;
+  return { cls, txt };
+}
 function renderLog() {
-  elLog.innerHTML = logs.map(l => `<li><time>${hhmm(l.t)}</time><span class="${l.cls}">${l.txt}</span></li>`).join('');
+  elLog.innerHTML = logs.map(l => { const x = logLine(l); return `<li><time>${hhmm(l.t)}</time><span class="${x.cls}">${x.txt}</span></li>`; }).join('');
 }
 
 /* ───────── armies ───────── */
@@ -363,25 +367,25 @@ function fpos(f) {
   const s = SLOTS[f.i], dir = f.side === 'h' ? -1 : 1;
   let x = front + dir * s.dx, y = GROUND + s.dy * 0.5;
   if (f.atk > 0) { const a = 1 - f.atk / ATK; x -= dir * Math.sin(a * Math.PI) * 30; }
-  if (f.leader) y -= 30 + Math.sin(time * 2 + f.seed) * 4;
+  if (f.leader) y -= theme.lift + Math.sin(time * 2 + f.seed) * 4;
   y += Math.sin(time * 5 + f.seed) * 1.5;
   if (warOver && f.alive && warOver.winner === f.side) y -= Math.abs(Math.sin(time * 6 + f.seed)) * 18;
-  return { x, y, dir, sc: (1 + (GROUND + s.dy * 0.5 - GROUND) / 220) * (f.leader ? (f.side === 'd' ? 1.4 : 1.3) : 1) };
+  return { x, y, dir, sc: (1 + (GROUND + s.dy * 0.5 - GROUND) / 220) * (f.leader ? theme.lscale[f.side] : 1) };
 }
 const lead = s => army[s].find(f => f.alive);
 
 function endWar(winner) {
   score[winner]++;
   warOver = { winner, t: 0 };
-  banner(winner === 'h' ? 'MONKEY KING WINS THE WAR!  猴王获胜' : 'THE DEMONS WIN THE WAR!  魔人获胜',
-    winner === 'h' ? 'The demon horde is destroyed' : 'The heroes have fallen', winner === 'h' ? '#2fe38a' : '#ff4d5e', 5.2);
+  banner(winner === 'h' ? theme.txt.heroWin : theme.txt.foeWin,
+    winner === 'h' ? theme.txt.heroWinSub : theme.txt.foeWinSub, winner === 'h' ? '#2fe38a' : '#ff4d5e', 5.2);
   flashA = 0.5;
 }
 function revive() {
   army = { h: makeArmy('h', 0), d: makeArmy('d', 0) };
   warOver = null;
-  banner('IMMORTAL PEACHES  蟠桃', 'Both armies are revived. A new war begins!', '#ffb3c7', 2.2);
-  for (const f of army.h.concat(army.d)) { const p = fpos(f); burst(p.x, p.y - 40, 8, 'rgb(255,170,200)', 90, 1.1, 3.5); }
+  banner(theme.txt.revive, theme.txt.reviveSub, theme.txt.reviveCol, 2.2);
+  for (const f of army.h.concat(army.d)) { const p = fpos(f); burst(p.x, p.y - 40, 8, theme.txt.reviveRGB, 90, 1.1, 3.5); }
 }
 
 function updateFight(dt) {
@@ -433,7 +437,7 @@ function updateFight(dt) {
     if (!e.started) {
       e.started = true; flashA = Math.max(flashA, 0.18);
       const g = r.dir > 0, tag = r.dir === 0 ? 'DOJI  十字星' : (g ? 'GREEN CANDLE' : 'RED CANDLE') + '  ' + pctFmt(r.pct);
-      const sub = r.dir === 0 ? 'Both armies hold their ground' : g ? 'The Monkey King\'s army powers up!' : 'The demon horde powers up!';
+      const sub = r.dir === 0 ? 'Both armies hold their ground' : g ? theme.txt.heroUp : theme.txt.foeUp;
       banner(tag, sub, r.dir === 0 ? '#c9d4f0' : g ? '#2fe38a' : '#ff4d5e', 1.4);
     }
     if (e.stage === 0) {
@@ -447,11 +451,11 @@ function updateFight(dt) {
         e.victims.forEach(f => {
           if (!f.alive) return;
           const p = fpos(f); f.alive = false; f.dyingT = 0;
-          burst(p.x, p.y - 40, 46, loser === 'd' ? 'rgb(255,120,90)' : 'rgb(120,255,190)', 260, 0.9, 4.5);
-          ring(p.x, p.y - 40, loser === 'd' ? '255,120,90' : '120,255,190', 150);
+          burst(p.x, p.y - 40, 46, theme.burst[loser], 260, 0.9, 4.5);
+          ring(p.x, p.y - 40, theme.ring[loser], 150);
         });
         shake = 6 + r.kills * 5 + (r.power === 'ultimate' ? 8 : 0); flashA = 0.35 + 0.1 * r.kills;
-        banner(r.kills > 1 ? ['', '', 'DOUBLE KILL!', 'TRIPLE KILL!'][r.kills] : (r.dir > 0 ? 'DEMON SLAIN!  魔人倒下' : 'HERO DOWN!  勇士倒下'),
+        banner(r.kills > 1 ? ['', '', 'DOUBLE KILL!', 'TRIPLE KILL!'][r.kills] : (r.dir > 0 ? theme.txt.foeDown : theme.txt.heroDown),
           r.power === 'light' ? 'a light strike' : r.power === 'normal' ? 'a clean strike' : r.power === 'strong' ? 'a strong strike' : r.power === 'heavy' ? 'a heavy beam' : 'an ultimate beam',
           r.dir > 0 ? '#2fe38a' : '#ff4d5e', 1.5);
         if (!aliveList(loser).length) endWar(r.dir > 0 ? 'h' : 'd');
@@ -476,6 +480,9 @@ function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Ma
 function buildBG() {
   bg = document.createElement('canvas'); bg.width = arena.width; bg.height = arena.height;
   const c = bg.getContext('2d'); c.scale(K, K);
+  theme.bg(c);
+}
+function bgMonkey(c) {
   let g = c.createLinearGradient(0, 0, 0, 270);
   g.addColorStop(0, '#060919'); g.addColorStop(.5, '#1a1640'); g.addColorStop(.85, '#58305c'); g.addColorStop(1, '#c4764f');
   c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -642,13 +649,13 @@ function drawFighter(c, f) {
   const gy = GROUND + SLOTS[f.i].dy * 0.5;
   c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(p.x, gy + 2, 24 * p.sc, 6 * p.sc, 0, 0, TAU); c.fill();
   if (f.alive) {
-    const col = f.side === 'h' ? (f.leader ? '255,214,90' : '70,255,160') : (f.leader ? '190,70,255' : '255,70,80');
+    const col = theme.aura[f.side][f.leader ? 0 : 1];
     aura(c, p.x, p.y, col, inten * (warOver && warOver.winner === f.side ? 1.4 : 1), time + f.seed, p.sc);
-    if (f.leader) drawCloud(c, p.x, p.y + 4, p.sc * 1.1, f.side === 'h', time, f.seed);
+    if (f.leader) theme.platform(c, p.x, p.y + 4, p.sc * 1.1, f.side === 'h', time, f.seed);
   }
   c.translate(p.x, p.y); c.scale(face * p.sc, p.sc);
   if (rot) c.rotate(rot);
-  if (f.side === 'h') drawMonkey(c, f, a, time); else drawDemon(c, f, a, time);
+  (f.side === 'h' ? theme.drawH : theme.drawD)(c, f, a, time);
   c.restore();
   if (!f.alive && f.dyingT < 1.6) { // spirit
     c.save(); c.globalCompositeOperation = 'lighter'; const sy = p.y - 50 - f.dyingT * 70, ga = clamp(1 - f.dyingT / 1.6, 0, 1);
@@ -656,6 +663,506 @@ function drawFighter(c, f) {
     c.fillStyle = g; c.beginPath(); c.arc(p.x, sy, 16, 0, TAU); c.fill(); c.restore();
   }
 }
+
+/* ───────── theme: crab vs chicken ───────── */
+function drawClaw(c, x, y, ang, open, col, colD, s) {
+  c.save(); c.translate(x, y); c.rotate(ang); c.scale(s, s);
+  c.fillStyle = col; c.strokeStyle = colD; c.lineWidth = 1.6; c.lineJoin = 'round';
+  c.save(); c.rotate(-open * 0.5);
+  c.beginPath(); c.moveTo(4, -7); c.quadraticCurveTo(22, -12, 27, -1); c.quadraticCurveTo(16, -3, 6, 2); c.closePath(); c.fill(); c.stroke();
+  c.restore();
+  c.save(); c.rotate(open * 0.5);
+  c.beginPath(); c.moveTo(4, 7); c.quadraticCurveTo(21, 11, 26, 1); c.quadraticCurveTo(15, 2, 6, -2); c.closePath(); c.fill(); c.stroke();
+  c.restore();
+  c.beginPath(); c.ellipse(3, 0, 10, 8, 0, 0, TAU); c.fill(); c.stroke();
+  c.restore();
+}
+
+function drawCrab(c, f, a, t) {
+  const L = f.leader;
+  const sh = L ? '#f2b53c' : '#20a9b3', shD = L ? '#a8680f' : '#11747d';
+  c.save(); c.scale(1.1, 1.1); c.lineCap = 'round'; c.lineJoin = 'round';
+  // legs
+  c.strokeStyle = shD; c.lineWidth = 3.4;
+  for (let k = 0; k < 4; k++) {
+    const bx = -18 + k * 11, d = (k - 1.5) * 0.55, w = Math.sin(t * 7 + f.seed + k * 1.3) * 3;
+    c.beginPath(); c.moveTo(bx, -16); c.lineTo(bx + d * 10, -24); c.lineTo(bx + d * 17 + w, -1); c.stroke();
+  }
+  // far claw (behind the shell)
+  const idleW = Math.sin(t * 3 + f.seed) * 0.12;
+  const fa = -0.25 + idleW * 0.6 - (a >= 0 ? 0.3 * Math.sin(a * Math.PI) : 0);
+  const fx = 20 + Math.cos(fa) * 13, fy = -22 + Math.sin(fa) * 13;
+  c.strokeStyle = shD; c.lineWidth = 5; c.beginPath(); c.moveTo(20, -22); c.lineTo(fx, fy); c.stroke();
+  drawClaw(c, fx, fy, fa, 0.35 + 0.25 * Math.sin(t * 4 + f.seed + 1), shD, '#073f45', 0.9);
+  // shell
+  c.fillStyle = sh; c.strokeStyle = shD; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(-26, -16); c.bezierCurveTo(-28, -40, -6, -46, 6, -45); c.bezierCurveTo(24, -44, 30, -30, 26, -16);
+  c.bezierCurveTo(14, -9, -14, -9, -26, -16); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = 'rgba(255,255,255,.28)'; c.beginPath(); c.ellipse(-4, -37, 12, 4.5, -0.15, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(0,40,50,.25)';
+  [[-14, -25, 2.3], [0, -30, 2.7], [-6, -21, 2], [12, -23, 2.2]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
+  // eye stalks
+  [8, 16].forEach((ex, i) => {
+    const tx = ex + 2, ty = -52 + Math.sin(t * 5 + f.seed + i) * 0.8;
+    c.strokeStyle = shD; c.lineWidth = 3; c.beginPath(); c.moveTo(ex, -42); c.lineTo(tx, ty); c.stroke();
+    c.fillStyle = '#fff'; c.strokeStyle = shD; c.lineWidth = 1.2; c.beginPath(); c.arc(tx, ty, 4.4, 0, TAU); c.fill(); c.stroke();
+    c.fillStyle = '#111'; c.beginPath(); c.arc(tx + 1.3, ty + 0.3, a >= 0 ? 2.5 : 2.1, 0, TAU); c.fill();
+    c.strokeStyle = '#06292e'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(tx - 4, ty - 6); c.lineTo(tx + 4, ty - 3); c.stroke();
+  });
+  // mouth
+  if (a >= 0) { c.fillStyle = '#0b2a30'; c.beginPath(); c.ellipse(13, -26, 4, 3, 0, 0, TAU); c.fill(); }
+  else { c.strokeStyle = '#0b2a30'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(9, -27); c.quadraticCurveTo(13, -23, 18, -27); c.stroke(); }
+  // crown for the king
+  if (L) {
+    c.fillStyle = '#ffd34d'; c.strokeStyle = '#a56c00'; c.lineWidth = 1.4;
+    c.beginPath(); c.moveTo(-10, -43); c.lineTo(-10, -53); c.lineTo(-6.5, -48); c.lineTo(-3, -55); c.lineTo(0.5, -48); c.lineTo(4, -53); c.lineTo(4, -43); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#e5283a'; c.beginPath(); c.arc(-3, -47, 1.8, 0, TAU); c.fill();
+  }
+  // near claw (the one that attacks)
+  const th = a >= 0 ? -2.1 + 2.7 * ease(a) : -0.95 + Math.sin(t * 3 + f.seed) * 0.1;
+  const sx = 22, sy = -28, arm = 16, hx = sx + Math.cos(th) * arm, hy = sy + Math.sin(th) * arm;
+  c.strokeStyle = sh; c.lineWidth = 6.5; c.beginPath(); c.moveTo(sx, sy); c.lineTo(hx, hy); c.stroke();
+  const open = a >= 0 ? clamp(1.2 - a * 1.4, 0.05, 1) : 0.55 + 0.25 * Math.sin(t * 4 + f.seed);
+  drawClaw(c, hx, hy, th, open, sh, shD, 1.15);
+  c.restore();
+}
+
+function drawChicken(c, f, a, t) {
+  const L = f.leader;
+  const body = L ? '#8b4a22' : '#fdf6e6', bodyD = L ? '#4d2410' : '#dccdae', wingC = L ? '#d0701f' : '#efe2c4';
+  const combC = '#e5283a', beakC = '#ffb52e', legC = '#f0a22a';
+  const pk = a >= 0 ? Math.sin(a * Math.PI) : 0;
+  const bob = Math.sin(t * 6 + f.seed);
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  // tail feathers
+  const tl = L ? [['#1fa06a', -2.95, 40], ['#ff9b21', -2.6, 38], ['#e5283a', -2.25, 34], ['#2d6fd6', -1.95, 28]]
+               : [['#e9dcc0', -2.85, 24], ['#fdf6e6', -2.5, 24], ['#e9dcc0', -2.15, 20]];
+  tl.forEach(([col, ang, len], i) => {
+    const an = ang + Math.sin(t * 3 + f.seed + i) * 0.06;
+    c.save(); c.translate(-14, -40); c.rotate(an); c.fillStyle = col; c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1.2;
+    c.beginPath(); c.ellipse(len / 2, 0, len / 2, len * 0.17, 0, 0, TAU); c.fill(); c.stroke(); c.restore();
+  });
+  // legs + toes
+  c.strokeStyle = legC; c.lineWidth = 3.4;
+  const st = pk * 8;
+  [[-4, 0], [7, st]].forEach(([x, off]) => {
+    c.beginPath(); c.moveTo(x, -22); c.lineTo(x + off * 0.5, -10); c.lineTo(x + off, -1); c.stroke();
+    c.beginPath(); c.moveTo(x + off - 3, -1); c.lineTo(x + off + 8, -1); c.moveTo(x + off + 1, -1); c.lineTo(x + off + 7, -4.5); c.stroke();
+  });
+  // body
+  c.save(); c.translate(0, -34 + bob * 0.6); c.rotate(0.18);
+  c.fillStyle = body; c.strokeStyle = bodyD; c.lineWidth = 2;
+  c.beginPath(); c.ellipse(0, 0, 20, 15, 0, 0, TAU); c.fill(); c.stroke(); c.restore();
+  c.fillStyle = body; c.beginPath(); c.ellipse(11, -33, 10, 12, 0, 0, TAU); c.fill();
+  // wing
+  c.save(); c.translate(1, -38 + bob * 0.6);
+  c.rotate(0.2 + (a >= 0 ? Math.sin(a * Math.PI * 3) * 0.55 : Math.sin(t * 4 + f.seed) * 0.05));
+  c.fillStyle = wingC; c.strokeStyle = bodyD; c.lineWidth = 1.6;
+  c.beginPath(); c.ellipse(-4, 5, 13, 7, 0.1, 0, TAU); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(-14, 6); c.lineTo(-3, 8); c.moveTo(-12, 3); c.lineTo(-2, 4); c.stroke();
+  c.restore();
+  // neck
+  const hx = 14 + pk * 17, hy = -62 + bob * 0.8 + pk * 13;
+  c.strokeStyle = body; c.lineWidth = 10; c.beginPath(); c.moveTo(8, -46); c.quadraticCurveTo(14 + pk * 6, -56 + pk * 4, hx, hy + 2); c.stroke();
+  if (L) {
+    c.fillStyle = '#ff9b21'; c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = 1;
+    [[5, -46], [9, -49], [13, -53], [2, -50]].forEach(([x, y]) => { c.beginPath(); c.ellipse(x, y, 6, 3.5, 0.9, 0, TAU); c.fill(); c.stroke(); });
+  }
+  // head
+  c.fillStyle = body; c.strokeStyle = bodyD; c.lineWidth = 1.6; c.beginPath(); c.arc(hx, hy, 9, 0, TAU); c.fill(); c.stroke();
+  const cs = L ? 1.25 : 1;
+  c.fillStyle = combC;
+  [[-4, -8.5], [0, -11], [4.5, -9]].forEach(([ox, oy]) => { c.beginPath(); c.arc(hx + ox * cs * 0.9, hy + oy * cs * 0.95, 3.6 * cs, 0, TAU); c.fill(); });
+  const op = pk * 4;
+  c.fillStyle = beakC; c.strokeStyle = '#b8741a'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(hx + 7, hy - 3 - op * 0.5); c.lineTo(hx + 18, hy - op * 0.3); c.lineTo(hx + 7, hy + 0.5); c.closePath(); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(hx + 7, hy + 1); c.lineTo(hx + 16, hy + 2 + op); c.lineTo(hx + 7, hy + 4); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = combC; c.beginPath(); c.ellipse(hx + 7, hy + 7, 2.6, 4, 0, 0, TAU); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(hx + 3, hy - 3, 3, 0, TAU); c.fill();
+  c.fillStyle = '#111'; c.beginPath(); c.arc(hx + 4, hy - 3, 1.6, 0, TAU); c.fill();
+  c.strokeStyle = '#1b0d06'; c.lineWidth = 2; c.beginPath(); c.moveTo(hx - 1.5, hy - 8); c.lineTo(hx + 7, hy - 4.5); c.stroke();
+}
+
+function platFoam(c, x, y, sc, hero, t, seed) {
+  c.save(); c.translate(x, y); c.scale(sc, sc);
+  const b = Math.sin(t * 2.4 + seed) * 1.5;
+  c.fillStyle = 'rgba(70,190,210,.7)'; c.beginPath(); c.ellipse(0, 6 + b, 40, 9, 0, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.93)';
+  [[-26, 0, 11], [-9, -4, 14], [11, -3, 13], [27, 1, 10]].forEach(([ox, oy, r]) => { c.beginPath(); c.arc(ox, oy + b, r, 0, TAU); c.fill(); });
+  c.strokeStyle = 'rgba(190,240,255,.8)'; c.lineWidth = 1.4;
+  for (let i = 0; i < 4; i++) {
+    const bx = -24 + i * 16 + Math.sin(t * 2 + i + seed) * 3, by = -10 - ((t * 14 + i * 9 + seed * 5) % 24);
+    c.beginPath(); c.arc(bx, by, 2.4 + (i % 2), 0, TAU); c.stroke();
+  }
+  c.restore();
+}
+
+function platStraw(c, x, y, sc, hero, t, seed) {
+  c.save(); c.translate(x, y); c.scale(sc, sc);
+  const b = Math.sin(t * 2 + seed) * 1.5;
+  c.fillStyle = '#d8a53a'; rr(c, -34, -4 + b, 68, 17, 6); c.fill();
+  c.strokeStyle = '#9a6c18'; c.lineWidth = 1.3;
+  for (let i = 0; i < 9; i++) { const sx = -30 + i * 7.5; c.beginPath(); c.moveTo(sx, -2 + b); c.lineTo(sx + 3, 11 + b); c.stroke(); }
+  c.strokeStyle = '#6b4410'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-14, -4 + b); c.lineTo(-14, 13 + b); c.moveTo(14, -4 + b); c.lineTo(14, 13 + b); c.stroke();
+  c.strokeStyle = '#e9c25a'; c.lineWidth = 1.6;
+  for (let i = 0; i < 5; i++) { const sx = -26 + i * 13, wv = Math.sin(t * 3 + i + seed) * 2; c.beginPath(); c.moveTo(sx, -4 + b); c.lineTo(sx + 4 + wv, -11 + b); c.stroke(); }
+  c.restore();
+}
+
+function bgBeach(c) {
+  const rnd = mulberry(11);
+  let g = c.createLinearGradient(0, 0, 0, 250);
+  g.addColorStop(0, '#0d1236'); g.addColorStop(.4, '#2b2a6b'); g.addColorStop(.72, '#b4527a'); g.addColorStop(.9, '#ff9a62'); g.addColorStop(1, '#ffd9a0');
+  c.fillStyle = g; c.fillRect(0, 0, W, 262);
+  c.fillStyle = '#fff'; for (let i = 0; i < 70; i++) { c.globalAlpha = .2 + rnd() * .6; c.fillRect(rnd() * W, rnd() * 120, 1.5, 1.5); } c.globalAlpha = 1;
+  // sun
+  g = c.createRadialGradient(780, 246, 10, 780, 246, 190); g.addColorStop(0, 'rgba(255,230,160,.65)'); g.addColorStop(1, 'rgba(255,200,140,0)');
+  c.fillStyle = g; c.fillRect(540, 60, 480, 200);
+  c.save(); c.beginPath(); c.rect(0, 0, W, 246); c.clip(); c.fillStyle = '#fff0c4'; c.beginPath(); c.arc(780, 246, 62, 0, TAU); c.fill(); c.restore();
+  c.fillStyle = 'rgba(255,170,150,.22)';
+  [[180, 120, 150, 9], [420, 150, 200, 8], [640, 100, 170, 7]].forEach(([x, y, w, h]) => { c.beginPath(); c.ellipse(x, y, w, h, 0, 0, TAU); c.fill(); });
+  // sea
+  g = c.createLinearGradient(0, 244, 0, 270); g.addColorStop(0, '#356b94'); g.addColorStop(1, '#16405e');
+  c.fillStyle = g; c.fillRect(0, 244, W, 24);
+  c.fillStyle = 'rgba(255,230,170,.55)';
+  for (let i = 0; i < 14; i++) { const w = 20 + rnd() * 60; c.fillRect(780 - w / 2 + (rnd() - .5) * 30, 246 + i * 1.6, w * (1 - i / 16), 1.2); }
+  c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 1;
+  for (let i = 0; i < 18; i++) { const x = rnd() * W, y = 248 + rnd() * 16; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 20 + rnd() * 30, y); c.stroke(); }
+  // sand
+  g = c.createLinearGradient(0, 262, 0, H); g.addColorStop(0, '#9b7a5c'); g.addColorStop(.18, '#7f6249'); g.addColorStop(1, '#2c2126');
+  c.fillStyle = g; c.fillRect(0, 262, W, H - 262);
+  c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 3; c.beginPath();
+  for (let x = 0; x <= W; x += 8) c.lineTo(x, 264 + Math.sin(x * .05) * 2.2); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,.22)'; c.lineWidth = 1.5; c.beginPath();
+  for (let x = 0; x <= W; x += 8) c.lineTo(x, 272 + Math.sin(x * .04 + 1.5) * 3); c.stroke();
+  c.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 220; i++) c.fillRect(rnd() * W, 272 + rnd() * (H - 272), 1.6, 1.2);
+  c.fillStyle = 'rgba(255,230,190,.12)'; for (let i = 0; i < 160; i++) c.fillRect(rnd() * W, 272 + rnd() * (H - 272), 1.6, 1.2);
+  c.strokeStyle = 'rgba(0,0,0,.2)'; c.lineWidth = 1;
+  for (let i = 0; i < 14; i++) { const x = rnd() * W, y = 282 + rnd() * 140; c.beginPath(); c.arc(x, y, 18 + rnd() * 30, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); }
+  // palms
+  const palm = (x, base, hh, lean, sc) => {
+    c.strokeStyle = '#1a1a26'; c.lineWidth = 7 * sc; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x, base); c.quadraticCurveTo(x + lean * .5, base - hh * .55, x + lean, base - hh); c.stroke();
+    const tx = x + lean, ty = base - hh; c.strokeStyle = '#102428'; c.lineWidth = 3.4 * sc;
+    for (let i = 0; i < 7; i++) {
+      const an = -Math.PI * 0.95 + i * (Math.PI * 0.9 / 6), Ln = 62 * sc;
+      c.beginPath(); c.moveTo(tx, ty);
+      c.quadraticCurveTo(tx + Math.cos(an) * Ln * .6, ty + Math.sin(an) * Ln * .6 - 14 * sc, tx + Math.cos(an) * Ln, ty + Math.sin(an) * Ln + 18 * sc); c.stroke();
+    }
+  };
+  palm(56, 300, 190, 26, 1); palm(104, 292, 130, -16, .75); palm(948, 304, 200, -30, 1.05); palm(900, 294, 120, 18, .7);
+  // rocks, starfish, shells
+  c.fillStyle = '#2a2430'; [[30, 332, 40, 18], [975, 342, 46, 20], [150, 318, 22, 9]].forEach(([x, y, rx, ry]) => { c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, TAU); c.fill(); });
+  c.fillStyle = 'rgba(255,255,255,.08)'; [[22, 324, 18, 6], [968, 333, 20, 7]].forEach(([x, y, rx, ry]) => { c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, TAU); c.fill(); });
+  const star = (x, y, r, col) => {
+    c.fillStyle = col; c.beginPath();
+    for (let i = 0; i < 10; i++) { const an = -Math.PI / 2 + i * Math.PI / 5, rd = i % 2 ? r * .45 : r; c.lineTo(x + Math.cos(an) * rd, y + Math.sin(an) * rd); }
+    c.closePath(); c.fill();
+  };
+  star(210, 395, 11, '#ff8a3d'); star(790, 382, 9, '#ff6f5a');
+  c.fillStyle = '#efe2cc'; c.strokeStyle = 'rgba(0,0,0,.25)'; c.lineWidth = 1;
+  [[300, 410], [620, 425], [520, 392], [880, 410]].forEach(([x, y]) => { c.beginPath(); c.ellipse(x, y, 7, 5, 0.3, 0, TAU); c.fill(); c.stroke(); c.beginPath(); c.moveTo(x - 4, y); c.lineTo(x + 4, y - 1); c.stroke(); });
+}
+
+/* ───────── theme: Popeye (1929 strip version) vs pirates ───────── */
+function anchorMark(c, x, y, s, col) {
+  c.save(); c.translate(x, y); c.scale(s, s); c.strokeStyle = col; c.lineWidth = 1.7; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(0, -5); c.lineTo(0, 5); c.moveTo(-3, -2.5); c.lineTo(3, -2.5);
+  c.moveTo(-4.5, 1.5); c.quadraticCurveTo(0, 8.5, 4.5, 1.5); c.stroke();
+  c.beginPath(); c.arc(0, -6.4, 1.5, 0, TAU); c.stroke(); c.restore();
+}
+
+function drawPopeye(c, f, a, t) {
+  const skin = '#f2c18d', skinD = '#c98f58', shirt = '#27407a', pants = '#1e2c52';
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  // legs + big shoes
+  c.strokeStyle = pants; c.lineWidth = 8; c.beginPath(); c.moveTo(-4, -26); c.lineTo(-8, -5); c.moveTo(7, -26); c.lineTo(10 + (a >= 0 ? 7 : 0), -5); c.stroke();
+  c.fillStyle = '#1a1210'; c.beginPath(); c.ellipse(-8, -3, 8.5, 4, 0, 0, TAU); c.ellipse(12 + (a >= 0 ? 7 : 0), -3, 8.5, 4, 0, 0, TAU); c.fill();
+  // far arm: small upper arm, huge forearm, fist
+  const sw = Math.sin(t * 6 + f.seed) * 2;
+  c.strokeStyle = skinD; c.lineWidth = 6; c.beginPath(); c.moveTo(-6, -52); c.lineTo(-15, -44 + sw); c.stroke();
+  c.fillStyle = skinD; c.beginPath(); c.ellipse(-18, -37 + sw, 8, 11, 0.3, 0, TAU); c.fill();
+  c.beginPath(); c.arc(-19, -27 + sw, 6.2, 0, TAU); c.fill();
+  // torso + belt
+  c.fillStyle = shirt; c.beginPath(); c.ellipse(1, -46, 13, 17, 0, 0, TAU); c.fill();
+  c.fillStyle = '#e9ecf5'; [[8, -54], [9, -48], [8, -42]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 1.4, 0, TAU); c.fill(); });
+  c.fillStyle = '#2b1c10'; c.fillRect(-12, -33, 26, 4);
+  // punching arm: thin upper arm, enormous forearm with an anchor tattoo, big fist
+  const th = a >= 0 ? -2.3 + 2.7 * ease(a) : -1.0 + Math.sin(t * 3 + f.seed) * 0.12;
+  const sx = 6, sy = -54, ux = Math.cos(th), uy = Math.sin(th);
+  c.strokeStyle = skin; c.lineWidth = 6; c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + ux * 11, sy + uy * 11); c.stroke();
+  c.save(); c.translate(sx + ux * 21, sy + uy * 21); c.rotate(th);
+  c.fillStyle = skin; c.strokeStyle = skinD; c.lineWidth = 1.5; c.beginPath(); c.ellipse(0, 0, 14, 9.5, 0, 0, TAU); c.fill(); c.stroke();
+  anchorMark(c, -1, 0, 1.05, '#27407a'); c.restore();
+  c.fillStyle = skin; c.strokeStyle = skinD; c.lineWidth = 1.5; c.beginPath(); c.arc(sx + ux * 36, sy + uy * 36, 8.8, 0, TAU); c.fill(); c.stroke();
+  // head: bald dome, jutting chin, one open eye and one squint, pipe
+  const hy = -74;
+  c.fillStyle = skin; c.strokeStyle = skinD; c.lineWidth = 1.5;
+  c.beginPath(); c.arc(2, hy, 12, 0, TAU); c.fill(); c.stroke();
+  c.beginPath(); c.ellipse(11, hy + 9, 10, 9, 0.2, 0, TAU); c.fill(); c.stroke();
+  c.beginPath(); c.arc(4, hy + 3, 10.5, 0, TAU); c.fill();
+  c.fillStyle = skinD; c.beginPath(); c.ellipse(-8, hy + 1, 3, 4, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#4a2c14'; c.lineWidth = 1.8; c.beginPath();
+  c.moveTo(-1, hy - 11.5); c.quadraticCurveTo(-3, hy - 17, 1, hy - 18); c.moveTo(4, hy - 12); c.quadraticCurveTo(5, hy - 18, 9, hy - 17); c.stroke();
+  c.fillStyle = '#e8a977'; c.beginPath(); c.ellipse(14, hy + 3, 4.4, 3.8, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#1b100a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-1, hy - 2); c.lineTo(5, hy - 1.2); c.stroke();
+  c.fillStyle = '#fff'; c.beginPath(); c.ellipse(9.5, hy - 1.5, 3.6, 2.6, 0, 0, TAU); c.fill();
+  c.fillStyle = '#111'; c.beginPath(); c.arc(10.4, hy - 1.5, 1.4, 0, TAU); c.fill();
+  c.strokeStyle = '#2b160a'; c.lineWidth = 2.8; c.beginPath(); c.moveTo(-3, hy - 6); c.lineTo(5, hy - 4.5); c.moveTo(6, hy - 6.5); c.lineTo(14, hy - 3.5); c.stroke();
+  c.strokeStyle = '#7b4a22'; c.lineWidth = 3; c.beginPath(); c.moveTo(14, hy + 10); c.lineTo(26, hy + 6); c.stroke();
+  c.fillStyle = '#4e2c14'; c.beginPath(); c.ellipse(28.5, hy + 3, 3.8, 5, 0.25, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(230,230,240,.55)';
+  for (let i = 0; i < 3; i++) { const k = ((t * 14 + i * 8 + f.seed * 3) % 24); c.beginPath(); c.arc(29 + Math.sin(t * 2 + i) * 3, hy - 3 - k, 2 + k * 0.1, 0, TAU); c.globalAlpha *= 1; c.fill(); }
+}
+
+function drawSailor(c, f, a, t) {
+  const skins = ['#f2c18d', '#d9a066', '#b9794a'], skin = skins[f.i % 3];
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = '#27407a'; c.lineWidth = 8; c.beginPath(); c.moveTo(-4, -26); c.lineTo(-8, -4); c.moveTo(7, -26); c.lineTo(10 + (a >= 0 ? 7 : 0), -4); c.stroke();
+  c.fillStyle = '#17120f'; c.beginPath(); c.ellipse(-8, -3, 7, 3.4, 0, 0, TAU); c.ellipse(12 + (a >= 0 ? 7 : 0), -3, 7, 3.4, 0, 0, TAU); c.fill();
+  c.strokeStyle = skin; c.lineWidth = 5.5; c.beginPath(); c.moveTo(-6, -53); c.lineTo(-15, -42 + Math.sin(t * 6 + f.seed) * 2); c.stroke();
+  c.fillStyle = '#f4f6fb'; c.beginPath(); c.ellipse(1, -45, 13, 18, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#27407a'; c.lineWidth = 2; c.beginPath(); c.moveTo(-9, -55); c.lineTo(1, -38); c.lineTo(11, -55); c.stroke();
+  c.fillStyle = '#c8242f'; c.beginPath(); c.arc(1, -41, 2.4, 0, TAU); c.fill();
+  const th = a >= 0 ? -2.3 + 2.7 * ease(a) : -1.0 + Math.sin(t * 3 + f.seed) * 0.12;
+  const sx = 7, sy = -54, ux = Math.cos(th), uy = Math.sin(th);
+  c.strokeStyle = skin; c.lineWidth = 6; c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + ux * 26, sy + uy * 26); c.stroke();
+  c.fillStyle = skin; c.beginPath(); c.arc(sx + ux * 28, sy + uy * 28, 6.6, 0, TAU); c.fill();
+  const hy = -70;
+  c.fillStyle = skin; c.beginPath(); c.arc(3, hy, 11.5, 0, TAU); c.fill();
+  c.fillStyle = '#e39b72'; c.beginPath(); c.ellipse(13.5, hy + 2, 2.6, 2.3, 0, 0, TAU); c.fill();
+  c.fillStyle = '#f4f6fb'; c.strokeStyle = '#27407a'; c.lineWidth = 2.2;
+  c.beginPath(); c.moveTo(-8, hy - 4); c.quadraticCurveTo(3, hy - 23, 14, hy - 4); c.closePath(); c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(-9, hy - 4); c.lineTo(15, hy - 4); c.stroke();
+  c.fillStyle = '#111'; c.beginPath(); c.arc(9, hy - 1, 1.7, 0, TAU); c.arc(2, hy - 1, 1.5, 0, TAU); c.fill();
+  c.strokeStyle = '#2b1608'; c.lineWidth = 2; c.beginPath(); c.moveTo(6, hy - 5); c.lineTo(12, hy - 3); c.moveTo(-1, hy - 4); c.lineTo(4.5, hy - 3); c.stroke();
+  if (a >= 0) { c.fillStyle = '#4a0f0a'; c.beginPath(); c.ellipse(10, hy + 6, 3.2, 2.6, 0, 0, TAU); c.fill(); }
+  else { c.strokeStyle = '#6b2f14'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(7, hy + 6); c.lineTo(12, hy + 6); c.stroke(); }
+}
+
+function drawPirate(c, f, a, t) {
+  const L = f.leader, skins = ['#e8b88a', '#c98f5a', '#a8683a'], skin = skins[f.i % 3], coat = L ? '#a8202a' : '#7a1c26';
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = '#2a1c14'; c.lineWidth = 9; c.beginPath(); c.moveTo(-5, -27); c.lineTo(-10, -4); c.moveTo(8, -27); c.lineTo(11 + (a >= 0 ? 8 : 0), -4); c.stroke();
+  c.fillStyle = '#120c08'; c.beginPath(); c.ellipse(-10, -3, 8, 3.6, 0, 0, TAU); c.ellipse(13 + (a >= 0 ? 8 : 0), -3, 8, 3.6, 0, 0, TAU); c.fill();
+  // far arm (hook for the captain)
+  const bx = -17, by = -43 + Math.sin(t * 6 + f.seed) * 2;
+  c.strokeStyle = coat; c.lineWidth = 7; c.beginPath(); c.moveTo(-8, -56); c.lineTo(bx, by); c.stroke();
+  if (L) { c.strokeStyle = '#d9b44a'; c.lineWidth = 3; c.beginPath(); c.moveTo(bx, by); c.quadraticCurveTo(bx - 9, by + 4, bx - 5, by + 12); c.stroke(); }
+  else { c.fillStyle = skin; c.beginPath(); c.arc(bx, by, 4.5, 0, TAU); c.fill(); }
+  // torso
+  c.fillStyle = coat; c.beginPath(); c.ellipse(1, -47, 17, 21, 0, 0, TAU); c.fill();
+  if (!L) {
+    c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2.4;
+    for (let k = 0; k < 4; k++) { const y = -60 + k * 8, w = Math.sqrt(Math.max(0, 1 - Math.pow((y + 47) / 21, 2))) * 16; c.beginPath(); c.moveTo(1 - w, y); c.lineTo(1 + w, y); c.stroke(); }
+  } else {
+    c.fillStyle = '#e8c04a'; [-58, -50, -42].forEach(y => { c.beginPath(); c.arc(8, y, 1.9, 0, TAU); c.fill(); });
+    c.strokeStyle = '#e8c04a'; c.lineWidth = 2; c.beginPath(); c.moveTo(-14, -62); c.lineTo(16, -62); c.stroke();
+  }
+  c.fillStyle = '#1b120c'; c.fillRect(-15, -33, 32, 5); c.fillStyle = '#e8c04a'; c.fillRect(0, -34, 6, 7);
+  // cutlass arm
+  const th = a >= 0 ? -2.2 + 2.8 * ease(a) : -1.05 + Math.sin(t * 3 + f.seed) * 0.1;
+  const sx = 8, sy = -58, ux = Math.cos(th), uy = Math.sin(th), hx = sx + 14 * ux, hy2 = sy + 14 * uy + 4;
+  c.strokeStyle = coat; c.lineWidth = 7; c.beginPath(); c.moveTo(sx, sy); c.lineTo(hx, hy2); c.stroke();
+  c.strokeStyle = '#d7deee'; c.lineWidth = 4.2; c.beginPath(); c.moveTo(hx + ux * 6, hy2 + uy * 6); c.quadraticCurveTo(hx + ux * 28 - uy * 5, hy2 + uy * 28 + ux * 5, hx + ux * 46, hy2 + uy * 46); c.stroke();
+  c.strokeStyle = '#e8c04a'; c.lineWidth = 3; c.beginPath(); c.moveTo(hx - uy * 7, hy2 + ux * 7); c.lineTo(hx + uy * 7, hy2 - ux * 7); c.stroke();
+  c.fillStyle = skin; c.beginPath(); c.arc(hx, hy2, 5, 0, TAU); c.fill();
+  // head
+  const hy = -76;
+  c.fillStyle = skin; c.beginPath(); c.arc(3, hy, 12.5, 0, TAU); c.fill();
+  c.fillStyle = L ? '#1b1410' : '#3a2a1c'; c.beginPath(); c.moveTo(-8, hy + 2); c.quadraticCurveTo(3, hy + (L ? 29 : 20), 15, hy + 4); c.quadraticCurveTo(3, hy + 8, -8, hy + 2); c.fill();
+  c.fillStyle = '#d98a62'; c.beginPath(); c.ellipse(15, hy + 1, 3, 2.6, 0, 0, TAU); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.ellipse(10, hy - 2.5, 3, 2.4, 0, 0, TAU); c.fill();
+  c.fillStyle = '#111'; c.beginPath(); c.arc(11, hy - 2.5, 1.4, 0, TAU); c.fill();
+  if (L || f.i % 2) {
+    c.fillStyle = '#0b0b0b'; c.beginPath(); c.ellipse(1, hy - 3, 4, 3.6, 0, 0, TAU); c.fill();
+    c.strokeStyle = '#0b0b0b'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-8, hy - 8); c.lineTo(12, hy - 6); c.stroke();
+  } else {
+    c.fillStyle = '#fff'; c.beginPath(); c.ellipse(2, hy - 2.5, 2.6, 2.2, 0, 0, TAU); c.fill();
+    c.fillStyle = '#111'; c.beginPath(); c.arc(3, hy - 2.5, 1.2, 0, TAU); c.fill();
+  }
+  c.strokeStyle = '#1b0a05'; c.lineWidth = 2.6; c.beginPath(); c.moveTo(6, hy - 8); c.lineTo(15, hy - 4.5); c.stroke();
+  c.fillStyle = '#3a0a0a'; c.beginPath(); c.ellipse(11, hy + 8, a >= 0 ? 4.5 : 3.6, a >= 0 ? 3.4 : 1.6, 0, 0, TAU); c.fill();
+  c.fillStyle = '#e8c04a'; c.fillRect(10, hy + 6, 2, 2.4);
+  if (L) {
+    c.fillStyle = '#16120f'; c.strokeStyle = '#e8c04a'; c.lineWidth = 1.8;
+    c.beginPath(); c.moveTo(-17, hy - 5); c.lineTo(3, hy - 25); c.lineTo(23, hy - 5); c.quadraticCurveTo(3, hy - 11, -17, hy - 5); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#f4f0e6'; c.beginPath(); c.arc(3, hy - 14, 2.6, 0, TAU); c.fill();
+    c.strokeStyle = '#f4f0e6'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-1, hy - 10); c.lineTo(7, hy - 8); c.moveTo(7, hy - 10); c.lineTo(-1, hy - 8); c.stroke();
+  } else {
+    c.fillStyle = '#c8242f'; c.beginPath(); c.moveTo(-10, hy - 4); c.quadraticCurveTo(3, hy - 22, 16, hy - 4); c.quadraticCurveTo(3, hy - 9, -10, hy - 4); c.fill();
+    c.strokeStyle = '#c8242f'; c.lineWidth = 4; c.beginPath(); c.moveTo(-9, hy - 6); c.quadraticCurveTo(-18, hy - 3 + Math.sin(t * 6 + f.seed) * 3, -24, hy + 3 + Math.sin(t * 5 + f.seed) * 3); c.stroke();
+  }
+}
+
+function platBuoy(c, x, y, sc, hero, t, seed) {
+  c.save(); c.translate(x, y); c.scale(sc, sc);
+  const b = Math.sin(t * 2.2 + seed) * 1.5;
+  c.fillStyle = 'rgba(30,80,120,.5)'; c.beginPath(); c.ellipse(0, 8 + b, 46, 9, 0, 0, TAU); c.fill();
+  c.fillStyle = '#f2f4f8'; c.beginPath(); c.ellipse(0, 3 + b, 38, 10, 0, 0, TAU); c.fill();
+  c.save(); c.beginPath(); c.ellipse(0, 3 + b, 38, 10, 0, 0, TAU); c.clip(); c.fillStyle = '#d3222c';
+  [-32, -6, 20].forEach(x0 => c.fillRect(x0, -10 + b, 12, 30)); c.restore();
+  c.fillStyle = 'rgba(14,40,66,.85)'; c.beginPath(); c.ellipse(0, 2 + b, 20, 4.6, 0, 0, TAU); c.fill();
+  c.restore();
+}
+
+function platChest(c, x, y, sc, hero, t, seed) {
+  c.save(); c.translate(x, y); c.scale(sc, sc);
+  const b = Math.sin(t * 2 + seed) * 1.5;
+  c.fillStyle = '#6b4420'; rr(c, -30, 0 + b, 60, 15, 4); c.fill();
+  c.fillStyle = '#7e5129'; c.beginPath(); c.moveTo(-30, 0 + b); c.quadraticCurveTo(0, -11 + b, 30, 0 + b); c.closePath(); c.fill();
+  c.strokeStyle = '#e8c04a'; c.lineWidth = 3; c.beginPath(); c.moveTo(-14, -3 + b); c.lineTo(-14, 15 + b); c.moveTo(14, -3 + b); c.lineTo(14, 15 + b); c.stroke();
+  c.fillStyle = '#e8c04a'; c.fillRect(-3.5, 1 + b, 7, 7);
+  c.fillStyle = 'rgba(255,230,120,.9)';
+  for (let i = 0; i < 3; i++) { const k = (t * 1.3 + i * 0.33 + seed) % 1; c.globalAlpha *= 1; c.fillRect(-18 + i * 18 + Math.sin(t * 3 + i) * 2, -6 - k * 14 + b, 2.2, 2.2); }
+  c.restore();
+}
+
+function bgHarbor(c) {
+  const rnd = mulberry(23);
+  let g = c.createLinearGradient(0, 0, 0, 262);
+  g.addColorStop(0, '#080c1e'); g.addColorStop(.5, '#16284f'); g.addColorStop(.85, '#3a5f86'); g.addColorStop(1, '#8fb4c8');
+  c.fillStyle = g; c.fillRect(0, 0, W, 262);
+  c.fillStyle = '#fff'; for (let i = 0; i < 80; i++) { c.globalAlpha = .2 + rnd() * .6; c.fillRect(rnd() * W, rnd() * 150, 1.5, 1.5); } c.globalAlpha = 1;
+  g = c.createRadialGradient(170, 86, 8, 170, 86, 120); g.addColorStop(0, 'rgba(230,240,255,.5)'); g.addColorStop(1, 'rgba(230,240,255,0)');
+  c.fillStyle = g; c.fillRect(30, 0, 280, 220);
+  c.fillStyle = '#eef3ff'; c.beginPath(); c.arc(170, 86, 34, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(160,175,205,.4)'; [[160, 78, 7], [182, 96, 5], [172, 70, 4]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill(); });
+  c.fillStyle = 'rgba(20,35,70,.45)'; [[420, 130, 220, 9], [760, 100, 180, 8], [640, 170, 240, 7]].forEach(([x, y, w, h]) => { c.beginPath(); c.ellipse(x, y, w, h, 0, 0, TAU); c.fill(); });
+  // distant ships
+  const ship = (x, y, s) => {
+    c.fillStyle = '#0c1424'; c.beginPath(); c.moveTo(x - 44 * s, y); c.lineTo(x + 44 * s, y); c.lineTo(x + 32 * s, y + 14 * s); c.lineTo(x - 32 * s, y + 14 * s); c.closePath(); c.fill();
+    c.strokeStyle = '#0c1424'; c.lineWidth = 2.2 * s; c.beginPath(); c.moveTo(x - 14 * s, y); c.lineTo(x - 14 * s, y - 62 * s); c.moveTo(x + 14 * s, y); c.lineTo(x + 14 * s, y - 52 * s); c.stroke();
+    c.fillStyle = '#1a2a48'; c.beginPath(); c.moveTo(x - 14 * s, y - 60 * s); c.lineTo(x + 8 * s, y - 8 * s); c.lineTo(x - 14 * s, y - 8 * s); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(x + 14 * s, y - 50 * s); c.lineTo(x + 34 * s, y - 8 * s); c.lineTo(x + 14 * s, y - 8 * s); c.closePath(); c.fill();
+  };
+  ship(520, 246, 1); ship(860, 249, .75); ship(330, 250, .55);
+  // sea
+  g = c.createLinearGradient(0, 244, 0, 270); g.addColorStop(0, '#26507a'); g.addColorStop(1, '#0d2440');
+  c.fillStyle = g; c.fillRect(0, 244, W, 26);
+  c.fillStyle = 'rgba(225,238,255,.5)';
+  for (let i = 0; i < 12; i++) { const w = 14 + rnd() * 40; c.fillRect(170 - w / 2 + (rnd() - .5) * 20, 246 + i * 1.9, w * (1 - i / 14), 1.2); }
+  c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 1;
+  for (let i = 0; i < 20; i++) { const x = rnd() * W, y = 248 + rnd() * 18; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 20 + rnd() * 30, y); c.stroke(); }
+  // pier planks
+  const cols = ['#5a4130', '#4f3828', '#634835', '#553c2b'];
+  let y = 268, row = 0;
+  while (y < H) {
+    const rh = 12 + row * 3.2; c.fillStyle = cols[row % 4]; c.fillRect(0, y, W, rh + 1);
+    c.strokeStyle = 'rgba(0,0,0,.5)'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
+    c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = 1.4;
+    for (let x = rnd() * 120; x < W; x += 90 + rnd() * 60) { c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + rh); c.stroke(); }
+    c.strokeStyle = 'rgba(255,230,190,.07)'; c.lineWidth = 1;
+    for (let k = 0; k < 3; k++) { const gy = y + 3 + rnd() * (rh - 4), gx = rnd() * W; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx + 40 + rnd() * 80, gy); c.stroke(); }
+    c.fillStyle = 'rgba(20,12,8,.7)';
+    for (let x = 28 + rnd() * 40; x < W; x += 150 + rnd() * 60) { c.beginPath(); c.arc(x, y + rh / 2, 1.5, 0, TAU); c.fill(); }
+    y += rh; row++;
+  }
+  g = c.createLinearGradient(0, 268, 0, H); g.addColorStop(0, 'rgba(255,200,120,.1)'); g.addColorStop(.35, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.55)');
+  c.fillStyle = g; c.fillRect(0, 268, W, H - 268);
+  c.fillStyle = '#2a1c12'; c.fillRect(0, 264, W, 6); c.fillStyle = 'rgba(255,220,170,.25)'; c.fillRect(0, 264, W, 1.5);
+  // posts + lanterns + ropes
+  [64, 936].forEach(px => {
+    c.fillStyle = '#2a1c12'; c.fillRect(px - 8, 140, 16, 170); c.fillStyle = '#3a281a'; c.fillRect(px - 8, 140, 5, 170);
+    const lg = c.createRadialGradient(px, 128, 4, px, 128, 120); lg.addColorStop(0, 'rgba(255,205,120,.55)'); lg.addColorStop(1, 'rgba(255,205,120,0)');
+    c.fillStyle = lg; c.fillRect(px - 130, 0, 260, 260);
+    c.fillStyle = '#ffd98a'; rr(c, px - 9, 114, 18, 24, 4); c.fill(); c.strokeStyle = '#2a1c12'; c.lineWidth = 2.4; c.stroke();
+    c.beginPath(); c.moveTo(px - 11, 114); c.lineTo(px, 105); c.lineTo(px + 11, 114); c.stroke();
+  });
+  c.strokeStyle = '#8a6a3c'; c.lineWidth = 3; c.beginPath(); c.moveTo(70, 190); c.quadraticCurveTo(500, 262, 930, 190); c.stroke();
+  // barrels and crates
+  const barrel = (x, yy) => {
+    c.fillStyle = '#5b3a1e'; rr(c, x - 17, yy - 32, 34, 34, 8); c.fill();
+    c.strokeStyle = '#1f130a'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(x - 17, yy - 22); c.lineTo(x + 17, yy - 22); c.moveTo(x - 17, yy - 8); c.lineTo(x + 17, yy - 8); c.stroke();
+    c.fillStyle = '#7a4f28'; c.beginPath(); c.ellipse(x, yy - 32, 17, 5, 0, 0, TAU); c.fill();
+  };
+  barrel(118, 340); barrel(150, 352); barrel(888, 346);
+  c.fillStyle = '#6a4a2a'; c.fillRect(940, 322, 44, 36); c.strokeStyle = '#2a1a0c'; c.lineWidth = 2.4; c.strokeRect(940, 322, 44, 36);
+  c.beginPath(); c.moveTo(940, 322); c.lineTo(984, 358); c.moveTo(984, 322); c.lineTo(940, 358); c.stroke();
+}
+
+const THEMES = {
+  monkey: {
+    id: 'monkey', btn: '🐵 Monkey King vs Demons', emoji: '🐵', title: 'Monkey King vs Demons',
+    h1: '🐵 Monkey King vs Demons <small>猴王大战魔人</small>',
+    desc: "Live Bitcoin 1-minute candles as an anime-style battle. Green candle: the Monkey King's army strikes down a demon. Red candle: a demon strikes down a hero.",
+    credit: 'The warriors are original illustrations inspired by the classic novel <i>Journey to the West</i>.',
+    how: [
+      "<b>While a minute is open</b>, the tug-of-war follows price versus that minute's open. Above the open, the Monkey King's army pushes the demons back; below it, the demons push forward.",
+      "<b>When the minute closes</b>, that candle settles the round. Green candle: a demon falls. Red candle: a hero falls. Bigger candle bodies mean bigger beams, and 2.2x the usual body size or more is a multi-kill. A tiny candle is a standoff.",
+      "<b>When one army is wiped out</b>, the other wins the war and the Immortal Peaches revive everyone for the next one.",
+      "Every visit starts with both armies at full strength (7 vs 7). The chart and battle log still show the recent candles."
+    ],
+    bg: bgMonkey, drawH: drawMonkey, drawD: drawDemon, platform: drawCloud,
+    lift: 30, lscale: { h: 1.3, d: 1.4 },
+    aura: { h: ['255,214,90', '70,255,160'], d: ['190,70,255', '255,70,80'] },
+    burst: { h: 'rgb(120,255,190)', d: 'rgb(255,120,90)' }, ring: { h: '120,255,190', d: '255,120,90' },
+    txt: {
+      hudH: '猴王军 · MONKEY KING (BULLS)', hudD: '魔人军 · DEMONS (BEARS)',
+      heroWin: 'MONKEY KING WINS THE WAR!  猴王获胜', foeWin: 'THE DEMONS WIN THE WAR!  魔人获胜',
+      heroWinSub: 'The demon horde is destroyed', foeWinSub: 'The heroes have fallen',
+      revive: 'IMMORTAL PEACHES  蟠桃', reviveSub: 'Both armies are revived. A new war begins!', reviveCol: '#ffb3c7', reviveRGB: 'rgb(255,170,200)',
+      heroUp: "The Monkey King's army powers up!", foeUp: 'The demon horde powers up!',
+      foeDown: 'DEMON SLAIN!  魔人倒下', heroDown: 'HERO DOWN!  勇士倒下',
+      hero1: 'hero', foe1: 'demon', heroN: 'heroes', foeN: 'demons',
+      intro: 'MONKEY KING vs DEMONS', introSub: 'Bulls vs bears. Round one!'
+    }
+  },
+  crab: {
+    id: 'crab', btn: '🦀 Crabs vs Chickens', emoji: '🦀', title: 'Crabs vs Chickens',
+    h1: '🦀 Crabs vs Chickens <small>螃蟹大战鸡群</small>',
+    desc: 'Live Bitcoin 1-minute candles as a beach battle. Green candle: the crab clan takes down a chicken. Red candle: a chicken takes down a crab.',
+    credit: 'The crabs and chickens are original illustrations.',
+    how: [
+      "<b>While a minute is open</b>, the tug-of-war follows price versus that minute's open. Above the open, the crab clan pinches the chickens back; below it, the chickens push forward.",
+      "<b>When the minute closes</b>, that candle settles the round. Green candle: a chicken falls. Red candle: a crab falls. Bigger candle bodies mean bigger beams, and 2.2x the usual body size or more is a multi-kill. A tiny candle is a standoff.",
+      "<b>When one army is wiped out</b>, the other wins the war, then the eggs hatch and the tide rises to bring everyone back for the next one.",
+      "Every visit starts with both armies at full strength (7 vs 7). The chart and battle log still show the recent candles."
+    ],
+    bg: bgBeach, drawH: drawCrab, drawD: drawChicken, platform: (c, x, y, sc, hero, t, seed) => (hero ? platFoam : platStraw)(c, x, y, sc, hero, t, seed),
+    lift: 26, lscale: { h: 1.25, d: 1.35 },
+    aura: { h: ['255,214,90', '70,255,200'], d: ['255,150,60', '255,70,80'] },
+    burst: { h: 'rgb(120,225,255)', d: 'rgb(255,240,210)' }, ring: { h: '120,225,255', d: '255,230,190' },
+    txt: {
+      hudH: '蟹兵团 · CRAB CLAN (BULLS)', hudD: '鸡军团 · CHICKEN FLOCK (BEARS)',
+      heroWin: 'CRABS WIN THE WAR!  螃蟹获胜', foeWin: 'THE CHICKENS WIN THE WAR!  鸡群获胜',
+      heroWinSub: 'The flock has fled the beach', foeWinSub: 'The crab clan is scattered',
+      revive: 'EGGS HATCH, TIDE RISES  重新开战', reviveSub: 'Both armies are back. A new war begins!', reviveCol: '#ffe2a8', reviveRGB: 'rgb(255,226,168)',
+      heroUp: 'The crab clan powers up!', foeUp: 'The chicken flock powers up!',
+      foeDown: 'CHICKEN DOWN!  鸡倒下', heroDown: 'CRAB DOWN!  蟹倒下',
+      hero1: 'crab', foe1: 'chicken', heroN: 'crabs', foeN: 'chickens',
+      intro: 'CRABS vs CHICKENS', introSub: 'Bulls vs bears. Round one!'
+    }
+  },
+  popeye: {
+    id: 'popeye', btn: '⚓ Popeye vs Pirates', emoji: '⚓', title: 'Popeye vs Pirates',
+    h1: '⚓ Popeye vs Pirates <small>大力水手大战海盗</small>',
+    desc: "Live Bitcoin 1-minute candles as a harbor brawl. Green candle: Popeye's crew knocks down a pirate. Red candle: a pirate knocks down a sailor.",
+    credit: 'Popeye here is the 1929 comic-strip version of the character (public domain in the US); the sailors and pirates are original. Unofficial fan page, not affiliated with King Features or the Popeye brand.',
+    how: [
+      "<b>While a minute is open</b>, the tug-of-war follows price versus that minute's open. Above the open, Popeye's crew shoves the pirates back; below it, the pirates push forward.",
+      "<b>When the minute closes</b>, that candle settles the round. Green candle: a pirate falls. Red candle: a sailor falls. Bigger candle bodies mean bigger punches, and 2.2x the usual body size or more is a multi-kill. A tiny candle is a standoff.",
+      "<b>When one crew is wiped out</b>, the other wins the war, then everyone is called back on deck for the next one.",
+      "Every visit starts with both crews at full strength (7 vs 7). The chart and battle log still show the recent candles."
+    ],
+    bg: bgHarbor, drawH: (c, f, a, t) => (f.leader ? drawPopeye : drawSailor)(c, f, a, t), drawD: drawPirate,
+    platform: (c, x, y, sc, hero, t, seed) => (hero ? platBuoy : platChest)(c, x, y, sc, hero, t, seed),
+    lift: 26, lscale: { h: 1.25, d: 1.3 },
+    aura: { h: ['255,214,90', '70,255,170'], d: ['255,120,50', '255,70,80'] },
+    burst: { h: 'rgb(120,200,255)', d: 'rgb(255,160,100)' }, ring: { h: '120,200,255', d: '255,160,100' },
+    txt: {
+      hudH: '大力水手队 · POPEYE\'S CREW (BULLS)', hudD: '海盗团 · PIRATE CREW (BEARS)',
+      heroWin: 'POPEYE WINS THE WAR!  大力水手获胜', foeWin: 'THE PIRATES WIN THE WAR!  海盗获胜',
+      heroWinSub: 'The pirate crew is sent packing', foeWinSub: 'The sailors have gone overboard',
+      revive: 'ALL HANDS ON DECK  全员归队', reviveSub: 'Both crews are back. A new war begins!', reviveCol: '#bfe3ff', reviveRGB: 'rgb(190,225,255)',
+      heroUp: "Popeye's crew powers up!", foeUp: 'The pirate crew powers up!',
+      foeDown: 'PIRATE DOWN!  海盗倒下', heroDown: 'SAILOR DOWN!  水手倒下',
+      hero1: 'sailor', foe1: 'pirate', heroN: 'sailors', foeN: 'pirates',
+      intro: 'POPEYE vs PIRATES', introSub: 'Bulls vs bears. Round one!'
+    }
+  }
+};
+let theme = THEMES.monkey;
 
 /* ───────── drawing: fx / hud ───────── */
 function beam(c, x1, y1, x2, y2, w, col, al) {
@@ -742,9 +1249,9 @@ function drawHUD(c) {
   c.textBaseline = 'middle';
   // panels
   c.fillStyle = 'rgba(8,12,26,.62)'; rr(c, 14, 12, 250, 52, 10); c.fill(); rr(c, W - 264, 12, 250, 52, 10); c.fill();
-  c.textAlign = 'left'; c.fillStyle = '#9ff5c8'; c.font = `700 13px ${fontCJK}`; c.fillText('猴王军 · MONKEY KING (BULLS)', 26, 28);
+  c.textAlign = 'left'; c.fillStyle = '#9ff5c8'; c.font = `700 13px ${fontCJK}`; c.fillText(theme.txt.hudH, 26, 28);
   pips(c, 32, 48, 'h', 1);
-  c.textAlign = 'right'; c.fillStyle = '#ffa3ad'; c.fillText('魔人军 · DEMONS (BEARS)', W - 26, 28);
+  c.textAlign = 'right'; c.fillStyle = '#ffa3ad'; c.fillText(theme.txt.hudD, W - 26, 28);
   pips(c, W - 32, 48, 'd', -1);
 
   // centre: timer + tug meter
@@ -821,6 +1328,7 @@ function fit() {
   arena.width = Math.max(300, Math.round(r.width * dpr)); arena.height = Math.round(arena.width * H / W);
   K = arena.width / W; buildBG();
   const cr = chartCv.getBoundingClientRect(); chartCv.width = Math.round(cr.width * dpr); chartCv.height = Math.round(cr.height * dpr); CK = dpr;
+  if (seeded) drawChart();
 }
 window.addEventListener('resize', fit);
 if (window.ResizeObserver) new ResizeObserver(fit).observe(arena.parentElement);
@@ -834,9 +1342,53 @@ function frame(ts) {
   requestAnimationFrame(frame);
 }
 
+/* ───────── theme switching ───────── */
+const THEME_KEY = 'battle-theme';
+const elThemes = document.getElementById('themebar');
+elThemes.innerHTML = Object.values(THEMES).map(T => `<button type="button" class="tbtn" data-theme="${T.id}">${T.btn}</button>`).join('');
+elThemes.addEventListener('click', e => {
+  const b = e.target.closest('[data-theme]');
+  if (b && b.dataset.theme !== theme.id) applyTheme(b.dataset.theme, true);
+});
+
+function resetWar() {
+  army = { h: makeArmy('h', 0), d: makeArmy('d', 0) };
+  warOver = null; queue = []; current = null; bannerObj = null;
+  parts.length = 0; rings.length = 0; projs.length = 0;
+  pS = 0; shake = 0; flashA = 0;
+}
+
+function pickTheme() {
+  try { const q = new URLSearchParams(location.search).get('theme'); if (q && THEMES[q]) return q; } catch (e) {}
+  try { const s = localStorage.getItem(THEME_KEY); if (s && THEMES[s]) return s; } catch (e) {}
+  return 'monkey';
+}
+
+function applyTheme(id, fresh) {
+  theme = THEMES[id] || THEMES.monkey;
+  const full = theme.title + ' · Bitcoin Price Action';
+  document.title = full;
+  document.getElementById('ttl').innerHTML = theme.h1;
+  const md = document.querySelector('meta[name="description"]'); if (md) md.setAttribute('content', theme.desc);
+  const og = document.querySelector('meta[property="og:title"]'); if (og) og.setAttribute('content', full);
+  const fv = document.querySelector('link[rel="icon"]');
+  if (fv) fv.setAttribute('href', "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E" + encodeURIComponent(theme.emoji) + '%3C/text%3E%3C/svg%3E');
+  document.getElementById('how').innerHTML = theme.how.map(h => '<li>' + h + '</li>').join('');
+  document.getElementById('credit').innerHTML = theme.credit;
+  elThemes.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === theme.id ? 'true' : 'false'));
+  buildBG();
+  if (fresh) {
+    resetWar();
+    banner(theme.txt.intro, theme.txt.introSub, '#ffe2a8', 2.4);
+    try { localStorage.setItem(THEME_KEY, theme.id); } catch (e) {}
+    try { const u = new URL(location.href); u.searchParams.set('theme', theme.id); history.replaceState(null, '', u); } catch (e) {}
+  }
+  renderLog();
+}
+
 /* ───────── go ───────── */
 fit();
-renderLog();
+applyTheme(pickTheme(), false);
 requestAnimationFrame(frame);
 if (DEMO) runDemo(); else startFeed(0);
 })();
@@ -858,6 +1410,7 @@ if (DEMO) runDemo(); else startFeed(0);
 </script>
 
 <script src="/beeteesea/donate.js"></script>
+
 <script>
 /* Live Bitcoin block height in the header (mempool.space, falling back to
    blockstream.info). Polls on load + every 30s + on tab refocus; flashes gold
