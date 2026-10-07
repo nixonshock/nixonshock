@@ -1265,6 +1265,7 @@ const THEMES = {
       "<b>While a minute is open</b>, the tug-of-war follows price versus that minute's open. Above the open, the crab clan pinches the chickens back; below it, the chickens push forward.",
       "<b>When the minute closes</b>, that candle settles the round. Green candle: a chicken falls. Red candle: a crab falls. Bigger candle bodies mean bigger beams, and 2.2x the usual body size or more is a multi-kill. A tiny candle is a standoff.",
       "<b>When one army is wiped out</b>, the other wins the war, then the eggs hatch and the tide rises to bring everyone back for the next one.",
+      "<b>Both clans take turns on the bulls side</b>: each visit swaps which one fights for green, so neither is stuck playing the villain.",
       "Every visit starts with both armies at full strength (7 vs 7). The chart and battle log still show the recent candles."
     ],
     bg: { day: bgBeachDay, night: bgBeachNight }, drawH: drawCrab, drawD: drawChicken, platform: (c, x, y, sc, hero, t, seed) => (hero ? platFoam : platStraw)(c, x, y, sc, hero, t, seed),
@@ -1280,6 +1281,26 @@ const THEMES = {
       foeDown: 'CHICKEN DOWN!  鸡倒下', heroDown: 'CRAB DOWN!  蟹倒下',
       hero1: 'crab', foe1: 'chicken', heroN: 'crabs', foeN: 'chickens',
       intro: 'CRABS vs CHICKENS', introSub: 'Bulls vs bears. Round one!'
+    },
+    /* the mirror of the above: the chickens fight for green (bulls) and the crabs are the bears */
+    flipKey: 'chicken',
+    descFlip: 'Live Bitcoin 1-minute candles as a beach battle. Green candle: the chicken flock takes down a crab. Red candle: a crab takes down a chicken.',
+    howFlip: [
+      "<b>While a minute is open</b>, the tug-of-war follows price versus that minute's open. Above the open, the chicken flock pecks the crabs back; below it, the crabs push forward.",
+      "<b>When the minute closes</b>, that candle settles the round. Green candle: a crab falls. Red candle: a chicken falls. Bigger candle bodies mean bigger beams, and 2.2x the usual body size or more is a multi-kill. A tiny candle is a standoff.",
+      "<b>When one army is wiped out</b>, the other wins the war, then the eggs hatch and the tide rises to bring everyone back for the next one.",
+      "<b>Both clans take turns on the bulls side</b>: each visit swaps which one fights for green, so neither is stuck playing the villain.",
+      "Every visit starts with both armies at full strength (7 vs 7). The chart and battle log still show the recent candles."
+    ],
+    txtFlip: {
+      hudH: '鸡军团 · CHICKEN FLOCK (BULLS)', hudD: '蟹兵团 · CRAB CLAN (BEARS)',
+      heroWin: 'THE CHICKENS WIN THE WAR!  鸡群获胜', foeWin: 'CRABS WIN THE WAR!  螃蟹获胜',
+      heroWinSub: 'The crab clan is scattered', foeWinSub: 'The flock has fled the beach',
+      revive: 'EGGS HATCH, TIDE RISES  重新开战', reviveSub: 'Both armies are back. A new war begins!', reviveCol: '#ffe2a8', reviveRGB: 'rgb(255,226,168)',
+      heroUp: 'The chicken flock powers up!', foeUp: 'The crab clan powers up!',
+      foeDown: 'CRAB DOWN!  蟹倒下', heroDown: 'CHICKEN DOWN!  鸡倒下',
+      hero1: 'chicken', foe1: 'crab', heroN: 'chickens', foeN: 'crabs',
+      intro: 'CHICKENS vs CRABS', introSub: 'Bulls vs bears. Round one!'
     }
   },
   popeye: {
@@ -1513,8 +1534,39 @@ function pickTheme() {
   return 'monkey';
 }
 
+/* ───────── whose turn on the bulls side ─────────
+   Either clan can fight for green. They take turns: every visit swaps which
+   one is the hero (bulls) side, so the chickens are not always the "bad guy".
+   ?side=crab / ?side=chicken pins one if you want to share a specific look. */
+const FLIP_KEY = 'battle-hero-side';
+let heroSide = null;
+function pickHeroSide() {
+  if (heroSide) return heroSide;
+  let q = null; try { q = new URLSearchParams(location.search).get('side'); } catch (e) {}
+  if (q === 'crab' || q === 'chicken') { heroSide = q; return heroSide; }
+  let last = null; try { last = localStorage.getItem(FLIP_KEY); } catch (e) {}
+  heroSide = last === 'crab' ? 'chicken' : last === 'chicken' ? 'crab' : (Math.random() < .5 ? 'crab' : 'chicken');
+  try { localStorage.setItem(FLIP_KEY, heroSide); } catch (e) {}
+  return heroSide;
+}
+function flipTheme(T) {
+  const F = Object.assign({}, T);
+  F.drawH = T.drawD; F.drawD = T.drawH;
+  F.aura = { h: T.aura.d, d: T.aura.h };
+  F.burst = { h: T.burst.d, d: T.burst.h };
+  F.ring = { h: T.ring.d, d: T.ring.h };
+  F.lscale = { h: T.lscale.d, d: T.lscale.h };
+  F.txt = T.txtFlip; F.desc = T.descFlip; F.how = T.howFlip;
+  F.flipped = true;
+  return F;
+}
+function resolveTheme(id) {
+  const T = THEMES[id] || THEMES.monkey;
+  return (T.flipKey && T.flipKey === pickHeroSide()) ? flipTheme(T) : T;
+}
+
 function applyTheme(id, fresh) {
-  theme = THEMES[id] || THEMES.monkey;
+  theme = resolveTheme(id);
   const full = theme.title + ' · Bitcoin Price Action';
   document.title = full;
   document.getElementById('ttl').innerHTML = theme.h1;
