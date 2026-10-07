@@ -70,6 +70,16 @@ body.tv .wrap{max-width:none;padding:0}
 body.tv .wrap > header.top,body.tv .themebar,body.tv .grid,body.tv details,body.tv footer{display:none!important}
 body.tv #stage{position:fixed;inset:0;overflow:hidden;background:#05070f;border:0;border-radius:0}
 body.tv #arena{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;max-width:none}
+#stage{position:relative}
+.maxbtn{position:absolute;right:12px;bottom:12px;z-index:70;width:44px;height:44px;padding:0;border:0;border-radius:11px;
+  background:rgba(8,12,26,.55);color:#fff;display:grid;place-items:center;cursor:pointer;opacity:.85;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:background .15s,opacity .15s}
+.maxbtn:hover,.maxbtn:focus-visible{background:rgba(8,12,26,.88);opacity:1}
+.maxbtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.maxbtn .ico-compress{display:none}
+.maxbtn[data-fs="1"] .ico-expand{display:none}
+.maxbtn[data-fs="1"] .ico-compress{display:block}
+body.tv .maxbtn{right:18px;bottom:18px;width:48px;height:48px}
 .tvtools{position:fixed;z-index:60;top:10px;right:10px;display:none;gap:8px;align-items:center;opacity:.6;transition:opacity .2s}
 body.tv .tvtools{display:flex}
 .tvtools:hover{opacity:1}
@@ -104,7 +114,12 @@ body.tv .tvtools{display:flex}
 
   <nav class="themebar" id="themebar" aria-label="Choose a battle theme"></nav>
 
-  <div class="card" id="stage"><canvas id="arena"></canvas></div>
+  <div class="card" id="stage"><canvas id="arena"></canvas>
+    <button id="maxbtn" class="maxbtn" type="button" data-fs="0" aria-label="Full screen" title="Full screen (t)">
+      <svg class="ico ico-expand" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+      <svg class="ico ico-compress" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M20 9h-5V4M15 20v-5h5M4 15h5v5"/></svg>
+    </button>
+  </div>
 
   <div class="grid">
     <div class="card">
@@ -132,7 +147,6 @@ body.tv .tvtools{display:flex}
   <button type="button" class="btn panel" data-theme="monkey" title="Monkey King vs Demons">🐵</button>
   <button type="button" class="btn panel" data-theme="crab" title="Crabs vs Chickens">🦀</button>
   <button type="button" class="btn panel" data-theme="popeye" title="Popeye vs Pirates">⚓</button>
-  <button type="button" class="btn panel" id="tvfs" title="Toggle browser full screen">⛶</button>
   <button type="button" class="btn panel" id="tvexit" title="Exit TV mode (Esc)">✕ Exit</button>
 </div>
 
@@ -1437,14 +1451,12 @@ function pips(c, x, y, side, dirx) {
 function drawHUD(c) {
   c.textBaseline = 'middle';
   // panels (pulled inside the crop when TV mode fills a wide screen)
-  const hx = tvPad, name = s => tv ? s.replace(/\s*\((?:BULLS|BEARS)\)/, '') : s;
+  const hx = tvPad;   // scene units lost to the crop each side in TV mode
   c.fillStyle = 'rgba(8,12,26,.62)'; rr(c, 14 + hx, 12, 250, 52, 10); c.fill(); rr(c, W - 264 - hx, 12, 250, 52, 10); c.fill();
-  c.textAlign = 'left'; c.fillStyle = '#9ff5c8'; c.font = `700 13px ${fontCJK}`; c.fillText(name(theme.txt.hudH), 26 + hx, 28);
+  c.textAlign = 'left'; c.fillStyle = '#9ff5c8'; c.font = `700 13px ${fontCJK}`; c.fillText(theme.txt.hudH, 26 + hx, 28);
   pips(c, 32 + hx, 48, 'h', 1);
-  c.textAlign = 'right'; c.fillStyle = '#ffa3ad'; c.fillText(name(theme.txt.hudD), W - 26 - hx, 28);
+  c.textAlign = 'right'; c.fillStyle = '#ffa3ad'; c.fillText(theme.txt.hudD, W - 26 - hx, 28);
   pips(c, W - 32 - hx, 48, 'd', -1);
-
-  if (tv) return void drawBanner(c);   // on a TV: fighters + banners only, no price readouts
 
   // centre: timer + tug meter
   const cx = W / 2, remain = cur ? Math.max(0, cur.t + candleMs - Date.now()) : 0;
@@ -1462,9 +1474,9 @@ function drawHUD(c) {
 
   // bottom: candle graves + score
   const recent = hist.slice(-30);
-  c.textAlign = 'left'; c.font = `600 11px ${fontCJK}`; c.fillStyle = 'rgba(255,255,255,.55)'; c.fillText('LAST 30 CLOSES', 24, H - 40);
+  c.textAlign = 'left'; c.font = `600 11px ${fontCJK}`; c.fillStyle = 'rgba(255,255,255,.55)'; c.fillText('LAST 30 CLOSES', 24 + hx, H - 40);
   recent.forEach((cd, i) => {
-    const r = classify(cd), hgt = r.dir === 0 ? 5 : 8 + Math.min(r.ratio, 4) * 4, x = 24 + i * 14;
+    const r = classify(cd), hgt = r.dir === 0 ? 5 : 8 + Math.min(r.ratio, 4) * 4, x = 24 + hx + i * 14;
     c.fillStyle = r.dir > 0 ? '#2fe38a' : r.dir < 0 ? '#ff4d5e' : '#8da0c6';
     rr(c, x, H - 14 - hgt, 10, hgt, 4); c.fill();
   });
@@ -1624,8 +1636,9 @@ function applyTheme(id, fresh) {
 }
 
 /* ───────── TV mode ─────────
-   Fills the screen with the fight alone — no header, price, chart or log — for
-   leaving on a TV. ?tv=1 opens straight into it (no true full screen without a
+   Fills the screen with the fight alone: the page chrome (header, price ticker,
+   chart, battle log, theme bar, footer) goes and the arena takes the whole
+   screen — its countdown, tug meter and last-30 bars stay — for a TV. ?tv=1 opens straight into it (no true full screen without a
    tap), ?tv=0 turns it off, otherwise the choice is remembered. Esc or ✕ leaves.
    The cluster of buttons at the top right stays for theme + full-screen control. */
 const TV_KEY = 'battle-tv';
@@ -1637,6 +1650,12 @@ function setTV(on, fs) {
   const tools = document.getElementById('tvtools'); if (tools) tools.hidden = !tv;
   const tb = document.getElementById('tvbtn');
   if (tb) { tb.dataset.on = tv ? '1' : '0'; tb.innerHTML = tv ? '⛶ TV mode on' : '⛶ TV mode'; }
+  const mb = document.getElementById('maxbtn');
+  if (mb) {
+    mb.dataset.fs = tv ? '1' : '0';
+    const lb = tv ? 'Leave full screen (Esc)' : 'Full screen (t)';
+    mb.title = lb; mb.setAttribute('aria-label', lb);
+  }
   try { localStorage.setItem(TV_KEY, tv ? '1' : '0'); } catch (e) {}
   fit();
   if (fs === false) return;                      // page just loaded: full screen needs a real tap
@@ -1648,15 +1667,10 @@ function setTV(on, fs) {
 
 const tvbtn = document.getElementById('tvbtn');
 if (tvbtn) tvbtn.addEventListener('click', () => setTV(!tv));
+const maxbtn = document.getElementById('maxbtn');
+if (maxbtn) maxbtn.addEventListener('click', () => setTV(!tv));
 const tvexit = document.getElementById('tvexit');
 if (tvexit) tvexit.addEventListener('click', () => setTV(false));
-const tvfs = document.getElementById('tvfs');
-if (tvfs) tvfs.addEventListener('click', () => {
-  try {
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else document.documentElement.requestFullscreen().catch(() => {});
-  } catch (e) {}
-});
 document.querySelectorAll('#tvtools [data-theme]').forEach(b => b.addEventListener('click', e => {
   e.stopPropagation();
   if (b.dataset.theme !== theme.id) applyTheme(b.dataset.theme, true);
