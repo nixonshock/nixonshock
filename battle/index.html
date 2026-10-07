@@ -64,7 +64,6 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
 .tbtn{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(17,26,46,.55);color:var(--text);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
 .tbtn:hover{border-color:var(--mute)}
 .tbtn[aria-pressed="true"]{background:var(--gold);color:#0a0e1a;border-color:var(--gold)}
-.tchip{display:inline-flex;align-items:center;padding:7px 14px;border-radius:999px;border:1px dashed var(--line);color:var(--mute);font-size:13px;font-weight:600;cursor:default}
 </style>
 </head>
 <body>
@@ -1488,14 +1487,14 @@ function frame(ts) {
   if (seeded) { updateFight(dt); }
   drawArena();
   if (ts - chartTs > 250) { chartTs = ts; if (seeded) drawChart(); }
-  if (ts - phaseTs > 300000) { phaseTs = ts; const np = localPhase(); if (np !== phase) { phase = np; buildBG(); updatePhaseChip(); } }
+  if (ts - phaseTs > 300000) { phaseTs = ts; const np = localPhase(); if (np !== phase) { phase = np; buildBG(); } }
   requestAnimationFrame(frame);
 }
 
 /* ───────── theme switching ───────── */
 const THEME_KEY = 'battle-theme';
 const elThemes = document.getElementById('themebar');
-elThemes.innerHTML = Object.values(THEMES).map(T => `<button type="button" class="tbtn" data-theme="${T.id}">${T.btn}</button>`).join('') + '<span class="tchip" id="phaseChip"></span>';
+elThemes.innerHTML = Object.values(THEMES).map(T => `<button type="button" class="tbtn" data-theme="${T.id}">${T.btn}</button>`).join('');
 elThemes.addEventListener('click', e => {
   const b = e.target.closest('[data-theme]');
   if (b && b.dataset.theme !== theme.id) applyTheme(b.dataset.theme, true);
@@ -1506,11 +1505,6 @@ function resetWar() {
   warOver = null; queue = []; current = null; bannerObj = null;
   parts.length = 0; rings.length = 0; projs.length = 0;
   pS = 0; shake = 0; flashA = 0;
-}
-
-function updatePhaseChip() {
-  const el = document.getElementById('phaseChip'); if (!el) return;
-  el.textContent = (phase === 'day' ? '☀️ Daytime' : '🌙 Nighttime') + ' \u00b7 from your local time';
 }
 
 function pickTheme() {
@@ -1531,7 +1525,6 @@ function applyTheme(id, fresh) {
   document.getElementById('how').innerHTML = theme.how.map(h => '<li>' + h + '</li>').join('');
   document.getElementById('credit').innerHTML = theme.credit;
   elThemes.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === theme.id ? 'true' : 'false'));
-  updatePhaseChip();
   buildBG();
   if (fresh) {
     resetWar();
