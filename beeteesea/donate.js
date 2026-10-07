@@ -62,7 +62,7 @@
       '.dnf-empty{font-size:10.5px;color:var(--muted,#9aa);font-style:italic;}\n' +
       '.dnf-err{font-size:10.5px;color:#ff7b72;text-align:center;}\n' +
       '.mwrap{position:relative;display:inline-block;}\n' +
-      '.music{position:absolute;right:0;top:calc(100% + 10px);width:200px;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;}\n' +
+      '.music{position:absolute;right:0;top:calc(100% + 10px);width:200px;max-width:calc(100vw - 20px);z-index:90;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;}\n' +
       '.music[hidden]{display:none;}\n' +
       '.music .mtitle{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;}\n' +
       '.music .mchk{display:flex;gap:8px;align-items:center;}\n' +
@@ -435,11 +435,12 @@
   }
 
   /* ---------------- music ---------------- */
-  /* Looping background track. Default is muted + stopped (per user) — nothing
-   * plays until they hit Play. preload='none' so the file isn't downloaded
-   * (or kept in memory) until it's actually used. Independent of the donate
-   * card and the rain: it loops underneath and coexists with the shower's
-   * WebAudio crack. Same beeteesea surface. */
+  /* Looping background track. Default is unmuted + stopped — nothing plays
+   * until they hit Play (no autoplay, so no browser policy fight), but Play
+   * itself is audible right away; a remembered mute is cleared by Play too.
+   * preload='none' so the file isn't downloaded (or kept in memory) until
+   * it's actually used. Independent of the donate card and the rain: it loops
+   * underneath and coexists with the shower's WebAudio crack. */
   function initMusic() {
     var top = document.querySelector('.top .controls');
     if (!top || top.querySelector('#mbtn')) return;
@@ -463,7 +464,7 @@
         mstat = w.querySelector('#mstat'), rng = w.querySelector('#mvol'),
         rv = w.querySelector('#mvolv');
 
-    var prefs = { vol: 60, muted: true };
+    var prefs = { vol: 60, muted: false };
     try {
       var s = localStorage.getItem('beeteesea_music');
       if (s) { var p = JSON.parse(s);
@@ -472,7 +473,7 @@
     } catch (e) {}
 
     var aud = new Audio('/beeteesea/music.mp3');
-    aud.loop = true; aud.preload = 'none'; aud.volume = prefs.vol / 100; aud.muted = true;
+    aud.loop = true; aud.preload = 'none'; aud.volume = prefs.vol / 100; aud.muted = prefs.muted;
 
     function save() {
       try { localStorage.setItem('beeteesea_music', JSON.stringify({ vol: prefs.vol, muted: prefs.muted })); } catch (e) {}
@@ -484,6 +485,22 @@
       rng.value = prefs.vol; rv.textContent = prefs.vol + '%';
       btn.classList.toggle('on', !aud.paused && !aud.muted);
     }
+    /* The popover hangs under the Music button; pin it to the viewport and clamp
+     * it so it can never run off an edge (the controls row wraps on narrower
+     * windows, which used to shove it past the left side of the screen). */
+    function place() {
+      if (window.innerWidth <= 760) {   // CSS centres it on phones
+        panel.style.position = panel.style.left = panel.style.top = panel.style.right = '';
+        return;
+      }
+      panel.style.position = 'fixed'; panel.style.right = 'auto';
+      var r = btn.getBoundingClientRect(), m = 10,
+          pw = panel.offsetWidth || 200, ph = panel.offsetHeight || 0,
+          left = Math.min(Math.max(m, r.right - pw), Math.max(m, window.innerWidth - pw - m)),
+          top = Math.min(r.bottom + 10, Math.max(m, window.innerHeight - ph - m));
+      panel.style.left = Math.round(left) + 'px';
+      panel.style.top = Math.round(top) + 'px';
+    }
     function togglePlay() {
       if (aud.paused) {
         if (prefs.muted) { prefs.muted = false; aud.muted = false; } // pressing Play should be audible
@@ -493,11 +510,13 @@
       save(); refresh();
     }
 
-    btn.addEventListener('click', function (e) { e.stopPropagation(); panel.hidden = !panel.hidden; });
+    btn.addEventListener('click', function (e) { e.stopPropagation(); panel.hidden = !panel.hidden; if (!panel.hidden) place(); });
     pp.addEventListener('click', function (e) { e.stopPropagation(); togglePlay(); });
     mute.addEventListener('click', function (e) { e.stopPropagation(); prefs.muted = !prefs.muted; aud.muted = prefs.muted; save(); refresh(); });
     rng.addEventListener('input', function () { prefs.vol = parseInt(rng.value, 10) || 0; aud.volume = prefs.vol / 100; save(); rv.textContent = prefs.vol + '%'; });
     document.addEventListener('click', function (e) { if (!panel.hidden && !e.target.closest('.mwrap')) panel.hidden = true; });
+    window.addEventListener('resize', function () { if (!panel.hidden) place(); });
+    window.addEventListener('scroll', function () { if (!panel.hidden) place(); }, { passive: true });
     refresh();
   }
 
