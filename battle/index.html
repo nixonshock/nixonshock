@@ -64,6 +64,17 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
 .tbtn{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(17,26,46,.55);color:var(--text);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
 .tbtn:hover{border-color:var(--mute)}
 .tbtn[aria-pressed="true"]{background:var(--gold);color:#0a0e1a;border-color:var(--gold)}
+/* TV mode: fill the screen with the fight alone — no header, chart, log or prices */
+body.tv{overflow:hidden;background:#05070f}
+body.tv .wrap{max-width:none;padding:0}
+body.tv .wrap > header.top,body.tv .themebar,body.tv .grid,body.tv details,body.tv footer{display:none!important}
+body.tv #stage{position:fixed;inset:0;overflow:hidden;background:#05070f;border:0;border-radius:0}
+body.tv #arena{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;max-width:none}
+.tvtools{position:fixed;z-index:60;top:10px;right:10px;display:none;gap:8px;align-items:center;opacity:.6;transition:opacity .2s}
+body.tv .tvtools{display:flex}
+.tvtools:hover{opacity:1}
+.tvtools .btn{padding:5px 10px;font-size:13px;line-height:1;background:rgba(8,12,26,.72)}
+.tvtools [data-theme][aria-pressed="true"]{background:var(--gold);color:#0a0e1a;border-color:var(--gold)}
 </style>
 </head>
 <body>
@@ -81,6 +92,7 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
       <div class="status"><span class="dot wait" id="dot"></span><span id="status">Connecting…</span></div>
     </div>
     <div class="controls">
+      <button id="tvbtn" class="btn panel" type="button" aria-label="TV mode" title="Fill the screen with the fight only (t)">⛶ TV mode</button>
       <span class="ddon">
         <button id="dbtn" class="btn panel" type="button" data-on="0" aria-label="Donate" title="Send a few sats">Donate <span class="kbd">d</span></button>
         <div class="donate panel" id="dcard" hidden role="dialog" aria-label="Donate">
@@ -92,7 +104,7 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
 
   <nav class="themebar" id="themebar" aria-label="Choose a battle theme"></nav>
 
-  <div class="card"><canvas id="arena"></canvas></div>
+  <div class="card" id="stage"><canvas id="arena"></canvas></div>
 
   <div class="grid">
     <div class="card">
@@ -114,6 +126,14 @@ footer{margin:18px 0 8px;color:#6b7da3;font-size:12px;line-height:1.5}
     For fun only, not financial advice. Prices from public exchange feeds (Binance, with Kraken as backup).
     <span id="credit"></span>
   </footer>
+</div>
+
+<div class="tvtools" id="tvtools" hidden aria-label="TV controls">
+  <button type="button" class="btn panel" data-theme="monkey" title="Monkey King vs Demons">🐵</button>
+  <button type="button" class="btn panel" data-theme="crab" title="Crabs vs Chickens">🦀</button>
+  <button type="button" class="btn panel" data-theme="popeye" title="Popeye vs Pirates">⚓</button>
+  <button type="button" class="btn panel" id="tvfs" title="Toggle browser full screen">⛶</button>
+  <button type="button" class="btn panel" id="tvexit" title="Exit TV mode (Esc)">✕ Exit</button>
 </div>
 
 <script>
@@ -1416,12 +1436,15 @@ function pips(c, x, y, side, dirx) {
 
 function drawHUD(c) {
   c.textBaseline = 'middle';
-  // panels
-  c.fillStyle = 'rgba(8,12,26,.62)'; rr(c, 14, 12, 250, 52, 10); c.fill(); rr(c, W - 264, 12, 250, 52, 10); c.fill();
-  c.textAlign = 'left'; c.fillStyle = '#9ff5c8'; c.font = `700 13px ${fontCJK}`; c.fillText(theme.txt.hudH, 26, 28);
-  pips(c, 32, 48, 'h', 1);
-  c.textAlign = 'right'; c.fillStyle = '#ffa3ad'; c.fillText(theme.txt.hudD, W - 26, 28);
-  pips(c, W - 32, 48, 'd', -1);
+  // panels (pulled inside the crop when TV mode fills a wide screen)
+  const hx = tvPad, name = s => tv ? s.replace(/\s*\((?:BULLS|BEARS)\)/, '') : s;
+  c.fillStyle = 'rgba(8,12,26,.62)'; rr(c, 14 + hx, 12, 250, 52, 10); c.fill(); rr(c, W - 264 - hx, 12, 250, 52, 10); c.fill();
+  c.textAlign = 'left'; c.fillStyle = '#9ff5c8'; c.font = `700 13px ${fontCJK}`; c.fillText(name(theme.txt.hudH), 26 + hx, 28);
+  pips(c, 32 + hx, 48, 'h', 1);
+  c.textAlign = 'right'; c.fillStyle = '#ffa3ad'; c.fillText(name(theme.txt.hudD), W - 26 - hx, 28);
+  pips(c, W - 32 - hx, 48, 'd', -1);
+
+  if (tv) return void drawBanner(c);   // on a TV: fighters + banners only, no price readouts
 
   // centre: timer + tug meter
   const cx = W / 2, remain = cur ? Math.max(0, cur.t + candleMs - Date.now()) : 0;
@@ -1446,7 +1469,11 @@ function drawHUD(c) {
     rr(c, x, H - 14 - hgt, 10, hgt, 4); c.fill();
   });
 
-  // banner
+  drawBanner(c);
+}
+
+function drawBanner(c) {
+  const cx = W / 2;
   if (bannerObj) {
     const b = bannerObj, k = clamp(b.t / 0.18, 0, 1), s = 1 + (1 - ease(k)) * 0.6, al = clamp((b.dur - b.t) / 0.4, 0, 1) * k;
     c.save(); c.translate(cx, 138); c.scale(s, s); c.globalAlpha = al; c.textAlign = 'center';
@@ -1492,7 +1519,16 @@ function drawChart() {
 }
 
 /* ───────── sizing + loop ───────── */
+function sizeArena() {
+  if (!tv) { arena.style.removeProperty('width'); arena.style.removeProperty('height'); tvPad = 0; return; }
+  const ar = W / H, vw = Math.max(320, window.innerWidth), vh = Math.max(240, window.innerHeight);
+  let cw = vw, ch = vw / ar;                                                   // tall screen: fit the whole scene in
+  if (vw / vh >= 1.3) { cw = vh * ar; ch = vh; if (cw < vw) { cw = vw; ch = vw / ar; } }   // wide screen: fill it and crop the edges
+  arena.style.width = cw + 'px'; arena.style.height = ch + 'px';
+  tvPad = Math.max(0, (cw - vw) / 2 * (W / cw));                               // scene units cut off each side
+}
 function fit() {
+  sizeArena();
   const dpr = Math.min(window.devicePixelRatio || 1, 2), r = arena.getBoundingClientRect();
   arena.width = Math.max(300, Math.round(r.width * dpr)); arena.height = Math.round(arena.width * H / W);
   K = arena.width / W; buildBG();
@@ -1576,7 +1612,7 @@ function applyTheme(id, fresh) {
   if (fv) fv.setAttribute('href', "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E" + encodeURIComponent(theme.emoji) + '%3C/text%3E%3C/svg%3E');
   document.getElementById('how').innerHTML = theme.how.map(h => '<li>' + h + '</li>').join('');
   document.getElementById('credit').innerHTML = theme.credit;
-  elThemes.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === theme.id ? 'true' : 'false'));
+  document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === theme.id ? 'true' : 'false'));
   buildBG();
   if (fresh) {
     resetWar();
@@ -1586,6 +1622,60 @@ function applyTheme(id, fresh) {
   }
   renderLog();
 }
+
+/* ───────── TV mode ─────────
+   Fills the screen with the fight alone — no header, price, chart or log — for
+   leaving on a TV. ?tv=1 opens straight into it (no true full screen without a
+   tap), ?tv=0 turns it off, otherwise the choice is remembered. Esc or ✕ leaves.
+   The cluster of buttons at the top right stays for theme + full-screen control. */
+const TV_KEY = 'battle-tv';
+let tv = false, tvPad = 0;
+
+function setTV(on, fs) {
+  tv = !!on;
+  document.body.classList.toggle('tv', tv);
+  const tools = document.getElementById('tvtools'); if (tools) tools.hidden = !tv;
+  const tb = document.getElementById('tvbtn');
+  if (tb) { tb.dataset.on = tv ? '1' : '0'; tb.innerHTML = tv ? '⛶ TV mode on' : '⛶ TV mode'; }
+  try { localStorage.setItem(TV_KEY, tv ? '1' : '0'); } catch (e) {}
+  fit();
+  if (fs === false) return;                      // page just loaded: full screen needs a real tap
+  try {
+    if (tv && !document.fullscreenElement) { document.documentElement.requestFullscreen().catch(() => {}); }
+    else if (!tv && document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
+  } catch (e) {}
+}
+
+const tvbtn = document.getElementById('tvbtn');
+if (tvbtn) tvbtn.addEventListener('click', () => setTV(!tv));
+const tvexit = document.getElementById('tvexit');
+if (tvexit) tvexit.addEventListener('click', () => setTV(false));
+const tvfs = document.getElementById('tvfs');
+if (tvfs) tvfs.addEventListener('click', () => {
+  try {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else document.documentElement.requestFullscreen().catch(() => {});
+  } catch (e) {}
+});
+document.querySelectorAll('#tvtools [data-theme]').forEach(b => b.addEventListener('click', e => {
+  e.stopPropagation();
+  if (b.dataset.theme !== theme.id) applyTheme(b.dataset.theme, true);
+}));
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && tv) setTV(false, false); else fit();
+});
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 't' || e.key === 'T') setTV(!tv);
+  else if (e.key === 'Escape' && tv) setTV(false, false);
+});
+(function initTV() {
+  let q = null; try { q = new URLSearchParams(location.search).get('tv'); } catch (e) {}
+  let want = false;
+  if (q === '1') want = true; else if (q === '0') want = false;
+  else { try { want = localStorage.getItem(TV_KEY) === '1'; } catch (e) {} }
+  if (want) setTV(true, false);
+})();
 
 /* ───────── go ───────── */
 fit();
