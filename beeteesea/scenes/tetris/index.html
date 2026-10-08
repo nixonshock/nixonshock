@@ -19,8 +19,17 @@
   html,body{margin:0;height:100%;background:#050611;overflow:hidden;font-family:"Courier New",monospace;font-weight:bold;color:#c9cde0;
             touch-action:none;-webkit-user-select:none;user-select:none}
   canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
-  #hud{position:fixed;left:14px;top:12px;font-size:12px;line-height:1.55;letter-spacing:.05em;
-       color:#9aa0bd;text-shadow:0 0 3px #000;pointer-events:none;z-index:2}
+  #hudwrap{position:fixed;left:14px;top:12px;display:flex;align-items:flex-start;gap:22px;
+       pointer-events:none;z-index:2}
+  #hud{font-size:12px;line-height:1.55;letter-spacing:.05em;
+       color:#9aa0bd;text-shadow:0 0 3px #000}
+  #curblock{width:min(200px,36vw)}
+  #curblock .lbl{color:#ffd84a;letter-spacing:.12em;font-size:12px}
+  #curblock #curblk{display:inline-block;color:#fff;font-size:26px;line-height:1.1;
+       text-shadow:0 0 8px rgba(255,216,74,.55)}
+  #curblock .new{animation:bhFlash 1.2s ease}
+  @keyframes bhFlash{0%{color:#ffd84a;text-shadow:0 0 20px #ffd84a,0 0 36px #ffd84a}
+     100%{color:#fff;text-shadow:0 0 8px rgba(255,216,74,.55)}}
   #hud b{color:#fff}
   #hud .ttl{color:#ffd84a;letter-spacing:.12em}
   #sndbtn{display:inline-block;pointer-events:auto;cursor:pointer;padding:2px 0;border-bottom:1px dotted #8a8fa8}
@@ -54,12 +63,18 @@
 </head>
 <body>
 <canvas id="c"></canvas>
+<div id="hudwrap">
 <div id="hud">
   <div class="ttl">MEMPOOL TETRIS <span style="color:#9aa0bd">// <b id="st">connecting…</b></span></div>
   <div>TX SEEN <b id="n">0</b> &nbsp; PIECES <b id="pc">0</b></div>
   <div>BTC CLEARED <b id="sc">0.00</b> &nbsp; BEST <b id="hi">0.00</b></div>
   <div>LINES <b id="ln">0</b> &nbsp; LAST BLOCK <b id="blk">—</b></div>
   <div id="sndbtn" role="button" tabindex="0" title="Click to turn sound on / off">SOUND <b id="snd">click to enable</b></div>
+</div>
+<div id="curblock">
+  <div class="lbl">CURRENT BLOCK</div>
+  <b id="curblk">—</b>
+</div>
 </div>
 <div id="legend">
   tx ≥ 0.1 BTC &nbsp;= piece in the next queue<br>
@@ -756,8 +771,32 @@
     setInterval(() => blockFound(900000 + ((Math.random() * 1000) | 0), 2000 + ((Math.random() * 1500) | 0), 2.5e6 + Math.random() * 1.5e6), 30000);
   }
 
+  // ---------- current block height (live chain tip) ----------
+  let lastBh = 0;
+  function setCurBlk(t) {
+    t = ("" + (t || "")).trim();
+    if (!/^\d+$/.test(t)) return;
+    const h = +t, el = $("curblk");
+    if (!el) return;
+    el.textContent = "#" + h.toLocaleString("en-US");
+    if (lastBh && h !== lastBh) { el.classList.remove("new"); void el.offsetWidth; el.classList.add("new"); }
+    lastBh = h;
+  }
+  function bhNow() {
+    fetch(API + "/blocks/tip/height").then(r => r.ok ? r.text() : Promise.reject())
+      .then(setCurBlk)
+      .catch(() => fetch("https://blockstream.info/api/blocks/tip/height")
+        .then(r => r.ok ? r.text() : Promise.reject()).then(setCurBlk).catch(() => {}));
+  }
+  function curBlock() {
+    bhNow();
+    setInterval(bhNow, 30000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) bhNow(); });
+  }
+
   hud();
   requestAnimationFrame(frame);
+  curBlock();
   if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); }
 })();
 </script>
