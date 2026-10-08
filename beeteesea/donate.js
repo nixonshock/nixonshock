@@ -299,7 +299,7 @@
       });
     }
     var bannerText = '⚡ ' + amount.toLocaleString() + (amount === 1 ? ' sat' : ' sats');
-    banner = { text: bannerText, message: (message || '').trim().slice(0, 140) || null, born: start, life: amount >= 1000 ? 3000 : 2600 };
+    banner = { text: bannerText, message: (message || '').trim().slice(0, 140) || null, born: start, life: 2000 };
     flash = { end: start + (220 + 640 * intensity), a: 0.30 + 0.55 * intensity };
 
     function frame(now) {
@@ -336,7 +336,7 @@
         var isNarrow = W < 640;                      // phones: keep the amount legible
         var maxW = W * 0.86;                         // never overflow the viewport
         var bx = W / 2, by = H * 0.16;
-        var fz = Math.round(W * (amount >= 1000 ? 0.05 : 0.04));
+        var fz = Math.round(W * (amount >= 1000 ? 0.045 : 0.034));
         if (isNarrow) fz = Math.max(26, fz);         // never shrink below readability
         ctx.font = '700 ' + fz + 'px "Bricolage Grotesque", system-ui, sans-serif';
         var atw = ctx.measureText(banner.text).width;
@@ -363,7 +363,7 @@
         ctx.fillText(banner.text, bx, by);
         ctx.shadowBlur = 0;
         if (banner.message) {
-          var mfz = Math.max(14, Math.round(fz * 0.58));
+          var mfz = Math.max(12, Math.round(fz * 0.5));
           ctx.font = '600 ' + mfz + 'px "Bricolage Grotesque", system-ui, sans-serif';
           var maxMsgLines = Math.max(1, Math.floor((H - by - mfz) / (mfz * 1.25)));
           var msgLines = wrapCtxText(ctx, banner.message, maxW, maxMsgLines);

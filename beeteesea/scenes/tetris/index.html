@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Mempool Tetris — live-tx Bitcoin tetris</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nixonshock.com/beeteesea/scenes/tetris/">
+<meta property="og:title" content="Mempool Tetris — live-tx Bitcoin tetris">
+<meta property="og:description" content="Every bitcoin transaction waiting for a block becomes a falling tetromino, sized by how much bitcoin it moves. Clear rows, catch blocks. Live from mempool.space.">
+<meta property="og:image" content="https://nixonshock.com/beeteesea/scenes/tetris/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mempool Tetris — live-tx Bitcoin tetris">
+<meta name="twitter:description" content="Every mempool transaction becomes a falling tetromino, sized by the bitcoin it moves.">
+<meta name="twitter:image" content="https://nixonshock.com/beeteesea/scenes/tetris/og.png">
+<style>
+  html,body{margin:0;height:100%;background:#050611;overflow:hidden;font-family:"Courier New",monospace;font-weight:bold;color:#c9cde0;
+            touch-action:none;-webkit-user-select:none;user-select:none}
+  canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+  #hud{position:fixed;left:14px;top:12px;font-size:12px;line-height:1.55;letter-spacing:.05em;
+       color:#9aa0bd;text-shadow:0 0 3px #000;pointer-events:none;z-index:2}
+  #hud b{color:#fff}
+  #hud .ttl{color:#ffd84a;letter-spacing:.12em}
+  #sndbtn{display:inline-block;pointer-events:auto;cursor:pointer;padding:2px 0;border-bottom:1px dotted #8a8fa8}
+  #sndbtn:hover b{color:#ffd84a}
+  /* donate button — mirrors the sound toggle */
+  #donatebtn{display:inline-block;pointer-events:auto;cursor:pointer;padding:2px 0;border-bottom:1px dotted #8a8fa8;margin-left:10px}
+  #donatebtn:hover b{color:#ffd84a}
+  #legend{position:fixed;left:14px;bottom:12px;font-size:11px;line-height:1.6;text-align:left;
+       color:#6f7494;pointer-events:none;z-index:2;text-shadow:0 0 3px #000}
+  #pad{position:fixed;left:0;right:0;bottom:10px;display:none;justify-content:center;gap:10px;z-index:4}
+  #pad button{width:56px;height:56px;border-radius:12px;border:2px solid #8a8fa8;background:#1a1d33;
+       color:#fff;font:22px "Courier New",monospace;touch-action:none}
+  #pad button:active{background:#3a3f6a}
+  @media (pointer:coarse){#pad{display:flex}#legend{display:none}}
+  /* donate card (donate.js upgrades #dcard into the QR-only card) */
+  #dcard{position:fixed;right:14px;top:12px;z-index:300;width:min(280px,calc(100vw - 24px));
+       background:#151828;border:2px solid #8a8fa8;border-radius:14px;color:#fff;
+       box-shadow:0 12px 30px rgba(0,0,0,.55)}
+  #dcard[hidden]{display:none}
+  #dcard .dh{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#ffd84a;margin-bottom:8px}
+</style>
+<!-- Vercel Web Analytics -->
+<script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="ttl">MEMPOOL TETRIS <span style="color:#9aa0bd">// <b id="st">connecting…</b></span>
+    <span id="donatebtn" role="button" tabindex="0" title="Open the donate card">DONATE <b>d</b></span></div>
+  <div>TX SEEN <b id="n">0</b> &nbsp; PIECES <b id="pc">0</b></div>
+  <div>BTC CLEARED <b id="sc">0.00</b> &nbsp; BEST <b id="hi">0.00</b></div>
+  <div>LINES <b id="ln">0</b> &nbsp; LAST BLOCK <b id="blk">—</b></div>
+  <div id="sndbtn" role="button" tabindex="0" title="Click to turn sound on / off">SOUND <b id="snd">click to enable</b></div>
+</div>
+<div id="legend">
+  tx ≥ 0.1 BTC &nbsp;= piece in the next queue<br>
+  tx ≥ 10 BTC &nbsp;= gold-outlined piece<br>
+  tx &lt; 0.1 BTC &nbsp;= tiny blocks on the sides<br>
+  block found &nbsp;= bottom rows swept<br>
+  ← → move &nbsp; ↑ rotate &nbsp; ↓ soft drop<br>
+  [SPACE] hard drop &nbsp; [P] pause &nbsp; [S] sound<br>
+  [D] donate &nbsp; click a piece &nbsp;open on mempool.space
+</div>
+<div id="pad">
+  <button id="bL">◀</button><button id="bR">▶</button><button id="bRot">⟳</button>
+  <button id="bD">▼</button><button id="bH">⤓</button>
+</div>
+
+<!-- donate card host — donate.js upgrades this into the QR-only card and wires the music + trollbox -->
+<div class="donate" id="dcard" hidden role="dialog" aria-label="Donate">
+  <span class="dh">Support the grid ⚡</span>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- config ----------
+  const PIECE_MIN_BTC = 0.1;                  // tx at or above this joins the next-piece queue
+  const WS_URL  = "wss://mempool.space/api/v1/ws";
+  const API     = "https://mempool.space/api";
+  const DEMO    = new URLSearchParams(location.search).has("demo");
+  const BW = 10, BH = 20;                     // well size
+  const FALL = 0.8, SOFT = 0.045;             // seconds per row: fixed speed, no speed-up
+  const MAX_QUEUE = 30, MAX_RAIN = 400;
+  const GOLD = "#ffd84a";
+
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const setStatus = s => { $("st").textContent = s; };
+
+  // ---------- tetrominoes (classic colours) ----------
+  const NAMES  = ["I", "O", "T", "S", "Z", "J", "L"];
+  const COLORS = ["#00d8e8", "#f0d800", "#a020e0", "#20c820", "#e02020", "#2848e8", "#f08000"];
+  const SHAPES = {
+    I: { n: 4, c: [[0,1],[1,1],[2,1],[3,1]] },
+    O: { n: 2, c: [[0,0],[1,0],[0,1],[1,1]] },
+    T: { n: 3, c: [[1,0],[0,1],[1,1],[2,1]] },
+    S: { n: 3, c: [[1,0],[2,0],[0,1],[1,1]] },
+    Z: { n: 3, c: [[0,0],[1,0],[1,1],[2,1]] },
+    J: { n: 3, c: [[0,0],[0,1],[1,1],[2,1]] },
+    L: { n: 3, c: [[2,0],[0,1],[1,1],[2,1]] }
+  };
+  function rotated(shape, times) {
+    const s = SHAPES[NAMES[shape]];
+    let cells = s.c;
+    for (let k = 0; k < times; k++) cells = cells.map(([x, y]) => [s.n - 1 - y, x]);
+    return cells;
+  }
+  const pieceCells = p => rotated(p.shape, p.rot).map(([x, y]) => [p.x + x, p.y + y]);
+
+  // ---------- canvas / layout ----------
+  const cv = $("c"), ctx = cv.getContext("2d");
+  const coarse = matchMedia("(pointer:coarse)").matches;
+  let W = 0, H = 0, DPR = 1, cell = 30, wellX = 0, wellY = 0, wellW = 0, wellH = 0;
+  let RCELL = 16, RCOLS = 0, sideLanes = null, laneBusy = new Float64Array(1);
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const top = 100, bottom = coarse ? 84 : 14;
+    cell = Math.floor(clamp(Math.min((H - top - bottom) / BH, (W - 16) / BW), 12, 46));
+    wellW = cell * BW; wellH = cell * BH;
+    wellX = Math.round((W - wellW) / 2);
+    wellY = Math.round(top + (H - top - bottom - wellH) / 2);
+    RCELL = W < 600 ? 12 : 16;
+    RCOLS = Math.floor(W / RCELL);
+    laneBusy = new Float64Array(RCOLS);
+    const lanes = [];
+    for (let c = 0; c < RCOLS; c++) {
+      const x = c * RCELL;
+      if (x + RCELL < wellX - 4 || x > wellX + wellW + 4) lanes.push(c);
+    }
+    sideLanes = lanes.length > 4 ? lanes : null;   // narrow screens: tiny blocks fall behind the well too
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  // ---------- donate card toggle (mirrors the scene pattern) ----------
+  function toggleDonate() {
+    const c = $("dcard"); if (!c) return;
+    const open = c.hidden;
+    c.hidden = !open;
+  }
+  $("donatebtn").addEventListener("pointerdown", e => e.stopPropagation());
+  $("donatebtn").addEventListener("click", toggleDonate);
+
+  // ---------- game state ----------
+  const newGrid = () => Array.from({ length: BH }, () => Array(BW).fill(null));
+  let grid = newGrid();
+  let active = null, queue = [], dropT = 0, soft = false;
+  let score = 0, lines = 0, pieces = 0, seen = 0, pid = 0;
+  let scored = new Set();
+  let over = false, overAt = 0, paused = false;
+  let shakeT = 0, banner = "", bannerT = 0;
+  let flashes = [];                 // {r, t}
+  let best = 0;
+  try { best = parseFloat(localStorage.getItem("mempool-tetris-best")) || 0; } catch {}
+  const known = new Set();
+  const rain = [];
+
+  function hud() {
+    $("n").textContent = seen; $("pc").textContent = pieces;
+    $("sc").textContent = score.toFixed(2); $("hi").textContent = best.toFixed(2);
+    $("ln").textContent = lines;
+  }
+  function saveBest() {
+    if (score > best) { best = score; try { localStorage.setItem("mempool-tetris-best", String(best)); } catch {} }
+  }
+
+  function collides(cells) {
+    for (const [x, y] of cells) {
+      if (x < 0 || x >= BW || y >= BH) return true;
+      if (y >= 0 && grid[y][x]) return true;
+    }
+    return false;
+  }
+
+  // ---------- pieces from transactions ----------
+  const tierOf = btc => btc >= 10 ? 2 : btc >= 1 ? 1 : 0;
+
+  function enqueue(btc, txid) {
+    const shape = txid ? parseInt(txid.slice(0, 6), 16) % 7 : (Math.random() * 7) | 0;
+    if (queue.length >= MAX_QUEUE) queue.shift();
+    queue.push({ shape, btc, txid: txid || null, label: btc.toFixed(2), tier: tierOf(btc) });
+  }
+
+  function spawnNext() {
+    const e = queue.shift();
+    const n = SHAPES[NAMES[e.shape]].n;
+    const p = { shape: e.shape, rot: 0, x: Math.floor((BW - n) / 2), y: e.shape === 0 ? -1 : 0,
+                btc: e.btc, txid: e.txid, label: e.label, tier: e.tier, id: ++pid };
+    if (collides(pieceCells(p))) { gameOver(); return; }
+    active = p; dropT = 0; pieces++; hud();
+    sfx(p.tier, wellX + (p.x + n / 2) * cell);
+  }
+
+  function gameOver() {
+    over = true; overAt = performance.now(); active = null; saveBest(); hud(); sfx(6, W / 2, true);
+  }
+  function resetGame() {
+    grid = newGrid(); active = null; score = 0; lines = 0; pieces = 0; scored = new Set();
+    over = false; flashes = []; hud();
+  }
+
+  // ---------- moves ----------
+  const canAct = () => active && !paused && !over;
+  function tryMove(dx, dy) {
+    const p = { ...active, x: active.x + dx, y: active.y + dy };
+    if (collides(pieceCells(p))) return false;
+    active = p; return true;
+  }
+  function rotate(dir) {
+    if (!canAct()) return;
+    const rot = (active.rot + dir + 4) % 4;
+    for (const kx of [0, -1, 1, -2, 2]) {
+      const p = { ...active, rot, x: active.x + kx };
+      if (!collides(pieceCells(p))) { active = p; return; }
+    }
+  }
+  function move(dx) { if (canAct()) tryMove(dx, 0); }
+  function hardDrop() {
+    if (!canAct()) return;
+    while (tryMove(0, 1)) {}
+    lock();
+  }
+
+  function lock() {
+    const cells = pieceCells(active);
+    if (cells.some(([, y]) => y < 0)) { gameOver(); return; }
+    for (const [x, y] of cells) {
+      grid[y][x] = { id: active.id, tier: active.tier, shape: active.shape, btc: active.btc,
+                     txid: active.txid, label: active.label };
+    }
+    if (active.tier === 2) shakeT = 0.35;
+    active = null; dropT = 0;
+    sfx(3, W / 2);
+    const full = [];
+    for (let r = 0; r < BH; r++) if (grid[r].every(Boolean)) full.push(r);
+    if (full.length) { removeRows(full); lines += full.length; sfx(4, W / 2); }
+    hud();
+  }
+
+  function removeRows(rows) {
+    const set = new Set(rows);
+    for (const r of rows) {
+      flashes.push({ r, t: 0 });
+      for (const c of grid[r]) if (c && !scored.has(c.id)) { scored.add(c.id); score += c.btc; }
+    }
+    grid = grid.filter((_, r) => !set.has(r));
+    while (grid.length < BH) grid.unshift(Array(BW).fill(null));
+    saveBest();
+  }
+
+  // ---------- block found: bottom rows swept ----------
+  function blockFound(height, txCount, weight) {
+    $("blk").textContent = "#" + height;
+    const k = weight ? clamp(Math.round(4 * weight / 4e6), 1, 4) : 4;
+    banner = "BLOCK " + height + (txCount ? "  //  " + txCount.toLocaleString() + " TX" : "");
+    if (grid[BH - 1].some(Boolean)) {
+      const rows = []; for (let i = 0; i < k; i++) rows.push(BH - 1 - i);
+      removeRows(rows);
+      banner += "  //  " + k + " ROW" + (k > 1 ? "S" : "") + " SWEPT";
+      sfx(5, W / 2, true);
+    }
+    bannerT = 3.5; hud();
+  }
+
+  // ---------- tiny falling blocks (txs under the piece threshold) ----------
+  function spawnRain() {
+    if (rain.length >= MAX_RAIN) rain.shift();
+    let lane = 0;
+    for (let t = 0; t < 10; t++) {
+      lane = sideLanes ? sideLanes[(Math.random() * sideLanes.length) | 0] : (Math.random() * RCOLS) | 0;
+      if (laneBusy[lane] < performance.now()) break;
+    }
+    laneBusy[lane] = performance.now() + 250;
+    rain.push({ x: lane * RCELL + 1, y: -RCELL, v: 80 + Math.random() * 170, size: RCELL - 2,
+                color: COLORS[(Math.random() * 7) | 0] });
+  }
+
+  function ingest(id, sats) {
+    if (id) { if (known.has(id)) return; known.add(id); if (known.size > 6000) known.delete(known.values().next().value); }
+    seen++;
+    const btc = sats / 1e8;
+    if (btc >= PIECE_MIN_BTC) enqueue(btc, id); else spawnRain();
+    hud();
+  }
+
+  // ---------- update ----------
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (!paused) update(dt, now);
+    draw(now);
+    requestAnimationFrame(frame);
+  }
+
+  function update(dt, now) {
+    for (let i = rain.length - 1; i >= 0; i--) {
+      rain[i].y += rain[i].v * dt;
+      if (rain[i].y > H + 20) rain.splice(i, 1);
+    }
+    for (let i = flashes.length - 1; i >= 0; i--) { flashes[i].t += dt; if (flashes[i].t > 0.35) flashes.splice(i, 1); }
+    if (shakeT > 0) shakeT -= dt;
+    if (bannerT > 0) bannerT -= dt;
+
+    if (over) { if (now - overAt > 3000) resetGame(); return; }
+    if (active) {
+      dropT += dt;
+      const step = soft ? SOFT : FALL;
+      while (dropT >= step && active) {
+        dropT -= step;
+        if (!tryMove(0, 1)) { lock(); break; }
+      }
+    } else if (queue.length) {
+      spawnNext();
+    }
+  }
+
+  // ---------- draw ----------
+  // classic bevelled block
+  function block(px, py, s, color, alpha, gold) {
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color; ctx.fillRect(px, py, s, s);
+    const b = Math.max(2, Math.round(s * 0.14));
+    ctx.fillStyle = "rgba(255,255,255,.5)";
+    ctx.fillRect(px, py, s, b); ctx.fillRect(px, py, b, s);
+    ctx.fillStyle = "rgba(0,0,0,.38)";
+    ctx.fillRect(px, py + s - b, s, b); ctx.fillRect(px + s - b, py, b, s);
+    ctx.fillStyle = "rgba(255,255,255,.14)";
+    ctx.fillRect(px + b, py + b, Math.max(1, s * 0.3), Math.max(1, s * 0.3));
+    if (gold) {
+      ctx.strokeStyle = GOLD; ctx.lineWidth = 2; ctx.shadowColor = GOLD; ctx.shadowBlur = 8;
+      ctx.strokeRect(px + 1, py + 1, s - 2, s - 2); ctx.shadowBlur = 0;
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawLabel(cx, cy, text, tier) {
+    const fs = Math.max(9, Math.floor(cell * 0.36));
+    ctx.font = "bold " + fs + "px 'Courier New',monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const w = ctx.measureText(text).width + 6;
+    ctx.fillStyle = "rgba(0,0,0,.78)";
+    ctx.fillRect(cx - w / 2, cy - fs * 0.7, w, fs * 1.4);
+    if (tier === 2) { ctx.strokeStyle = GOLD; ctx.lineWidth = 1; ctx.strokeRect(cx - w / 2 + .5, cy - fs * 0.7 + .5, w - 1, fs * 1.4 - 1); }
+    ctx.fillStyle = tier === 2 ? GOLD : "#fff";
+    ctx.fillText(text, cx, cy + 1);
+  }
+
+  function draw(now) {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#12163a"); bg.addColorStop(1, "#03040c");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // tiny falling blocks (one per small transaction)
+    for (const d of rain) block(d.x, d.y, d.size, d.color, 0.55, false);
+
+    ctx.save();
+    if (shakeT > 0) ctx.translate((Math.random() - .5) * 8 * shakeT / .35, (Math.random() - .5) * 8 * shakeT / .35);
+
+    // well
+    ctx.fillStyle = "#000"; ctx.fillRect(wellX, wellY, wellW, wellH);
+    ctx.strokeStyle = "rgba(255,255,255,.07)"; ctx.lineWidth = 1; ctx.beginPath();
+    for (let c = 1; c < BW; c++) { ctx.moveTo(wellX + c * cell + .5, wellY); ctx.lineTo(wellX + c * cell + .5, wellY + wellH); }
+    for (let r = 1; r < BH; r++) { ctx.moveTo(wellX, wellY + r * cell + .5); ctx.lineTo(wellX + wellW, wellY + r * cell + .5); }
+    ctx.stroke();
+
+    // locked blocks + one label per piece
+    const labelAt = new Map();
+    for (let r = 0; r < BH; r++) for (let c = 0; c < BW; c++) {
+      const g = grid[r][c]; if (!g) continue;
+      block(wellX + c * cell, wellY + r * cell, cell, COLORS[g.shape], 1, g.tier === 2);
+      if (!labelAt.has(g.id)) labelAt.set(g.id, { r, c, g });
+    }
+    for (const { r, c, g } of labelAt.values())
+      drawLabel(wellX + c * cell + cell / 2, wellY + r * cell + cell / 2, g.label, g.tier);
+
+    // active piece, landing outline, label
+    if (active) {
+      let gp = active;
+      while (!collides(pieceCells({ ...gp, y: gp.y + 1 }))) gp = { ...gp, y: gp.y + 1 };
+      ctx.setLineDash([4, 3]); ctx.strokeStyle = COLORS[active.shape]; ctx.lineWidth = 2; ctx.globalAlpha = .55;
+      for (const [x, y] of pieceCells(gp)) if (y >= 0) ctx.strokeRect(wellX + x * cell + 2, wellY + y * cell + 2, cell - 4, cell - 4);
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      const cells = pieceCells(active);
+      for (const [x, y] of cells) if (y >= 0) block(wellX + x * cell, wellY + y * cell, cell, COLORS[active.shape], 1, active.tier === 2);
+      const vis = cells.filter(([, y]) => y >= 0);
+      if (vis.length) {
+        const mx = vis.reduce((s, [x]) => s + x, 0) / vis.length, my = vis.reduce((s, [, y]) => s + y, 0) / vis.length;
+        drawLabel(wellX + (mx + .5) * cell, wellY + (my + .5) * cell, active.label, active.tier);
+      }
+    }
+
+    // flashes from cleared rows
+    for (const f of flashes) {
+      ctx.fillStyle = `rgba(255,255,255,${0.8 * (1 - f.t / 0.35)})`;
+      ctx.fillRect(wellX, wellY + f.r * cell, wellW, cell);
+    }
+
+    // frame
+    ctx.strokeStyle = "#8a8fa8"; ctx.lineWidth = 3;
+    ctx.strokeRect(wellX - 2, wellY - 2, wellW + 4, wellH + 4);
+    ctx.strokeStyle = "#2a2e50"; ctx.lineWidth = 1;
+    ctx.strokeRect(wellX - 5.5, wellY - 5.5, wellW + 11, wellH + 11);
+
+    // messages inside the well
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    if (over) {
+      ctx.fillStyle = "rgba(0,0,0,.75)"; ctx.fillRect(wellX, wellY, wellW, wellH);
+      ctx.fillStyle = "#ff5a5a";
+      ctx.font = "bold " + Math.floor(cell * 0.75) + "px 'Courier New',monospace";
+      ctx.fillText("MEMPOOL", wellX + wellW / 2, wellY + wellH / 2 - cell * 1.4);
+      ctx.fillText("CONGESTED", wellX + wellW / 2, wellY + wellH / 2 - cell * 0.5);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold " + Math.floor(cell * 0.5) + "px 'Courier New',monospace";
+      ctx.fillText(score.toFixed(2) + " BTC CLEARED", wellX + wellW / 2, wellY + wellH / 2 + cell * 0.7);
+      ctx.fillText("resetting…", wellX + wellW / 2, wellY + wellH / 2 + cell * 1.5);
+    } else if (!active && !queue.length) {
+      ctx.globalAlpha = 0.45 + 0.55 * Math.sin(now / 500);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold " + Math.floor(cell * 0.42) + "px 'Courier New',monospace";
+      ctx.fillText("AWAITING A", wellX + wellW / 2, wellY + cell * 3);
+      ctx.fillText("≥ " + PIECE_MIN_BTC + " BTC TRANSACTION…", wellX + wellW / 2, wellY + cell * 3.8);
+      ctx.globalAlpha = 1;
+    }
+    if (paused) {
+      ctx.fillStyle = "rgba(0,0,0,.65)"; ctx.fillRect(wellX, wellY, wellW, wellH);
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold " + Math.floor(cell * 0.9) + "px 'Courier New',monospace";
+      ctx.fillText("PAUSED", wellX + wellW / 2, wellY + wellH / 2);
+    }
+    ctx.restore();
+
+    // block banner above the well
+    if (bannerT > 0) {
+      ctx.globalAlpha = Math.min(1, bannerT);
+      ctx.fillStyle = GOLD; ctx.shadowColor = "#000"; ctx.shadowBlur = 6;
+      ctx.font = "bold " + Math.max(12, Math.floor(cell * 0.5)) + "px 'Courier New',monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(banner, W / 2, Math.max(12, wellY - 2) + 6);
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    }
+
+    drawNext();
+  }
+
+  // NEXT queue panel: the upcoming pieces, in arrival order
+  function drawNext() {
+    const s = Math.max(10, Math.floor(cell * 0.45));
+    const pw = Math.max(112, s * 4 + 80), rowH = s * 2 + 12, title = 24;
+    let px = wellX + wellW + 18, py = wellY + 34;      // sits below the block banner
+    if (px + pw > W - 6) { px = W - pw - 6; py = 8; }
+    const shown = Math.min(queue.length, 4);
+    const ph = title + Math.max(1, shown) * rowH + (queue.length > shown ? 18 : 6);
+    ctx.fillStyle = "rgba(0,0,0,.85)"; ctx.fillRect(px, py, pw, ph);
+    ctx.strokeStyle = "#8a8fa8"; ctx.lineWidth = 2; ctx.strokeRect(px, py, pw, ph);
+    ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    ctx.fillStyle = "#fff"; ctx.font = "bold 12px 'Courier New',monospace";
+    ctx.fillText("NEXT", px + 10, py + 13);
+    ctx.textAlign = "right"; ctx.fillStyle = "#8a8fa8"; ctx.font = "11px 'Courier New',monospace";
+    ctx.fillText("queue " + queue.length, px + pw - 8, py + 13);
+    if (!shown) {
+      ctx.textAlign = "left"; ctx.fillText("empty", px + 10, py + title + rowH / 2); return;
+    }
+    for (let i = 0; i < shown; i++) {
+      const e = queue[i], y0 = py + title + i * rowH;
+      const cells = rotated(e.shape, 0);
+      const minX = Math.min(...cells.map(c => c[0])), minY = Math.min(...cells.map(c => c[1]));
+      const maxY = Math.max(...cells.map(c => c[1]));
+      const oy = y0 + (rowH - (maxY - minY + 1) * s) / 2;
+      for (const [x, y] of cells) block(px + 10 + (x - minX) * s, oy + (y - minY) * s, s, COLORS[e.shape], 1, e.tier === 2);
+      ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      ctx.fillStyle = e.tier === 2 ? GOLD : "#fff"; ctx.font = "bold 12px 'Courier New',monospace";
+      ctx.fillText(e.label, px + pw - 8, y0 + rowH / 2);
+    }
+    if (queue.length > shown) {
+      ctx.textAlign = "center"; ctx.fillStyle = "#8a8fa8"; ctx.font = "11px 'Courier New',monospace";
+      ctx.fillText("+" + (queue.length - shown) + " more", px + pw / 2, py + ph - 10);
+    }
+  }
+
+  // ---------- click a piece -> transaction page ----------
+  function cellAt(ev) {
+    const c = Math.floor((ev.clientX - wellX) / cell), r = Math.floor((ev.clientY - wellY) / cell);
+    if (c < 0 || c >= BW || r < 0 || r >= BH) return null;
+    if (grid[r][c]) return grid[r][c];
+    if (active) for (const [x, y] of pieceCells(active)) if (x === c && y === r) return active;
+    return null;
+  }
+  cv.addEventListener("mousemove", ev => { const h = cellAt(ev); cv.style.cursor = h && h.txid ? "pointer" : "default"; });
+  cv.addEventListener("click", ev => {
+    const h = cellAt(ev);
+    if (h && h.txid) window.open("https://mempool.space/tx/" + h.txid, "_blank", "noopener");
+  });
+
+  // ---------- sound (synthesised with Web Audio) ----------
+  // piece spawn by size: 0 = 0.1-1 BTC soft blip, 1 = 1-10 BTC rising chirp, 2 = 10+ BTC deep drop
+  // 3 lock, 4 line clear, 5 block swept, 6 game over
+  let audio = null, soundOn = true;
+
+  function soundHud() { $("snd").textContent = !audio ? "click to enable" : soundOn ? "on" : "off"; }
+
+  function ensureAudio() {
+    if (audio) { if (audio.ac.state === "suspended") audio.ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ac = new AC();
+    const master = ac.createGain(); master.gain.value = 0.6;
+    const comp = ac.createDynamicsCompressor();
+    master.connect(comp); comp.connect(ac.destination);
+    const delay = ac.createDelay(1); delay.delayTime.value = 0.19;
+    const fb = ac.createGain(); fb.gain.value = 0.38;
+    const wet = ac.createGain(); wet.gain.value = 0.45;
+    delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
+    const nb = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate);
+    const nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    audio = { ac, master, delay, nb };
+    soundHud();
+  }
+
+  function tone(o) {
+    const ac = audio.ac;
+    const osc = ac.createOscillator();
+    osc.type = o.type || "sine";
+    osc.frequency.setValueAtTime(o.f, o.t);
+    if (o.f2) osc.frequency.exponentialRampToValueAtTime(o.f2, o.t + o.d);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, o.t);
+    g.gain.exponentialRampToValueAtTime(o.g, o.t + (o.a || 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, o.t + o.d);
+    osc.connect(g);
+    let node = g;
+    if (o.lp) { const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = o.lp; node.connect(f); node = f; }
+    if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = o.pan || 0; node.connect(p); node = p; }
+    node.connect(audio.master);
+    if (o.echo) node.connect(audio.delay);
+    osc.start(o.t); osc.stop(o.t + o.d + 0.05);
+  }
+
+  function whoosh(t, d, f1, f2, gain, pan) {
+    const ac = audio.ac;
+    const src = ac.createBufferSource(); src.buffer = audio.nb;
+    const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(f1, t); bp.frequency.exponentialRampToValueAtTime(f2, t + d);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + d * 0.35);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    src.connect(bp); bp.connect(g);
+    let node = g;
+    if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = pan || 0; node.connect(p); node = p; }
+    node.connect(audio.master); node.connect(audio.delay);
+    src.start(t); src.stop(t + d + 0.05);
+  }
+
+  function sfx(kind, x, force) {
+    if (!audio || !soundOn || (paused && !force)) return;
+    const ac = audio.ac;
+    if (ac.state !== "running") return;
+    const t = ac.currentTime + 0.01;
+    const pan = clamp((x / W) * 2 - 1, -0.8, 0.8);
+    if (kind === 0) {
+      tone({ f: 1400, f2: 2100, t, d: 0.07, type: "triangle", g: 0.08, pan });
+      tone({ f: 2100, t: t + 0.07, d: 0.09, type: "sine", g: 0.05, pan });
+    } else if (kind === 1) {
+      [392, 587, 784, 1175].forEach((f, i) =>
+        tone({ f, t: t + i * 0.06, d: 0.2, type: "sawtooth", g: 0.06, pan, echo: true, lp: 3200, a: 0.005 }));
+    } else if (kind === 2) {
+      tone({ f: 110, f2: 38, t, d: 1.6, type: "sine", g: 0.35, a: 0.03 });
+      tone({ f: 220, f2: 55, t, d: 1.3, type: "sawtooth", g: 0.09, lp: 600, echo: true, a: 0.05 });
+      whoosh(t, 1.1, 300, 6000, 0.14, pan);
+      [1568, 2349, 3136].forEach((f, i) =>
+        tone({ f, t: t + 0.25 + i * 0.09, d: 0.7, type: "sine", g: 0.035, pan, echo: true, a: 0.02 }));
+    } else if (kind === 3) {
+      tone({ f: 200, f2: 90, t, d: 0.1, type: "square", g: 0.05, lp: 900, pan });
+    } else if (kind === 4) {
+      whoosh(t, 0.5, 400, 5000, 0.12, 0);
+      tone({ f: 600, f2: 1800, t, d: 0.3, type: "triangle", g: 0.06, echo: true });
+    } else if (kind === 5) {
+      whoosh(t, 1.0, 200, 3000, 0.16, 0);
+      tone({ f: 90, f2: 45, t, d: 0.9, type: "sine", g: 0.25, a: 0.02 });
+      [523, 784, 1047].forEach((f, i) => tone({ f, t: t + 0.1 + i * 0.1, d: 0.5, type: "sine", g: 0.04, echo: true }));
+    } else {
+      tone({ f: 440, f2: 55, t, d: 1.2, type: "sawtooth", g: 0.12, lp: 900, echo: true });
+    }
+  }
+
+  function toggleSound() {
+    const first = !audio;
+    ensureAudio();
+    if (!first) soundOn = !soundOn;
+    soundHud();
+    if (soundOn && audio) setTimeout(() => sfx(0, 40, true), 60);
+  }
+  const sndBtn = $("sndbtn");
+  sndBtn.addEventListener("pointerdown", e => e.stopPropagation());
+  sndBtn.addEventListener("click", toggleSound);
+  addEventListener("pointerdown", ensureAudio);
+
+  // ---------- keyboard / touch ----------
+  function togglePause() { paused = !paused; }
+  addEventListener("keydown", e => {
+    if (e.code === "KeyS") { toggleSound(); return; }
+    if (e.code === "KeyD") { e.preventDefault(); toggleDonate(); return; }
+    ensureAudio();
+    switch (e.code) {
+      case "ArrowLeft":  e.preventDefault(); move(-1); break;
+      case "ArrowRight": e.preventDefault(); move(1); break;
+      case "ArrowUp":    e.preventDefault(); if (!e.repeat) rotate(1); break;
+      case "KeyZ":       if (!e.repeat) rotate(-1); break;
+      case "KeyX":       if (!e.repeat) rotate(1); break;
+      case "ArrowDown":  e.preventDefault(); soft = true; break;
+      case "Space":      e.preventDefault(); if (!e.repeat) hardDrop(); break;
+      case "KeyP":       togglePause(); break;
+      case "Digit1": sfx(0, W / 2, true); break;
+      case "Digit2": sfx(1, W / 2, true); break;
+      case "Digit3": sfx(2, W / 2, true); break;
+    }
+  });
+  addEventListener("keyup", e => { if (e.code === "ArrowDown") soft = false; });
+
+  const bind = (id, down, up) => {
+    const b = $(id);
+    b.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); ensureAudio(); down(); });
+    if (up) { b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); }
+  };
+  bind("bL", () => move(-1)); bind("bR", () => move(1)); bind("bRot", () => rotate(1));
+  bind("bD", () => { soft = true; }, () => { soft = false; }); bind("bH", hardDrop);
+
+  // ---------- data: mempool.space ----------
+  let ws, backoff = 1000, firstBlocks = true, primed = false, lookups = 0;
+  const lookupQ = [];
+
+  function connect() {
+    setStatus("connecting…");
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+      backoff = 1000; firstBlocks = true;
+      ws.send(JSON.stringify({ action: "init" }));
+      ws.send(JSON.stringify({ action: "want", data: ["blocks"] }));
+      ws.send(JSON.stringify({ "track-mempool-txids": true }));
+      setStatus("listening");
+    };
+    ws.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.block) blockFound(m.block.height, m.block.tx_count, m.block.weight);
+      if (m.blocks && firstBlocks) {
+        firstBlocks = false;
+        const b = m.blocks[m.blocks.length - 1];
+        if (b) $("blk").textContent = "#" + b.height;
+      }
+      if (m["mempool-txids"] && m["mempool-txids"].added) {
+        for (const id of m["mempool-txids"].added) {
+          if (known.has(id) || lookupQ.includes(id)) continue;
+          if (lookupQ.length > 80) lookupQ.shift();
+          lookupQ.push(id);
+        }
+      }
+    };
+    ws.onclose = () => { setStatus("reconnecting…"); setTimeout(connect, backoff); backoff = Math.min(backoff * 2, 15000); };
+    ws.onerror = () => { try { ws.close(); } catch {} };
+  }
+
+  async function pollRecent() {
+    try {
+      const r = await fetch(API + "/mempool/recent");
+      if (r.ok) {
+        const list = await r.json();
+        if (!primed) { primed = true; for (const t of list) known.add(t.txid); }   // first batch is old: skip it
+        else for (const t of list) ingest(t.txid, t.value);
+      }
+    } catch {}
+    setTimeout(pollRecent, 2000);
+  }
+
+  function lookupLoop() {
+    if (lookupQ.length && lookups < 3) {
+      const id = lookupQ.shift();
+      if (!known.has(id)) {
+        lookups++;
+        fetch(API + "/tx/" + id).then(r => r.ok ? r.json() : null).then(t => {
+          if (t && t.vout) ingest(id, t.vout.reduce((s, o) => s + (o.value || 0), 0));
+        }).catch(() => {}).finally(() => { lookups--; });
+      }
+    }
+    setTimeout(lookupLoop, 350);
+  }
+
+  // ---------- demo mode (?demo) ----------
+  function demo() {
+    setStatus("demo");
+    setInterval(() => {
+      const r = Math.random();
+      const btc = r < 0.7 ? Math.random() * 0.099 : r < 0.9 ? 0.1 + Math.random() * 0.9 : r < 0.98 ? 1 + Math.random() * 9 : 10 + Math.random() * 200;
+      seen++; if (btc >= PIECE_MIN_BTC) enqueue(btc, null); else spawnRain();
+      hud();
+    }, 400);
+    setInterval(() => blockFound(900000 + ((Math.random() * 1000) | 0), 2000 + ((Math.random() * 1500) | 0), 2.5e6 + Math.random() * 1.5e6), 30000);
+  }
+
+  hud();
+  requestAnimationFrame(frame);
+  if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); }
+})();
+</script>
+
+<script src="/beeteesea/donate.js?v=8"></script>
+</body>
+</html>
