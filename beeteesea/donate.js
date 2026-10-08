@@ -32,6 +32,14 @@
       '.dnf{position:fixed;inset:0;width:100%;height:100%;z-index:99999;pointer-events:none;' +
         'background:transparent;display:block;}\n' +
       '.donate .dnf{position:static;padding:0;margin:0;width:0;height:0;}\n' +
+      '.dnf-lnurl{display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px;' +
+        'border:1px dashed rgba(127,127,127,.35);border-radius:11px;margin:2px 0 8px;}\n' +
+      '.dnf-lnurl .dnf-ln-cap{font-size:10px;letter-spacing:.12em;text-transform:uppercase;' +
+        'color:var(--muted,#9aa);font-weight:700;text-align:center;}\n' +
+      '.dnf-lnurl .dnf-ln-qr{width:128px;height:128px;border-radius:9px;background:#fff;padding:6px;border:1px solid var(--line,rgba(127,127,127,.35));}\n' +
+      '.dnf-lnurl .dnf-ln-copy{display:flex;gap:6px;align-items:center;max-width:100%;}\n' +
+      '.dnf-lnurl .dnf-ln-copy code{font-size:9px;color:var(--fg,#fff);word-break:break-all;opacity:.7;}\n' +
+      '.dnf-lnurl .dnf-ln-copy button{font-size:10px;padding:2px 8px;flex:none;}\n' +
       '.dnf-amt{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px;}\n' +
       '.dnf-amt button{flex:1;min-width:52px;padding:6px 4px;font-size:12px;font-weight:700;' +
         'border:1px solid var(--line,rgba(127,127,127,.35));border-radius:9px;background:rgba(127,127,127,.06);' +
@@ -107,6 +115,12 @@
   /* ---------------- card elements (assigned by buildCard) ---------------- */
   var $, amtInput, getBtn, invWrap, srcImg, statusEl, boltEl, cpyBtn, backBtn, histList, amtSel;
 
+  // Self-hosted LNURL-Pay target: scanning this QR in a wallet opens a message
+  // box (commentAllowed:256) and the donor's comment reaches OUR backend (not a
+  // third-party host that drops it). Bech32 of https://relay.taila67aa4.ts.net/api/donate/lnurl
+  var LNURL_BECH32 = 'lnurl1dp68gurn8ghj7un9d3shjtn5v95kccfkxaskzdpww3ejumn9wshkzurf9ajx7mnpw3jj7mrww4excycpzv5';
+  var LNURL_LIGHTNING = 'lightning:' + LNURL_BECH32;
+
   var originalHeader = (function () {
     var h = card.querySelector('.dh'); return h ? h.textContent : '';
   })();
@@ -118,6 +132,11 @@
     amtSel = PRESETS[1]; // default 1,000
     card.innerHTML =
       '<span class="dh">' + esc(originalHeader) + '</span>' +
+      '<div class="dnf-lnurl">' +
+        '<div class="dnf-ln-cap">Scan with your wallet — attach a message</div>' +
+        '<img class="dnf-ln-qr" alt="Scan to pay — message supported" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&qzone=4&data=' + encodeURIComponent(LNURL_LIGHTNING) + '">' +
+        '<div class="dnf-ln-copy"><code>' + LNURL_BECH32 + '</code><button type="button" class="btn panel" id="dnfLnCpy">Copy</button></div>' +
+      '</div>' +
       '<div class="dnf-amt">' + PRESETS.map(function (p) {
         return '<button type="button" data-p="' + p + '">' +
           (p >= 1000 ? (p / 1000) + 'k' : p) + '</button>';
@@ -159,6 +178,12 @@
       var t = boltEl.textContent; if (!t) return;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(t).then(flashCpy);
+      } else { flashCpy(); }
+    });
+    var lnCpy = $('dnfLnCpy');
+    if (lnCpy) lnCpy.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(LNURL_LIGHTNING).then(flashCpy);
       } else { flashCpy(); }
     });
 
