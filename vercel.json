@@ -106,6 +106,10 @@
         }
       ],
       "destination": "/battle"
+    },
+    {
+      "source": "/tetris{/}?",
+      "destination": "/beeteesea/scenes/tetris"
     }
   ],
   "headers": [
