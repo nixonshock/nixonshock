@@ -84,7 +84,29 @@
       '.music .mvol{display:flex;gap:8px;align-items:center;}\n' +
       '.music .mvol input{flex:1;accent-color:var(--accent,#ffd54a);}\n' +
       '.music .mvol span{font-size:10px;color:var(--muted,#9aa);min-width:26px;text-align:right;}\n' +
-      '@media(max-width:760px){.music{position:fixed;left:50%;right:auto;top:150px;transform:translateX(-50%);width:min(280px,calc(100vw - 20px));}}\n';
+      '@media(max-width:760px){.music{position:fixed;left:50%;right:auto;top:150px;transform:translateX(-50%);width:min(280px,calc(100vw - 20px));}}\n' +
+      '.tb{position:fixed;right:14px;bottom:14px;z-index:301;font-family:system-ui,sans-serif;}\n' +
+      '.tb .tb-btn{width:46px;height:46px;border-radius:50%;font-size:20px;border:1px solid var(--line,rgba(127,127,127,.35));' +
+        'background:rgba(20,26,36,.9);color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);}\n' +
+      '.tb .tb-btn.on{opacity:0;pointer-events:none;}\n' +
+      '.tb .tb-panel{position:fixed;right:14px;bottom:14px;width:300px;max-width:calc(100vw - 20px);height:46vh;' +
+        'display:flex;flex-direction:column;background:var(--tb-bg,rgba(10,14,20,.97));border:1px solid rgba(127,127,127,.3);border-radius:14px;' +
+        'overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);}\n' +
+      '.tb .tb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:10px;' +
+        'letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;border-bottom:1px solid rgba(127,127,127,.18);}\n' +
+      '.tb .tb-head .btn{font-size:11px;padding:2px 8px;}\n' +
+      '.tb .tb-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--fg,#fff);}\n' +
+      '.tb .tb-msg{line-height:1.35;word-break:break-word;}\n' +
+      '.tb .tb-msg b{color:var(--accent,#ffd54a);font-weight:700;margin-right:4px;}\n' +
+      '.tb .tb-don{color:#3ddc84;font-weight:700;}\n' +
+      '.tb .tb-pay{font-size:22px;font-weight:800;color:#f8c144;line-height:1.25;word-break:break-word;animation:tbBlink 1.15s steps(2,start) infinite;}\n' +
+      '.tb .tb-form{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(127,127,127,.18);}\n' +
+      '.tb .tb-form input{flex:1;min-width:0;padding:6px 8px;font-size:12px;border:1px solid var(--line,rgba(127,127,127,.35));' +
+        'border-radius:9px;background:rgba(127,127,127,.06);color:var(--fg,#fff);font-family:inherit;}\n' +
+      '.tb .tb-form button{flex:none;padding:6px 10px;font-size:12px;font-weight:700;}\n' +
+      '@keyframes tbBlink{50%{opacity:.16}}\n' +
+      '@media(max-width:560px){.tb .tb-panel{width:min(300px,calc(100vw - 20px));right:10px;bottom:10px;}}\n' +
+      '[hidden]{display:none!important}\n';
     document.head.appendChild(s);
   })();
 
@@ -123,7 +145,7 @@
   // third-party host that drops it). Bech32 of https://relay.taila67aa4.ts.net/api/donate/lnurl
   var LNURL_BECH32 = 'lnurl1dp68gurn8ghj7un9d3shjtn5v95kccfkxaskzdpww3ejumn9wshkzurf9ajx7mnpw3jj7mrww4excycpzv5';
   var LNURL_LIGHTNING = 'lightning:' + LNURL_BECH32;
-  var LNURL_ADDR = 'donate@www.nixonshock.com';   // typed address resolves to OUR backend
+  var LNURL_ADDR = 'donate@nixonshock.com';   // typed address resolves to OUR backend
 
   var originalHeader = (function () {
     var h = card.querySelector('.dh'); return h ? h.textContent : '';
@@ -133,113 +155,22 @@
   /* Build the live card. Only called once the backend is confirmed healthy,
    * so the original static markup is left untouched otherwise. */
   function buildCard() {
-    amtSel = PRESETS[1]; // default 1,000
     card.innerHTML =
       '<span class="dh">' + esc(originalHeader) + '</span>' +
-      '<div class="dnf-lnurl">' +
-        '<div class="dnf-ln-cap">Scan with your wallet — attach a message</div>' +
-        '<img class="dnf-ln-qr" alt="Scan to pay — message supported" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&qzone=4&data=' + encodeURIComponent(LNURL_LIGHTNING) + '">' +
-        '<div class="dnf-ln-copy"><code>' + LNURL_BECH32 + '</code><button type="button" class="btn panel" id="dnfLnCpy">Copy</button></div>' +
+      '<div class="dnf-donate">' +
+        '<div class="dnf-ln-cap">Scan with any wallet — attach a message</div>' +
+        '<img class="dnf-ln-qr" alt="Scan to donate" src="https://api.qrserver.com/v1/create-qr-code/?size=480x480&qzone=4&data=' + encodeURIComponent(LNURL_LIGHTNING) + '">' +
         '<div class="dnf-ln-url"><code>' + LNURL_ADDR + '</code><button type="button" class="btn panel" id="dnfAddrCpy">Copy</button></div>' +
-      '</div>' +
-      '<div class="dnf-amt">' + PRESETS.map(function (p) {
-        return '<button type="button" data-p="' + p + '">' +
-          (p >= 1000 ? (p / 1000) + 'k' : p) + '</button>';
-      }).join('') + '</div>' +
-      '<div class="dnf-row">' +
-        '<input type="number" min="1" max="1000000" placeholder="Custom (sats)" aria-label="Donation amount in sats">' +
-        '<button type="button" class="dnf-get" id="dnfGet">Get invoice</button>' +
-      '</div>' +
-      '<div class="dnf-inv" id="dnfInv">' +
-        '<img alt="Scan to pay" width="148" height="148">' +
-        '<div class="dnf-status" id="dnfStatus">Creating invoice…</div>' +
-        '<div class="dnf-copy"><code id="dnfBolt"></code><button type="button" id="dnfCpy">Copy</button></div>' +
-        '<button type="button" class="btn panel" id="dnfBack">New donation</button>' +
-      '</div>' +
-      '<div class="dnf-hist" id="dnfHist">' +
-        '<div class="dnf-hlabel">Recent donations</div>' +
-        '<div class="dnf-hlist" id="dnfHistList"><span class="dnf-empty">Loading…</span></div>' +
       '</div>';
-
-    $ = function (s) { return card.querySelector(s.charAt(0) === '#' || s.charAt(0) === '.' ? s : '#' + s); };
-    amtInput = card.querySelector('.dnf-row input');
-    getBtn = $('dnfGet'); invWrap = $('dnfInv'); srcImg = invWrap.querySelector('img');
-    statusEl = $('dnfStatus'); boltEl = $('dnfBolt'); cpyBtn = $('dnfCpy'); backBtn = $('dnfBack');
-    histList = $('dnfHistList');
-
-    card.querySelectorAll('.dnf-amt button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        card.querySelectorAll('.dnf-amt button').forEach(function (x) { x.classList.remove('active'); });
-        b.classList.add('active');
-        amtSel = parseInt(b.dataset.p, 10);
-        amtInput.value = '';
-      });
-    });
-    amtInput.addEventListener('input', function () { amtSel = parseInt(amtInput.value, 10) || 0; });
-    amtInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') doInvoice(); });
-    getBtn.addEventListener('click', doInvoice);
-    backBtn.addEventListener('click', function () { invWrap.style.display = 'none'; state.pending = null; });
-    cpyBtn.addEventListener('click', function () {
-      var t = boltEl.textContent; if (!t) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(t).then(flashCpy);
-      } else { flashCpy(); }
-    });
-    var lnCpy = $('dnfLnCpy');
-    if (lnCpy) lnCpy.addEventListener('click', function () {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(LNURL_LIGHTNING).then(flashCpy);
-      } else { flashCpy(); }
-    });
-    var addrCpy = $('dnfAddrCpy');
+    var addrCpy = card.querySelector('#dnfAddrCpy');
     if (addrCpy) addrCpy.addEventListener('click', function () {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(LNURL_ADDR).then(flashCpy);
-      } else { flashCpy(); }
-    });
-
-    // History only. The donation watcher is started once at init, independent of
-    // this health gate, so the rain keeps working even if the card cannot be built.
-    refreshHistory();
-  }
-
-  function flashCpy() { var t = cpyBtn.textContent; cpyBtn.textContent = 'Copied ✓'; setTimeout(function () { cpyBtn.textContent = t; }, 1600); }
-
-  function doInvoice() {
-    var amount = amtSel;
-    if (isNaN(amount) || amount < 1) { statusEl.textContent = 'Pick an amount'; invWrap.style.display = 'flex'; return; }
-    invWrap.style.display = 'flex';
-    srcImg.style.visibility = 'hidden';
-    boltEl.textContent = '';
-    cpyBtn.style.visibility = 'hidden';
-    statusEl.textContent = 'Creating invoice…'; statusEl.classList.remove('paid');
-    getBtn.disabled = true;
-    api('invoice', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: Math.min(amount, 1000000) }) }).then(function (res) {
-      getBtn.disabled = false;
-      if (!res || !res.bolt11) { statusEl.textContent = 'Could not create invoice — try again.'; return; }
-      state.pending = { amount: res.amount };
-      srcImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=480x480&qzone=4&data=' + encodeURIComponent(res.bolt11);
-      srcImg.style.visibility = 'visible';
-      boltEl.textContent = res.bolt11;
-      cpyBtn.style.visibility = 'visible';
-      statusEl.textContent = 'Scan or copy — waiting for payment…';
+      function flash() { var t = addrCpy.textContent; addrCpy.textContent = 'Copied ✓'; setTimeout(function () { addrCpy.textContent = t; }, 1600); }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(LNURL_ADDR).then(flash);
+      else flash();
     });
   }
 
-  /* ---------------- history ---------------- */
-  function renderHistory(items) {
-    if (!histList) return;
-    if (!items || !items.length) { histList.innerHTML = '<span class="dnf-empty">No donations yet — be the first ⚡</span>'; return; }
-    histList.innerHTML = items.slice(0, 12).map(function (d) {
-      var row = '<span class="dnf-hrow"><b>⚡ ' + (d.amount || 0).toLocaleString() + ' sats</b><time>' + esc(ago(d.ts)) + '</time></span>';
-      var msg = d.message ? '<div class="dnf-hmsg">' + esc(d.message) + '</div>' : '';
-      return '<div class="dnf-hitem">' + row + msg + '</div>';
-    }).join('');
-  }
-  function refreshHistory() {
-    api('history').then(function (res) { if (res && res.history) renderHistory(res.history); });
-  }
+  function refreshHistory() {}   // donation feed now lives in the trollbox
 
   /* ---------------- lightning rain (Matrix-style bolt columns) ----------------
    * Every donation rains lightning bolts down the screen, and the NUMBER OF RAINS
@@ -593,6 +524,82 @@
     refresh();
   }
 
+  /* ---------------- trollbox (bottom-right: chat + donation feed) ---------------- */
+  function initTrollbox() {
+    if (document.querySelector('.tb')) return;
+    var host = document.createElement('div');
+    host.className = 'tb';
+    host.innerHTML =
+      '<button type="button" class="tb-btn" id="tbBtn" aria-label="Open chat">💬</button>' +
+      '<div class="tb-panel" id="tbPanel" hidden>' +
+        '<div class="tb-head"><span>trollbox · chat + sats</span><button type="button" class="btn panel" id="tbClose">✕</button></div>' +
+        '<div class="tb-list" id="tbList"></div>' +
+        '<div class="tb-form">' +
+          '<input id="tbName" maxlength="20" placeholder="anon" aria-label="Name">' +
+          '<input id="tbText" maxlength="200" placeholder="say something" aria-label="Message">' +
+          '<button type="button" class="btn panel" id="tbSend">Send</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(host);
+    var btn = host.querySelector('#tbBtn'), panel = host.querySelector('#tbPanel'),
+        closeBtn = host.querySelector('#tbClose'), list = host.querySelector('#tbList'),
+        nameIn = host.querySelector('#tbName'), textIn = host.querySelector('#tbText'),
+        sendBtn = host.querySelector('#tbSend');
+    try { nameIn.value = localStorage.getItem('tbName') || ''; } catch (e) {}
+    if (!nameIn.value) {
+      var who = ['satoshi', 'cypher', 'orange', 'block', 'noon', 'vortex', 'mempool', 'aurora', 'neon', 'peanut'];
+      nameIn.value = who[Math.floor(Math.random() * who.length)] + (Math.floor(Math.random() * 90) + 10);
+    }
+    var lastSeq = 0, seeded = false;
+    function feedEvent(ev) {
+      var d = document.createElement('div');
+      if (ev.type === 'donation') {
+        if (ev.message) {
+          d.className = 'tb-pay';                       // payment message: double-size + blink
+          d.textContent = '⚡ ' + (ev.amount || 0).toLocaleString() + ' sats — “' + ev.message + '”';
+        } else {
+          d.className = 'tb-don';
+          d.textContent = '⚡ ' + (ev.amount || 0).toLocaleString() + ' sats received';
+        }
+      } else {
+        d.className = 'tb-msg';
+        d.innerHTML = '<b>' + esc(ev.sender || 'anon') + '</b> ' + esc(ev.text || '');
+      }
+      list.appendChild(d);
+      while (list.children.length > 220) list.removeChild(list.firstChild);
+      list.scrollTop = list.scrollHeight;
+    }
+    function apply(res) {
+      if (!res || !res.events || res.next === undefined) return;
+      var evs = res.events;
+      for (var i = 0; i < evs.length; i++) feedEvent(evs[i]);
+      lastSeq = res.next;
+    }
+    function poll() { if (seeded) { api('feed?after=' + lastSeq).then(apply); } }
+    api('feed?after=0').then(function (res) {          // seed once, then poll incrementally
+      if (res && res.events) { list.innerHTML = ''; apply(res); }
+      seeded = true;
+    });
+    setInterval(poll, 2500);
+    function toggle(open) {
+      panel.hidden = !open;
+      btn.classList.toggle('on', open);
+      if (open) list.scrollTop = list.scrollHeight;
+    }
+    btn.addEventListener('click', function () { toggle(panel.hidden); });
+    closeBtn.addEventListener('click', function () { toggle(false); });
+    function send() {
+      var text = textIn.value.trim(); if (!text) return;
+      var sender = (nameIn.value || 'anon').trim().slice(0, 20) || 'anon';
+      try { localStorage.setItem('tbName', sender); } catch (e) {}
+      api('chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: sender, text: text }) });
+      textIn.value = '';
+    }
+    sendBtn.addEventListener('click', send);
+    textIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+  }
+
   /* ---------------- boot ----------------
    * Only upgrade the card once the backend answers /health OK. If it is not
    * reachable (or the site is deployed ahead of the backend), the original
@@ -605,4 +612,5 @@
   }
   startWatcher();   // always on: the rain must not depend on the card building
   boot();
+  initTrollbox();
 })();
