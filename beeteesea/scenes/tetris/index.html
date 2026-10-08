@@ -167,6 +167,7 @@
   let scored = new Set();
   let over = false, overAt = 0, paused = false;
   let shakeT = 0, banner = "", bannerT = 0;
+  let flashFxT = 0, blockFxT = 0, fxH = 0, fxSwept = false;
   let flashes = [];                 // {r, t}
   let best = 0;
   try { best = parseFloat(localStorage.getItem("mempool-tetris-best")) || 0; } catch {}
@@ -274,14 +275,17 @@
   // ---------- block found: bottom rows swept ----------
   function blockFound(height, txCount, weight) {
     $("blk").textContent = "#" + height;
-    const k = weight ? clamp(Math.round(4 * weight / 4e6), 1, 4) : 4;
-    banner = "BLOCK " + height + (txCount ? "  //  " + txCount.toLocaleString() + " TX" : "");
+    banner = "BLOCK " + height + (txCount ? " // " + txCount.toLocaleString() + " TX" : "");
+    fxH = height; fxSwept = false;
     if (grid[BH - 1].some(Boolean)) {
-      const rows = []; for (let i = 0; i < k; i++) rows.push(BH - 1 - i);
-      removeRows(rows);
-      banner += "  //  " + k + " ROW" + (k > 1 ? "S" : "") + " SWEPT";
+      removeRows([BH - 1]);                       // sweep only the single bottom row
+      fxSwept = true;
+      banner += " // BOTTOM ROW SWEPT";
       sfx(5, W / 2, true);
     }
+    shakeT = Math.max(shakeT, 0.55);
+    flashFxT = 0.4;
+    blockFxT = 1.6;
     bannerT = 3.5; hud();
   }
 
@@ -323,6 +327,8 @@
     for (let i = flashes.length - 1; i >= 0; i--) { flashes[i].t += dt; if (flashes[i].t > 0.35) flashes.splice(i, 1); }
     if (shakeT > 0) shakeT -= dt;
     if (bannerT > 0) bannerT -= dt;
+    if (blockFxT > 0) blockFxT -= dt;
+    if (flashFxT > 0) flashFxT -= dt;
 
     if (over) { if (now - overAt > 3000) resetGame(); return; }
     if (active) {
@@ -425,6 +431,26 @@
     for (const f of flashes) {
       ctx.fillStyle = `rgba(255,255,255,${0.8 * (1 - f.t / 0.35)})`;
       ctx.fillRect(wellX, wellY + f.r * cell, wellW, cell);
+    }
+
+    // BLOCK-FOUND effect: whole-well flash + big centered overlay
+    if (flashFxT > 0) {
+      const fa = Math.min(1, flashFxT / 0.4);
+      ctx.fillStyle = "rgba(255,255,255," + (0.4 * fa).toFixed(3) + ")";
+      ctx.fillRect(wellX, wellY, wellW, wellH);
+    }
+    if (blockFxT > 0) {
+      const ba = Math.min(1, blockFxT / 1.6);
+      ctx.save(); ctx.globalAlpha = ba;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.shadowColor = "#fff"; ctx.shadowBlur = 26;
+      ctx.fillStyle = GOLD;
+      ctx.font = "bold " + Math.max(22, Math.floor(cell * 0.85)) + "px 'Courier New',monospace";
+      ctx.fillText("⚡ BLOCK " + fxH + " FOUND ⚡", W / 2, wellY + wellH * 0.33);
+      ctx.shadowColor = GOLD; ctx.shadowBlur = 16; ctx.fillStyle = "#fff";
+      ctx.font = "bold " + Math.max(13, Math.floor(cell * 0.38)) + "px 'Courier New',monospace";
+      ctx.fillText(fxSwept ? "BOTTOM ROW SWEPT" : "MINING…", W / 2, wellY + wellH * 0.33 + Math.max(24, cell * 0.7));
+      ctx.restore();
     }
 
     // frame
