@@ -476,6 +476,7 @@
 
   // NEXT queue panel: the upcoming pieces, in arrival order
   function drawNext() {
+    if (W < 640) return;   // hide the NEXT-block panel on mobile so it doesn't cover the playfield
     const s = Math.max(10, Math.floor(cell * 0.45));
     const pw = Math.max(112, s * 4 + 80), rowH = s * 2 + 12, title = 24;
     let px = wellX + wellW + 18, py = wellY + 34;      // sits below the block banner
