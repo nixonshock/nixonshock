@@ -105,12 +105,12 @@
       '.tb .tb-msg{line-height:1.35;word-break:break-word;}\n' +
       '.tb .tb-msg b{color:var(--accent,#ffd54a);font-weight:700;margin-right:4px;}\n' +
       '.tb .tb-don{color:#3ddc84;font-weight:700;}\n' +
-      '.tb .tb-pay{font-size:22px;font-weight:800;color:#f8c144;line-height:1.25;word-break:break-word;animation:tbBlink 1.15s steps(2,start) infinite;}\n' +
+      '.tb .tb-pay{font-size:15px;font-weight:800;color:#f8c144;line-height:1.3;word-break:break-word;animation:tbGlow 1.8s ease-in-out infinite;text-shadow:0 0 6px rgba(248,193,68,.5);}\n' +
       '.tb .tb-form{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(127,127,127,.18);}\n' +
       '.tb .tb-form input{flex:1;min-width:0;padding:6px 8px;font-size:12px;border:1px solid var(--line,rgba(127,127,127,.35));' +
         'border-radius:9px;background:rgba(127,127,127,.06);color:var(--fg,#fff);font-family:inherit;}\n' +
       '.tb .tb-form button{flex:none;padding:6px 10px;font-size:12px;font-weight:700;}\n' +
-      '@keyframes tbBlink{50%{opacity:.16}}\n' +
+      '@keyframes tbGlow{0%,100%{text-shadow:0 0 4px rgba(248,193,68,.45),0 0 14px rgba(248,193,68,.3);}50%{text-shadow:0 0 12px rgba(248,193,68,.95),0 0 30px rgba(248,193,68,.6);}}\n' +
       '@media(max-width:560px){.tb .tb-panel{width:min(300px,calc(100vw - 20px));right:10px;bottom:10px;}}\n' +
       '[hidden]{display:none!important}\n';
     document.head.appendChild(s);
