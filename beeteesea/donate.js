@@ -100,8 +100,8 @@
         'overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);}\n' +
       '.tb .tb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:10px;' +
         'letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;border-bottom:1px solid rgba(127,127,127,.18);}\n' +
-      '.tb .tb-head .btn{font-size:11px;padding:2px 8px;}\\n' +
       '.tb .tb-head .btn{font-size:11px;padding:2px 8px;}\n' +
+      '.tb .tb-list{flex:1 1 auto;min-height:0;overflow-y:auto;padding:9px;display:flex;flex-direction:column;gap:7px;font-size:13.5px;color:#e9eef7;}\n' +
       '.tb .tb-online{font-size:10px;font-weight:600;letter-spacing:.02em;color:#7fe08a;text-transform:none;margin:0 6px;white-space:nowrap;border-left:1px solid rgba(127,127,127,.25);padding-left:9px;}\n' +
       '.tb .tb-msg{color:#e9eef7;font-size:13.5px;line-height:1.4;word-break:break-word;}\n' +
       '.tb .tb-msg b{color:#ffd54a;font-weight:700;margin-right:4px;}\n' +
@@ -113,6 +113,7 @@
       '.tb .tb-form button{flex:none;padding:6px 10px;font-size:12px;font-weight:700;}\n' +
       '@keyframes tbGlow{0%,100%{text-shadow:0 0 4px rgba(248,193,68,.45),0 0 14px rgba(248,193,68,.3);}50%{text-shadow:0 0 12px rgba(248,193,68,.95),0 0 30px rgba(248,193,68,.6);}}\n' +
       '@media(max-width:560px){.tb .tb-panel{width:min(300px,calc(100vw - 20px));right:10px;bottom:10px;}}\n' +
+      '@media(max-width:640px){#dcard,.tb{display:none!important}}\n' +
       '[hidden]{display:none!important}\n';
     document.head.appendChild(s);
   })();
