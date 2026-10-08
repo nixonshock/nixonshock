@@ -358,7 +358,7 @@
           ctx.closePath();
           ctx.fill();
         }
-        ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 12;
+        ctx.shadowColor = 'rgba(255,198,64,.95)'; ctx.shadowBlur = 18;   // gold glow on the amount
         ctx.fillStyle = 'rgba(255,255,255,' + ba.toFixed(3) + ')';
         ctx.fillText(banner.text, bx, by);
         ctx.shadowBlur = 0;
@@ -368,7 +368,7 @@
           var maxMsgLines = Math.max(1, Math.floor((H - by - mfz) / (mfz * 1.25)));
           var msgLines = wrapCtxText(ctx, banner.message, maxW, maxMsgLines);
           ctx.textAlign = 'center';
-          ctx.shadowBlur = 12;
+          ctx.shadowColor = 'rgba(255,198,64,.85)'; ctx.shadowBlur = 14;   // gold glow on the message too
           for (var mi = 0; mi < msgLines.length; mi++) {
             ctx.fillStyle = 'rgba(255,255,255,' + (0.94 * ba).toFixed(3) + ')';
             ctx.fillText(msgLines[mi], bx, by + (fz * 1.12) + mi * (mfz * 1.25));
