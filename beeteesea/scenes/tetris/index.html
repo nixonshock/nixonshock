@@ -192,6 +192,11 @@
 
   // ---------- pieces from transactions ----------
   const tierOf = btc => btc >= 10 ? 2 : btc >= 1 ? 1 : 0;
+  // human-readable BTC amount for the tiny dust blocks (< 0.1 BTC)
+  const fmtBtc = b => {
+    const dec = b >= 0.01 ? 3 : b >= 0.001 ? 5 : 8;
+    return b.toFixed(dec).replace(/0+$/, '').replace(/\.$/, '');
+  };
 
   function enqueue(btc, txid) {
     const shape = txid ? parseInt(txid.slice(0, 6), 16) % 7 : (Math.random() * 7) | 0;
@@ -281,7 +286,7 @@
   }
 
   // ---------- tiny falling blocks (txs under the piece threshold) ----------
-  function spawnRain() {
+  function spawnRain(btc) {
     if (rain.length >= MAX_RAIN) rain.shift();
     let lane = 0;
     for (let t = 0; t < 10; t++) {
@@ -290,14 +295,14 @@
     }
     laneBusy[lane] = performance.now() + 250;
     rain.push({ x: lane * RCELL + 1, y: -RCELL, v: 80 + Math.random() * 170, size: RCELL - 2,
-                color: COLORS[(Math.random() * 7) | 0] });
+                color: COLORS[(Math.random() * 7) | 0], btc: btc || 0, label: btc ? fmtBtc(btc) : null });
   }
 
   function ingest(id, sats) {
     if (id) { if (known.has(id)) return; known.add(id); if (known.size > 6000) known.delete(known.values().next().value); }
     seen++;
     const btc = sats / 1e8;
-    if (btc >= PIECE_MIN_BTC) enqueue(btc, id); else spawnRain();
+    if (btc >= PIECE_MIN_BTC) enqueue(btc, id); else spawnRain(btc);
     hud();
   }
 
@@ -369,8 +374,16 @@
     bg.addColorStop(0, "#12163a"); bg.addColorStop(1, "#03040c");
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
-    // tiny falling blocks (one per small transaction)
-    for (const d of rain) block(d.x, d.y, d.size, d.color, 0.55, false);
+    // tiny falling blocks (one per small transaction), each tagged with its BTC amount
+    for (const d of rain) {
+      block(d.x, d.y, d.size, d.color, 0.55, false);
+      if (d.label) {
+        ctx.font = "bold 9px 'Courier New',monospace";
+        ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+        ctx.fillStyle = "#ffd84a";
+        ctx.fillText(d.label, d.x + d.size / 2, d.y - 2);
+      }
+    }
 
     ctx.save();
     if (shakeT > 0) ctx.translate((Math.random() - .5) * 8 * shakeT / .35, (Math.random() - .5) * 8 * shakeT / .35);
@@ -710,7 +723,7 @@
     setInterval(() => {
       const r = Math.random();
       const btc = r < 0.7 ? Math.random() * 0.099 : r < 0.9 ? 0.1 + Math.random() * 0.9 : r < 0.98 ? 1 + Math.random() * 9 : 10 + Math.random() * 200;
-      seen++; if (btc >= PIECE_MIN_BTC) enqueue(btc, null); else spawnRain();
+      seen++; if (btc >= PIECE_MIN_BTC) enqueue(btc, null); else spawnRain(btc);
       hud();
     }, 400);
     setInterval(() => blockFound(900000 + ((Math.random() * 1000) | 0), 2000 + ((Math.random() * 1500) | 0), 2.5e6 + Math.random() * 1.5e6), 30000);
