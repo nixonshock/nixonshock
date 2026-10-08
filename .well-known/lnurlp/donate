@@ -1,0 +1,1 @@
+{"callback": "https://relay.taila67aa4.ts.net/api/donate/lnurl/callback", "maxSendable": 1000000000, "minSendable": 1000, "metadata": "[[\"text/plain\",\"Support Bitcoin Matrix\"],[\"text/identifier\",\"x0u1mhl@ln.bot\"]]", "commentAllowed": 256, "tag": "payRequest"}

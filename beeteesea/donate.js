@@ -40,6 +40,9 @@
       '.dnf-lnurl .dnf-ln-copy{display:flex;gap:6px;align-items:center;max-width:100%;}\n' +
       '.dnf-lnurl .dnf-ln-copy code{font-size:9px;color:var(--fg,#fff);word-break:break-all;opacity:.7;}\n' +
       '.dnf-lnurl .dnf-ln-copy button{font-size:10px;padding:2px 8px;flex:none;}\n' +
+      '.dnf-lnurl .dnf-ln-url{display:flex;gap:6px;align-items:center;max-width:100%;}\n' +
+      '.dnf-lnurl .dnf-ln-url code{font-size:10px;color:var(--accent,#ffd54a);white-space:nowrap;font-weight:700;}\n' +
+      '.dnf-lnurl .dnf-ln-url button{font-size:10px;padding:2px 8px;flex:none;}\n' +
       '.dnf-amt{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px;}\n' +
       '.dnf-amt button{flex:1;min-width:52px;padding:6px 4px;font-size:12px;font-weight:700;' +
         'border:1px solid var(--line,rgba(127,127,127,.35));border-radius:9px;background:rgba(127,127,127,.06);' +
@@ -120,6 +123,7 @@
   // third-party host that drops it). Bech32 of https://relay.taila67aa4.ts.net/api/donate/lnurl
   var LNURL_BECH32 = 'lnurl1dp68gurn8ghj7un9d3shjtn5v95kccfkxaskzdpww3ejumn9wshkzurf9ajx7mnpw3jj7mrww4excycpzv5';
   var LNURL_LIGHTNING = 'lightning:' + LNURL_BECH32;
+  var LNURL_ADDR = 'donate@www.nixonshock.com';   // typed address resolves to OUR backend
 
   var originalHeader = (function () {
     var h = card.querySelector('.dh'); return h ? h.textContent : '';
@@ -136,6 +140,7 @@
         '<div class="dnf-ln-cap">Scan with your wallet — attach a message</div>' +
         '<img class="dnf-ln-qr" alt="Scan to pay — message supported" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&qzone=4&data=' + encodeURIComponent(LNURL_LIGHTNING) + '">' +
         '<div class="dnf-ln-copy"><code>' + LNURL_BECH32 + '</code><button type="button" class="btn panel" id="dnfLnCpy">Copy</button></div>' +
+        '<div class="dnf-ln-url"><code>' + LNURL_ADDR + '</code><button type="button" class="btn panel" id="dnfAddrCpy">Copy</button></div>' +
       '</div>' +
       '<div class="dnf-amt">' + PRESETS.map(function (p) {
         return '<button type="button" data-p="' + p + '">' +
@@ -184,6 +189,12 @@
     if (lnCpy) lnCpy.addEventListener('click', function () {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(LNURL_LIGHTNING).then(flashCpy);
+      } else { flashCpy(); }
+    });
+    var addrCpy = $('dnfAddrCpy');
+    if (addrCpy) addrCpy.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(LNURL_ADDR).then(flashCpy);
       } else { flashCpy(); }
     });
 
@@ -456,21 +467,45 @@
     });
   }
   function playThunder(amount) {
-    // tiny "crack" pop so the impact is felt, not just seen
+    // "Received!" chime — a bright coin-stack ding that climbs a touch with the
+    // tip size, plus a soft low thump so the impact is felt.
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     var ctxh = state._ac || (state._ac = new AC());
-    if (ctxh.state === 'suspended') ctxh.resume();
-    var t = ctxh.currentTime, o = ctxh.createOscillator(), g = ctxh.createGain();
+    if (ctxh.state === 'suspended') { try { ctxh.resume(); } catch (e) {} }
+    var t = ctxh.currentTime;
+    var step = Math.min(Math.round(amount / 200), 7);
+    var base = 523.25 * Math.pow(2, step / 12);        // C5 and up (richer for big tips)
+    [[1, .18], [1.2599, .14], [2, .05]].forEach(function (n, i) {
+      var o = ctxh.createOscillator(), g = ctxh.createGain();
+      o.type = 'sine'; o.frequency.value = base * n[0];
+      o.connect(g); g.connect(ctxh.destination);
+      var st = t + i * 0.07;
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(n[1], st + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + 0.5);
+      o.start(st); o.stop(st + 0.55);
+    });
+    var o = ctxh.createOscillator(), g = ctxh.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(90, t);
+    o.frequency.exponentialRampToValueAtTime(50, t + 0.18);
     o.connect(g); g.connect(ctxh.destination);
-    o.type = 'sine';
-    o.frequency.setValueAtTime(160 + Math.random() * 40, t);
-    o.frequency.exponentialRampToValueAtTime(45, t + 0.28);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(Math.min(0.25, 0.08 + amount / 20000), t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-    o.start(t); o.stop(t + 0.32);
+    g.gain.exponentialRampToValueAtTime(0.12, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    o.start(t); o.stop(t + 0.3);
   }
+
+  /* Warm the web-audio context on the first user gesture. The donation chime
+   * fires from polling (not a click), so without this autoplay policy may leave
+   * the context suspended and the sound silent. A single click/tap/key is enough. */
+  function warmAudio() {
+    if (state._ac) { if (state._ac.state === 'suspended') state._ac.resume().catch(function () {}); return; }
+    var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    var c = new AC(); state._ac = c; c.resume().catch(function () {});
+  }
+  document.addEventListener('pointerdown', warmAudio, { once: true });
+  document.addEventListener('keydown', warmAudio, { once: true });
 
   /* ---------------- music ---------------- */
   /* Looping background track. Default is unmuted + stopped — nothing plays
