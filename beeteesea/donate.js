@@ -232,6 +232,34 @@
     boltHot = mk('rgba(255,255,255,1)', 'rgba(255,214,90,1)', 16);
   }
 
+  // Wrap a string to fit maxWidth, hard-breaking any unbroken token longer than
+  // the line and capping to maxLines (last shown line gets an ellipsis marker).
+  function wrapCtxText(ctx, text, maxWidth, maxLines) {
+    var words = text.split(/\s+/), out = [], line = '';
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      var candidate = line ? (line + ' ' + w) : w;
+      if (ctx.measureText(candidate).width <= maxWidth) { line = candidate; }
+      else {
+        if (line) { out.push(line); line = ''; }
+        while (ctx.measureText(w).width > maxWidth && w.length > 1) {
+          var cut = w.length - 1;
+          while (cut > 1 && ctx.measureText(w.slice(0, cut)).width > maxWidth) cut--;
+          out.push(w.slice(0, cut)); w = w.slice(cut);
+        }
+        line = w;
+      }
+    }
+    if (line) out.push(line);
+    if (maxLines && out.length > maxLines) {
+      out = out.slice(0, maxLines);
+      for (var j = out.length - 1; j >= 0; j--) {
+        if (ctx.measureText(out[j] + '\u2026').width <= maxWidth) { out[j] += '\u2026'; break; }
+      }
+    }
+    return out;
+  }
+
   function fireShower(amount, message) {
     ensureCanvas();
     cv.style.display = 'block';              // visible only while it's actually raining
@@ -306,11 +334,15 @@
       if (banner && now < banner.born + banner.life) {
         var ba = 1 - Math.max(0, (now - banner.born - banner.life + 700) / 700);
         var isNarrow = W < 640;                      // phones: keep the amount legible
+        var maxW = W * 0.86;                         // never overflow the viewport
+        var bx = W / 2, by = H * 0.16;
         var fz = Math.round(W * (amount >= 1000 ? 0.05 : 0.04));
         if (isNarrow) fz = Math.max(26, fz);         // never shrink below readability
         ctx.font = '700 ' + fz + 'px "Bricolage Grotesque", system-ui, sans-serif';
+        var atw = ctx.measureText(banner.text).width;
+        if (atw > maxW) fz = Math.max(18, Math.round(fz * (maxW / atw))); // fit big amounts on one line
+        ctx.font = '700 ' + fz + 'px "Bricolage Grotesque", system-ui, sans-serif';
         ctx.textAlign = 'center';
-        var bx = W / 2, by = H * 0.16;
         // contrast chip so the amount reads over any busy scene (mainly phones)
         if (isNarrow) {
           var tw = ctx.measureText(banner.text).width;
@@ -331,12 +363,16 @@
         ctx.fillText(banner.text, bx, by);
         ctx.shadowBlur = 0;
         if (banner.message) {
-          var mfz = Math.max(16, Math.round(fz * 0.58));
+          var mfz = Math.max(14, Math.round(fz * 0.58));
           ctx.font = '600 ' + mfz + 'px "Bricolage Grotesque", system-ui, sans-serif';
+          var maxMsgLines = Math.max(1, Math.floor((H - by - mfz) / (mfz * 1.25)));
+          var msgLines = wrapCtxText(ctx, banner.message, maxW, maxMsgLines);
           ctx.textAlign = 'center';
           ctx.shadowBlur = 12;
-          ctx.fillStyle = 'rgba(255,255,255,' + (0.94 * ba).toFixed(3) + ')';
-          ctx.fillText('\u201c' + banner.message + '\u201d', bx, by + fz * 1.12);
+          for (var mi = 0; mi < msgLines.length; mi++) {
+            ctx.fillStyle = 'rgba(255,255,255,' + (0.94 * ba).toFixed(3) + ')';
+            ctx.fillText(msgLines[mi], bx, by + (fz * 1.12) + mi * (mfz * 1.25));
+          }
           ctx.shadowBlur = 0;
         }
       }
