@@ -55,10 +55,12 @@
       '.dnf-hist{margin-top:10px;border-top:1px solid var(--line,rgba(127,127,127,.18));padding-top:8px;}\n' +
       '.dnf-hlabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;margin-bottom:6px;}\n' +
       '.dnf-hlist{display:flex;flex-direction:column;gap:4px;max-height:120px;overflow:auto;}\n' +
-      '.dnf-hitem{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--fg,#fff);' +
+      '.dnf-hitem{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--fg,#fff);' +
         'background:rgba(127,127,127,.05);border-radius:7px;padding:4px 8px;}\n' +
+      '.dnf-hrow{display:flex;justify-content:space-between;gap:8px;}\n' +
       '.dnf-hitem b{color:#f8c144;font-variant-numeric:tabular-nums;}\n' +
       '.dnf-hitem time{color:var(--muted,#9aa);font-size:10px;flex:none;}\n' +
+      '.dnf-hmsg{font-size:10.5px;color:var(--muted,#9aa);line-height:1.35;padding-left:1px;}\n' +
       '.dnf-empty{font-size:10.5px;color:var(--muted,#9aa);font-style:italic;}\n' +
       '.dnf-err{font-size:10.5px;color:#ff7b72;text-align:center;}\n' +
       '.mwrap{position:relative;display:inline-block;}\n' +
@@ -194,7 +196,9 @@
     if (!histList) return;
     if (!items || !items.length) { histList.innerHTML = '<span class="dnf-empty">No donations yet — be the first ⚡</span>'; return; }
     histList.innerHTML = items.slice(0, 12).map(function (d) {
-      return '<div class="dnf-hitem"><b>⚡ ' + (d.amount || 0).toLocaleString() + ' sats</b><time>' + esc(ago(d.ts)) + '</time></div>';
+      var row = '<span class="dnf-hrow"><b>⚡ ' + (d.amount || 0).toLocaleString() + ' sats</b><time>' + esc(ago(d.ts)) + '</time></span>';
+      var msg = d.message ? '<div class="dnf-hmsg">' + esc(d.message) + '</div>' : '';
+      return '<div class="dnf-hitem">' + row + msg + '</div>';
     }).join('');
   }
   function refreshHistory() {
@@ -255,7 +259,7 @@
     boltHot = mk('rgba(255,255,255,1)', 'rgba(255,214,90,1)', 16);
   }
 
-  function fireShower(amount) {
+  function fireShower(amount, message) {
     ensureCanvas();
     cv.style.display = 'block';              // visible only while it's actually raining
     if (!boltDim) buildSprites();
@@ -294,7 +298,7 @@
       });
     }
     var bannerText = '⚡ ' + amount.toLocaleString() + (amount === 1 ? ' sat' : ' sats');
-    banner = { text: bannerText, born: start, life: amount >= 1000 ? 3000 : 2200 };
+    banner = { text: bannerText, message: (message || '').trim().slice(0, 140) || null, born: start, life: amount >= 1000 ? 3000 : 2600 };
     flash = { end: start + (220 + 640 * intensity), a: 0.30 + 0.55 * intensity };
 
     function frame(now) {
@@ -353,6 +357,15 @@
         ctx.fillStyle = 'rgba(255,255,255,' + ba.toFixed(3) + ')';
         ctx.fillText(banner.text, bx, by);
         ctx.shadowBlur = 0;
+        if (banner.message) {
+          var mfz = Math.max(16, Math.round(fz * 0.58));
+          ctx.font = '600 ' + mfz + 'px "Bricolage Grotesque", system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = 'rgba(255,255,255,' + (0.94 * ba).toFixed(3) + ')';
+          ctx.fillText('\u201c' + banner.message + '\u201d', bx, by + fz * 1.12);
+          ctx.shadowBlur = 0;
+        }
       }
 
       if (alive > 0 || now < endMs + 1500) {
@@ -386,9 +399,9 @@
    */
   var lastId = -1;                       // -1 = not yet seeded
 
-  function rain(amount) {
+  function rain(amount, message) {
     if (window.BEETEESEA_NO_SOUND !== true) { try { playThunder(amount); } catch (e) {} }
-    fireShower(amount);
+    fireShower(amount, message);
     refreshHistory();
   }
 
@@ -399,13 +412,13 @@
         lastId = res.id;                                // baseline — a stale id never fires
         if (res.id > 0 && res.ts) {
           var age = Math.floor(Date.now() / 1000 - res.ts);   // tolerant of float ts
-          if (age >= 0 && age <= CATCHUP_S) rain(res.amount || 0);
+          if (age >= 0 && age <= CATCHUP_S) rain(res.amount || 0, res.message);
         }
         return;
       }
       if (res.id > lastId) {
         lastId = res.id;
-        rain(res.amount || 0);
+        rain(res.amount || 0, res.message);
       }
     });
   }
