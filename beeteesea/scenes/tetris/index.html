@@ -25,9 +25,6 @@
   #hud .ttl{color:#ffd84a;letter-spacing:.12em}
   #sndbtn{display:inline-block;pointer-events:auto;cursor:pointer;padding:2px 0;border-bottom:1px dotted #8a8fa8}
   #sndbtn:hover b{color:#ffd84a}
-  /* donate button — mirrors the sound toggle */
-  #donatebtn{display:inline-block;pointer-events:auto;cursor:pointer;padding:2px 0;border-bottom:1px dotted #8a8fa8;margin-left:10px}
-  #donatebtn:hover b{color:#ffd84a}
   #legend{position:fixed;left:14px;bottom:12px;font-size:11px;line-height:1.6;text-align:left;
        color:#6f7494;pointer-events:none;z-index:2;text-shadow:0 0 3px #000}
   #pad{position:fixed;left:0;right:0;bottom:10px;display:none;justify-content:center;gap:10px;z-index:4}
@@ -35,9 +32,10 @@
        color:#fff;font:22px "Courier New",monospace;touch-action:none}
   #pad button:active{background:#3a3f6a}
   @media (pointer:coarse){#pad{display:flex}#legend{display:none}}
-  /* donate card (donate.js upgrades #dcard into the QR-only card) — centred top so it
-     never collides with the HUD (left) or the music cluster (right) */
-  #dcard{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:300;width:min(280px,calc(100vw - 24px));
+  /* donate card (donate.js upgrades #dcard into the QR-only card) — drops below the
+     top-right Donate + ♪ music cluster, like the other scenes */
+  .ddon{position:relative;display:inline-block}
+  #dcard{position:absolute;right:0;top:calc(100% + 8px);z-index:300;width:min(280px,calc(100vw - 24px));
        background:#151828;border:2px solid #8a8fa8;border-radius:14px;color:#fff;
        box-shadow:0 12px 30px rgba(0,0,0,.55)}
   #dcard[hidden]{display:none}
@@ -45,9 +43,10 @@
   /* host for donate.js's music control — donate.js inserts the ♪ button as the first
      child of `.top .controls`, so this element must exist or the music never mounts */
   .top{position:fixed;top:12px;right:14px;z-index:300;display:flex;align-items:center}
-  .top .controls{display:flex;gap:8px;align-items:center}
+  .top .controls{display:flex;gap:8px;align-items:center;position:relative}
   .btn.panel{font:bold 12px "Courier New",monospace;color:#fff;background:#1a1d33;border:2px solid #8a8fa8;border-radius:12px;padding:6px 10px;cursor:pointer}
   .btn.panel:hover{background:#3a3f6a}
+  .btn.panel .kbd{font-size:9px;opacity:.65;margin-left:4px}
 </style>
 <!-- Vercel Web Analytics -->
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
@@ -56,8 +55,7 @@
 <body>
 <canvas id="c"></canvas>
 <div id="hud">
-  <div class="ttl">MEMPOOL TETRIS <span style="color:#9aa0bd">// <b id="st">connecting…</b></span>
-    <span id="donatebtn" role="button" tabindex="0" title="Open the donate card">DONATE <b>d</b></span></div>
+  <div class="ttl">MEMPOOL TETRIS <span style="color:#9aa0bd">// <b id="st">connecting…</b></span></div>
   <div>TX SEEN <b id="n">0</b> &nbsp; PIECES <b id="pc">0</b></div>
   <div>BTC CLEARED <b id="sc">0.00</b> &nbsp; BEST <b id="hi">0.00</b></div>
   <div>LINES <b id="ln">0</b> &nbsp; LAST BLOCK <b id="blk">—</b></div>
@@ -77,12 +75,13 @@
   <button id="bD">▼</button><button id="bH">⤓</button>
 </div>
 
-<!-- donate.js music host: donate.js mounts the ♪ Music button here -->
-<div class="top"><div class="controls"></div></div>
-<!-- donate card host — donate.js upgrades this into the QR-only card and wires the music + trollbox -->
-<div class="donate" id="dcard" hidden role="dialog" aria-label="Donate">
-  <span class="dh">Support the grid ⚡</span>
-</div>
+<!-- top-right cluster: donate.js mounts the ♪ Music button here as the first child -->
+<div class="top"><div class="controls">
+  <span class="ddon">
+    <button id="dbtn" class="btn panel" type="button" aria-label="Donate" title="Send a few sats">Donate <span class="kbd">d</span></button>
+    <div class="donate panel" id="dcard" hidden role="dialog" aria-label="Donate"><span class="dh">Support the grid ⚡</span></div>
+  </span>
+</div></div>
 
 <script>
 (() => {
@@ -157,8 +156,8 @@
     const open = c.hidden;
     c.hidden = !open;
   }
-  $("donatebtn").addEventListener("pointerdown", e => e.stopPropagation());
-  $("donatebtn").addEventListener("click", toggleDonate);
+  $("dbtn").addEventListener("pointerdown", e => e.stopPropagation());
+  $("dbtn").addEventListener("click", toggleDonate);
 
   // ---------- game state ----------
   const newGrid = () => Array.from({ length: BH }, () => Array(BW).fill(null));
