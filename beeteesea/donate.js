@@ -536,8 +536,8 @@
     var host = document.createElement('div');
     host.className = 'tb';
     host.innerHTML =
-      '<button type="button" class="tb-btn" id="tbBtn" aria-label="Open chat">💬</button>' +
-      '<div class="tb-panel" id="tbPanel" hidden>' +
+      '<button type="button" class="tb-btn on" id="tbBtn" aria-label="Open chat">💬</button>' +
+      '<div class="tb-panel" id="tbPanel">' +
         '<div class="tb-head"><span>trollbox · chat + sats</span><button type="button" class="btn panel" id="tbClose">✕</button></div>' +
         '<div class="tb-list" id="tbList"></div>' +
         '<div class="tb-form">' +
@@ -552,6 +552,13 @@
         nameIn = host.querySelector('#tbName'), textIn = host.querySelector('#tbText'),
         sendBtn = host.querySelector('#tbSend');
     try { nameIn.value = localStorage.getItem('tbName') || ''; } catch (e) {}
+    // Typing in the trollbox must never trigger the page's global keybindings
+    // (Space=pause / D=donate on document) — stop those keys from bubbling.
+    [nameIn, textIn].forEach(function (f) {
+      ['keydown', 'keyup'].forEach(function (evt) {
+        f.addEventListener(evt, function (e) { e.stopPropagation(); });
+      });
+    });
     if (!nameIn.value) {
       var who = ['satoshi', 'cypher', 'orange', 'block', 'noon', 'vortex', 'mempool', 'aurora', 'neon', 'peanut'];
       nameIn.value = who[Math.floor(Math.random() * who.length)] + (Math.floor(Math.random() * 90) + 10);
