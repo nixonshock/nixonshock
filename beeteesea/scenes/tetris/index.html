@@ -35,12 +35,19 @@
        color:#fff;font:22px "Courier New",monospace;touch-action:none}
   #pad button:active{background:#3a3f6a}
   @media (pointer:coarse){#pad{display:flex}#legend{display:none}}
-  /* donate card (donate.js upgrades #dcard into the QR-only card) */
-  #dcard{position:fixed;right:14px;top:12px;z-index:300;width:min(280px,calc(100vw - 24px));
+  /* donate card (donate.js upgrades #dcard into the QR-only card) — centred top so it
+     never collides with the HUD (left) or the music cluster (right) */
+  #dcard{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:300;width:min(280px,calc(100vw - 24px));
        background:#151828;border:2px solid #8a8fa8;border-radius:14px;color:#fff;
        box-shadow:0 12px 30px rgba(0,0,0,.55)}
   #dcard[hidden]{display:none}
   #dcard .dh{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#ffd84a;margin-bottom:8px}
+  /* host for donate.js's music control — donate.js inserts the ♪ button as the first
+     child of `.top .controls`, so this element must exist or the music never mounts */
+  .top{position:fixed;top:12px;right:14px;z-index:300;display:flex;align-items:center}
+  .top .controls{display:flex;gap:8px;align-items:center}
+  .btn.panel{font:bold 12px "Courier New",monospace;color:#fff;background:#1a1d33;border:2px solid #8a8fa8;border-radius:12px;padding:6px 10px;cursor:pointer}
+  .btn.panel:hover{background:#3a3f6a}
 </style>
 <!-- Vercel Web Analytics -->
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
@@ -70,6 +77,8 @@
   <button id="bD">▼</button><button id="bH">⤓</button>
 </div>
 
+<!-- donate.js music host: donate.js mounts the ♪ Music button here -->
+<div class="top"><div class="controls"></div></div>
 <!-- donate card host — donate.js upgrades this into the QR-only card and wires the music + trollbox -->
 <div class="donate" id="dcard" hidden role="dialog" aria-label="Donate">
   <span class="dh">Support the grid ⚡</span>
