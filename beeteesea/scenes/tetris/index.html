@@ -295,7 +295,7 @@
     }
     laneBusy[lane] = performance.now() + 250;
     rain.push({ x: lane * RCELL + 1, y: -RCELL, v: 80 + Math.random() * 170, size: RCELL - 2,
-                color: COLORS[(Math.random() * 7) | 0], btc: btc || 0, label: btc ? fmtBtc(btc) : null });
+                color: COLORS[(Math.random() * 7) | 0], btc: btc || 0, label: btc && btc >= 0.01 ? fmtBtc(btc) : null });
   }
 
   function ingest(id, sats) {
