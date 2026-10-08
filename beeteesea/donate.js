@@ -43,6 +43,12 @@
       '.dnf-lnurl .dnf-ln-url{display:flex;gap:6px;align-items:center;max-width:100%;}\n' +
       '.dnf-lnurl .dnf-ln-url code{font-size:10px;color:var(--accent,#ffd54a);white-space:nowrap;font-weight:700;}\n' +
       '.dnf-lnurl .dnf-ln-url button{font-size:10px;padding:2px 8px;flex:none;}\n' +
+      '.dnf-donate{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px;}\n' +
+      '.dnf-donate .dnf-ln-cap{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;text-align:center;}\n' +
+      '.dnf-donate .dnf-ln-qr{width:min(180px,72%);height:auto;border-radius:10px;background:#fff;padding:8px;border:1px solid var(--line,rgba(127,127,127,.35));}\n' +
+      '.dnf-donate .dnf-ln-url{display:flex;gap:8px;align-items:center;justify-content:center;max-width:100%;}\n' +
+      '.dnf-donate .dnf-ln-url code{font-size:11px;color:var(--accent,#ffd54a);white-space:nowrap;font-weight:700;}\n' +
+      '.dnf-donate .dnf-ln-url button{font-size:11px;padding:3px 10px;flex:none;}\n' +
       '.dnf-amt{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px;}\n' +
       '.dnf-amt button{flex:1;min-width:52px;padding:6px 4px;font-size:12px;font-weight:700;' +
         'border:1px solid var(--line,rgba(127,127,127,.35));border-radius:9px;background:rgba(127,127,127,.06);' +
@@ -159,7 +165,7 @@
       '<span class="dh">' + esc(originalHeader) + '</span>' +
       '<div class="dnf-donate">' +
         '<div class="dnf-ln-cap">Scan with any wallet — attach a message</div>' +
-        '<img class="dnf-ln-qr" alt="Scan to donate" src="https://api.qrserver.com/v1/create-qr-code/?size=480x480&qzone=4&data=' + encodeURIComponent(LNURL_LIGHTNING) + '">' +
+        '<img class="dnf-ln-qr" alt="Scan to donate" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&qzone=4&data=' + encodeURIComponent(LNURL_LIGHTNING) + '">' +
         '<div class="dnf-ln-url"><code>' + LNURL_ADDR + '</code><button type="button" class="btn panel" id="dnfAddrCpy">Copy</button></div>' +
       '</div>';
     var addrCpy = card.querySelector('#dnfAddrCpy');
