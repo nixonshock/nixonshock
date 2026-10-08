@@ -100,8 +100,9 @@
         'overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);}\n' +
       '.tb .tb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:10px;' +
         'letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;border-bottom:1px solid rgba(127,127,127,.18);}\n' +
+      '.tb .tb-head .btn{font-size:11px;padding:2px 8px;}\\n' +
       '.tb .tb-head .btn{font-size:11px;padding:2px 8px;}\n' +
-      '.tb .tb-list{flex:1;overflow-y:auto;padding:9px;display:flex;flex-direction:column;gap:7px;font-size:13.5px;color:#e9eef7;}\n' +
+      '.tb .tb-online{font-size:10px;font-weight:600;letter-spacing:.02em;color:#7fe08a;text-transform:none;margin:0 6px;white-space:nowrap;border-left:1px solid rgba(127,127,127,.25);padding-left:9px;}\n' +
       '.tb .tb-msg{color:#e9eef7;font-size:13.5px;line-height:1.4;word-break:break-word;}\n' +
       '.tb .tb-msg b{color:#ffd54a;font-weight:700;margin-right:4px;}\n' +
       '.tb .tb-don{color:#3ddc84;font-weight:700;}\n' +
@@ -574,7 +575,7 @@
     host.innerHTML =
       '<button type="button" class="tb-btn on" id="tbBtn" aria-label="Open chat">💬</button>' +
       '<div class="tb-panel" id="tbPanel">' +
-        '<div class="tb-head"><span>trollbox · chat + sats</span><button type="button" class="btn panel" id="tbClose">✕</button></div>' +
+        '<div class="tb-head"><span>trollbox · chat + sats</span><span class="tb-online" id="tbOnline">● 0 online</span><button type="button" class="btn panel" id="tbClose">✕</button></div>' +
         '<div class="tb-list" id="tbList"></div>' +
         '<div class="tb-form">' +
           '<input id="tbName" maxlength="20" placeholder="anon" aria-label="Name">' +
@@ -662,4 +663,25 @@
   startWatcher();   // always on: the rain must not depend on the card building
   boot();
   initTrollbox();
+
+  /* live-viewer presence: heartbeat + the 'N online' counter in the trollbox head */
+  var _presUid = (function () {
+    try {
+      var k = 'tbPresenceUid';
+      if (sessionStorage.getItem(k)) return sessionStorage.getItem(k);
+      var u = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : ('u' + Date.now().toString(36) + Math.random().toString(36).slice(2));
+      sessionStorage.setItem(k, u); return u;
+    } catch (e) { return 'u' + Date.now().toString(36); }
+  })();
+  function presenceTick() {
+    api('presence?uid=' + encodeURIComponent(_presUid)).then(function (r) {
+      var el = document.getElementById('tbOnline');
+      if (!el) return;
+      el.textContent = (r && typeof r.online === 'number') ? ('● ' + r.online + ' online') : '●';
+    });
+  }
+  presenceTick();
+  setInterval(presenceTick, 25000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) presenceTick(); });
 })();
