@@ -47,7 +47,9 @@
   .donate img{border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line);align-self:center;display:block}
   /* prominent current-block readout */
   #curblock{position:fixed;left:14px;bottom:12px;font-size:11px;letter-spacing:.12em;color:#0a8f2a;line-height:1.4;text-shadow:0 0 6px #00ff41;pointer-events:none;user-select:none;z-index:2}
-  #curblock b{display:block;font-size:32px;font-weight:700;color:#d8ffe0;letter-spacing:.02em}
+  #curblock b{display:block;font-size:32px;font-weight:700;color:#d8ffe0;letter-spacing:.02em;transition:color .4s}
+  #curblock b.up{color:#7dffa8}
+  #curblock b.down{color:#ff7d7d}
   @media(max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
 </style>
 </head>
@@ -79,7 +81,10 @@
   </span>
 </div></div>
 
-<div id="curblock">CURRENT BLOCK <b id="blk2">—</b></div>
+<div id="curblock">
+  <div>BTC PRICE <b id="pr">—</b></div>
+  <div>CURRENT BLOCK <b id="blk2">—</b></div>
+</div>
 
 <script>
 (() => {
@@ -484,7 +489,35 @@
     setInterval(() => blockFound(900000 + ((Math.random() * 1000) | 0), 2000 + ((Math.random() * 1500) | 0)), 25000);
   }
 
+  // ---------- live BTC/USD price (Binance, mirror as fallback) ----------
+  let lastPr = null;
+  function setPr(v) {
+    if (!isFinite(v)) return;
+    const el = document.getElementById("pr"); if (!el) return;
+    const s = v >= 1000 ? "$" + Math.round(v).toLocaleString("en-US")
+                        : "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    el.textContent = s;
+    if (lastPr !== null && v !== lastPr) {
+      el.classList.remove("up", "down"); void el.offsetWidth;
+      el.classList.add(v > lastPr ? "up" : "down");
+    }
+    lastPr = v;
+  }
+  function prNow() {
+    fetch("https://data-api.binance.vision/api/v3/ticker/price?symbol=BTCUSDT")
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(j => setPr(+j.price))
+      .catch(() => fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot")
+        .then(r => r.ok ? r.json() : Promise.reject()).then(j => setPr(+j.data.amount)).catch(() => {}));
+  }
+  function startPrice() {
+    prNow();
+    setInterval(prNow, 30000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) prNow(); });
+  }
+
   if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); }
+  startPrice();
 })();
 </script>
 
