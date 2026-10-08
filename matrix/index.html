@@ -32,7 +32,7 @@
        letter-spacing:.4em;color:#9dffb5;text-shadow:0 0 14px #00ff41;pointer-events:none;z-index:3}
   body.paused #paused{display:flex}
 
-  /* donate + music controls (shared /beeteesea/donate.js surface) */
+  /* donate + music controls (shared /beeteesea/donate.js?v=12 surface) */
   [hidden]{display:none!important}
   :root{--line:rgba(0,255,80,.35);--fg:#d8ffe0;--accent:#00ff41;--muted:#0a8f2a;--font-mono:"Courier New",monospace}
   .controls{position:fixed;right:14px;top:12px;display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;z-index:4}
@@ -523,7 +523,7 @@
 
 <script>
 /* matrix donate button — toggles #dcard. The live card, music control and the
-   lightning rain all mount via /beeteesea/donate.js (same beeteesea surface). */
+   lightning rain all mount via /beeteesea/donate.js?v=12 (same beeteesea surface). */
 (function () {
   var dbtn = document.getElementById('dbtn'), dcard = document.getElementById('dcard');
   if (!dbtn || !dcard) return;
@@ -536,6 +536,6 @@
 })();
 </script>
 
-<script src="/beeteesea/donate.js"></script>
+<script src="/beeteesea/donate.js?v=12"></script>
 </body>
 </html>

@@ -607,7 +607,7 @@
       if (ev.type === 'donation') {
         if (ev.message) {
           d.className = 'tb-pay';                       // payment message: double-size + blink
-          d.textContent = '⚡ ' + (ev.amount || 0).toLocaleString() + ' sats — “' + ev.message + '”';
+          d.textContent = '⚡ ' + (ev.amount || 0).toLocaleString() + ' sats — ' + ev.message;
         } else {
           d.className = 'tb-don';
           d.textContent = '⚡ ' + (ev.amount || 0).toLocaleString() + ' sats received';
