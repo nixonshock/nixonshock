@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mempool Music</title>
 <style>
-  :root{--ink:#e4ecff;--dim:#8a96b8;--faint:#4b5578;--cyan:#5ee0ff;--mag:#ff6bd6;--gold:#ffd84a}
+  :root{--ink:#e4ecff;--dim:#c7d2f5;--faint:#94a2cf;--cyan:#5ee0ff;--mag:#ff6bd6;--gold:#ffd84a}
   html,body{margin:0;height:100%;background:#06070f;overflow:hidden;color:var(--ink);
             font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;-webkit-user-select:none;user-select:none}
   canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
@@ -49,7 +49,7 @@
   <div>CHORD <b id="chord">Am</b> → <b id="nxt">F</b> <span class="hx">at the next block</span></div>
   <div>NOTES <b id="nn">0</b> &nbsp; TX/S <b id="rate">0.0</b></div>
   <div class="hx">LAST BLOCK <b id="blk">—</b></div>
-  <div id="ctl">VOL <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume"> <span id="mute" role="button" tabindex="0">MUTE</span> <label id="drl" title="Play a drum hit for every transaction under 0.1 BTC"><input id="dr" type="checkbox"> DRUM</label></div>
+  <div id="ctl">VOL <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume"> <span id="mute" role="button" tabindex="0">MUTE</span> <label id="drl" title="Drum per transaction: hi-hat <0.003, kick 0.003-0.03, snare 0.03+, drum loop 10+ BTC"><input id="dr" type="checkbox"> DRUM</label></div>
 </div>
 
 <div id="whales"><h3>RECENT WHALES ≥ 1 BTC</h3><div id="wl"><div class="none">none yet…</div></div></div>
@@ -60,13 +60,13 @@
   <i style="background:#7f8fb0"></i>&lt;2 <i style="background:#4cc9f0"></i>2–5 <i style="background:#5ee27a"></i>5–10
   <i style="background:#ffe066"></i>10–20 <i style="background:#ff9f43"></i>20–50 <i style="background:#ff4d6d"></i>50+
   <span class="hx">&nbsp; · &nbsp;[M] mute &nbsp;·&nbsp; [D] drum</span><br>
-  <span class="dk">drum on</span> (tx &lt; 0.1 BTC, DRUM checked):
-  <i style="background:#5ee0ff"></i>hi-hat &lt;0.003 <i style="background:#ff9f43"></i>kick 0.003–0.03 <i style="background:#ff6bd6"></i>snare 0.03–0.1
+  <span class="dk">drum on</span> (DRUM checked):
+  <i style="background:#5ee0ff"></i>hi-hat &lt;0.003 <i style="background:#ff9f43"></i>kick 0.003–0.03 <i style="background:#ff6bd6"></i>snare 0.03+ <i style="background:#ffd84a"></i>10&nbsp;BTC+ = drum loop
 </div>
 
 <div id="start">
   <button id="go">▶ START THE MUSIC</button>
-  <p>Every Bitcoin transaction becomes a note, played in a calm A-minor scale. Each new block moves the music to the next chord. Tick <b>DRUM</b> to add a hi-hat / kick / snare for every transaction under 0.1 BTC. Browsers need one click before they allow sound.</p>
+  <p>Every Bitcoin transaction becomes a note, played in a calm A-minor scale. Each new block moves the music to the next chord. Tick <b>DRUM</b> to add a hi-hat (under 0.003 BTC), kick (0.003–0.03) or snare (0.03+) per transaction — and a one-off drum loop for any 10 BTC+ whale. Browsers need one click before they allow sound.</p>
 </div>
 
 <script>
@@ -108,11 +108,11 @@
   const velFor = fee => fee == null ? 0.3 : clamp(0.2 + 0.8 * Math.log10(1 + fee) / 2.0, 0.2, 1);
 
   // ---------- drums: every tx under 0.1 BTC gets a hit ----------
-  const DRUM_BTC = 0.1;                                          // drum threshold
+  const DRUM_LOOP_BTC = 10;                                      // 10+ BTC triggers a one-off drum loop
   const DRUM_COLOR = { K: "#ff9f43", S: "#ff6bd6", H: "#5ee0ff" };
   const DRUM_NAME = { K: "kick", S: "snare", H: "hi-hat" };
-  // smaller transfer = tighter/quieter voice: hi-hat under 0.003, kick up to 0.03, snare above
-  const drumKind = (btc, fee) => btc < 0.003 ? "H" : btc < 0.03 ? "K" : "S";
+  // smaller transfer = tighter/quieter voice: hi-hat <0.003, kick 0.003-0.03, snare 0.03+, loop 10+
+  const drumKind = btc => btc < 0.003 ? "H" : btc < 0.03 ? "K" : "S";
   const drumsOn = () => $("dr").checked;
 
   // ---------- audio engine (Web Audio, no files) ----------
@@ -261,6 +261,17 @@
 
   const playDrum = (k, t, vel, pan, fee) => k === "K" ? kick(t, vel, pan) : k === "S" ? snare(t, vel, pan) : hat(t, vel, pan, fee != null && fee >= 20);
 
+  // one-off drum loop for whales at/over 10 BTC: a 1-bar rolling fill
+  const FILL = [[0,"K",0],[0.5,"H",.3],[1,"K",0],[1.5,"S",0],[2,"K",0],[2.5,"H",-.3],[3,"S",0],[3.5,"K",.15]];
+  function drumFill(t, vel, fee) {
+    for (let i = 0; i < FILL.length; i++) {
+      const s = FILL[i][0], k = FILL[i][1], pan = FILL[i][2], tt = t + s * STEP;
+      const vv = clamp(vel * (k === "K" ? 1 : 0.92), 0.25, 1);
+      playDrum(k, tt, vv, pan, k === "H" ? fee : 0);
+      vis.push({ t: tt, drum: "L", color: "#ffd84a", vel: vv, dur: 0.9, ghost: false });
+    }
+  }
+
   // ---------- scheduler: arrivals are random, music lands on the grid ----------
   const pending = [], noteQ = [], vis = [], markers = [];
   let nextStep = null, notesPlayed = 0, tipHeight = 0, lastBlockSec = null;
@@ -296,7 +307,11 @@
       if (play) notesPlayed++;
       vis.push({ t, row, vel, dur: it.whale ? 3.2 : Math.max(dur, 1.15), color: it.whale ? "#ffd84a" : feeColor(it.fee), whale: it.whale, btc: it.btc, ghost: !play });
       if (!drumOn || !it.drum) continue;
-      const k = drumKind(it.btc, it.fee), live = nd++ < MAX_DRUMS_STEP && A && A.ac.state === "running";
+      if (it.btc != null && it.btc >= DRUM_LOOP_BTC) {          // 10+ BTC: one-off drum loop
+        if (A && A.ac.state === "running") drumFill(t, vel, it.fee);
+        continue;                                               // drumFill pushes its own vis entries
+      }
+      const k = drumKind(it.btc), live = nd++ < MAX_DRUMS_STEP && A && A.ac.state === "running";
       if (live) playDrum(k, t, vel, it.pan, it.fee);
       vis.push({ t, drum: k, color: DRUM_COLOR[k], vel, dur: 0.9, btc: it.btc, ghost: !live });
     }
@@ -313,7 +328,7 @@
     const whale = btc != null && btc >= WHALE_BTC;
     if (pending.length > 300) pending.splice(0, 150);
     const pan = id ? clamp(parseInt(id.slice(0, 4), 16) / 65535 * 2 - 1, -1, 1) * 0.7 : (Math.random() * 2 - 1) * 0.7;
-    pending.push({ at: performance.now() + Math.random() * spreadMs, id, btc, fee, whale, drum: btc != null && btc < DRUM_BTC, row: rowFor(btc), pan });
+    pending.push({ at: performance.now() + Math.random() * spreadMs, id, btc, fee, whale, drum: btc != null, row: rowFor(btc), pan });
     if (whale) { whales.unshift({ id, btc, ts: Date.now() }); if (whales.length > 6) whales.pop(); renderWhales(); }
   }
 
@@ -399,7 +414,7 @@
     for (let i = 0; i < 20; i++) {
       const y = Y0 + (19 - i) * rowH, inChord = pcs.indexOf(ROWS[i].semi % 12) >= 0;
       if (inChord) { ctx.fillStyle = "rgba(94,224,255,.07)"; ctx.fillRect(0, y, W, rowH); }
-      ctx.fillStyle = inChord ? "rgba(94,224,255,.85)" : "rgba(138,150,184,.45)";
+      ctx.fillStyle = inChord ? "rgba(94,224,255,.9)" : "rgba(199,210,245,.72)";
       ctx.fillText(ROWS[i].name, 8, y + rowH / 2);
       ctx.fillStyle = "rgba(255,255,255,.035)"; ctx.fillRect(34, y + rowH - 0.5, W, 1);
     }
@@ -489,7 +504,7 @@
     ctx.fillText(CHORDS[chordIdx].name, tx, small ? Y0 - 38 : 46); ctx.shadowBlur = 0;
     ctx.font = "11px ui-monospace,Menlo,Consolas,monospace"; ctx.fillStyle = "#8a96b8";
     const banner = performance.now() < bannerUntil;
-    ctx.fillStyle = banner ? "#ffd84a" : "#8a96b8";
+    ctx.fillStyle = banner ? "#ffd84a" : "#c7d2f5";
     ctx.fillText(banner ? bannerText : "next block → " + CHORDS[(chordIdx + 1) % CHORDS.length].name, tx, small ? Y0 - 14 : 78);
 
     // waveform
