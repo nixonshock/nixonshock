@@ -43,14 +43,18 @@
   .donate{position:absolute;right:0;top:calc(100% + 10px);width:250px;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;z-index:40;box-shadow:0 14px 34px rgba(0,0,0,.7);color:var(--ink)}
   .donate .dh{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
   .donate img{border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line);align-self:center;display:block}
-  /* big block height + live BTC price, centered top strip */
-  #stats{position:fixed;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:28px;align-items:flex-start;z-index:2;pointer-events:none;text-align:center;letter-spacing:.05em;user-select:none}
-  #stats .lbl{font-size:9px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
-  #stats .num{font-size:28px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 16px rgba(94,224,255,.3)}
-  #stats .chg{font-size:11px;color:var(--dim);margin-top:3px;font-variant-numeric:tabular-nums}
-  #stats .chg.up{color:#5ee27a} #stats .chg.down{color:#ff4d6d}
+  /* big block height (left) + live BTC price (right), flanking the canvas chord */
+  .tl{position:fixed;top:16px;z-index:2;pointer-events:none;letter-spacing:.05em;user-select:none}
+  #statL{right:calc(50% + 96px);text-align:right}
+  #statR{left:calc(50% + 96px);text-align:left}
+  .tl .lbl{font-size:9px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
+  .tl .num{font-size:30px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 16px rgba(94,224,255,.3)}
+  .tl .chg{font-size:11px;color:var(--dim);margin-top:3px;font-variant-numeric:tabular-nums}
+  .tl .chg.up{color:#5ee27a} .tl .chg.down{color:#ff4d6d}
   @media (max-width:700px){#whales{display:none}.hx{display:none}#hud{max-width:90vw}#bar{font-size:10px}
-        #stats{top:6px;gap:14px}#stats .num{font-size:19px}#stats .lbl{font-size:8px}}
+        .tl{top:8px}#statL{right:auto;left:50%;transform:translateX(-100%);text-align:right}
+        #statR{left:50%;transform:none;padding-left:16px;text-align:left}
+        .tl .num{font-size:19px}.tl .lbl{font-size:8px}}
   @media (max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
   #start{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
          background:rgba(6,7,15,.62);backdrop-filter:blur(3px);text-align:center;padding:24px}
@@ -70,7 +74,7 @@
   <div>CHORD <b id="chord">Am</b> → <b id="nxt">F</b> <span class="hx">at the next block</span></div>
   <div>NOTES <b id="nn">0</b> &nbsp; TX/S <b id="rate">0.0</b></div>
   <div class="hx">LAST BLOCK <b id="blk">—</b></div>
-  <div id="ctl">VOL <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume"> <span id="mute" role="button" tabindex="0">MUTE</span> <label id="drl" title="Drum per transaction: hi-hat <0.003, kick 0.003-0.03, snare 0.03+, drum loop 10+ BTC"><input id="dr" type="checkbox"> DRUM</label></div>
+  <div id="ctl">VOL <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume"> <span id="mute" role="button" tabindex="0">MUTE</span> <label id="drl" title="Drum per transaction: hi-hat <0.003, kick 0.003-0.03, snare 0.03+, drum loop 10+ BTC"><input id="dr" type="checkbox" checked> DRUM</label></div>
 </div>
 
 <div id="whales"><h3>RECENT WHALES ≥ 1 BTC</h3><div id="wl"><div class="none">none yet…</div></div></div>
@@ -84,10 +88,8 @@
   </span>
 </div></div>
 
-<div id="stats">
-  <div><div class="lbl">Block</div><div class="num" id="bigblk">—</div></div>
-  <div><div class="lbl">BTC / USD</div><div class="num" id="price">—</div><div class="chg" id="chg"></div></div>
-</div>
+<div class="tl" id="statL"><div class="lbl">Block</div><div class="num" id="bigblk">—</div></div>
+<div class="tl" id="statR"><div class="lbl">BTC / USD</div><div class="num" id="price">—</div><div class="chg" id="chg"></div></div>
 
 <div id="bar">
   <b>pitch</b> = amount (bigger is higher; the number on a note is its BTC) &nbsp;·&nbsp; <b>loudness &amp; brightness</b> = fee rate &nbsp;·&nbsp; <b>whale ≥ 1 BTC</b> = bell &nbsp;·&nbsp; <b>new block</b> = next chord<br>
@@ -134,7 +136,7 @@
     { name: "C",  semis: [3, 7, 10],  bass: -9,  pc: [3, 7, 10] },
     { name: "G",  semis: [-2, 2, 5],  bass: -14, pc: [10, 2, 5] }
   ];
-  let chordIdx = 0;
+  let chordIdx = (Math.random() * CHORDS.length) | 0;   // random start chord
 
   const feeColor = r => r == null ? "#9aa6c8" : r < 2 ? "#7f8fb0" : r < 5 ? "#4cc9f0" : r < 10 ? "#5ee27a" : r < 20 ? "#ffe066" : r < 50 ? "#ff9f43" : "#ff4d6d";
   const rowFor = btc => btc == null ? 3 + ((Math.random() * 5) | 0)
