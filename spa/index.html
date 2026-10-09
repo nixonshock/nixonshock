@@ -51,10 +51,23 @@
   .tl .num{font-size:30px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 16px rgba(94,224,255,.3)}
   .tl .chg{font-size:11px;color:var(--dim);margin-top:3px;font-variant-numeric:tabular-nums}
   .tl .chg.up{color:#5ee27a} .tl .chg.down{color:#ff4d6d}
-  @media (max-width:700px){#whales{display:none}.hx{display:none}#hud{max-width:90vw}#bar{font-size:10px}
-        .tl{top:8px}#statL{right:auto;left:50%;transform:translateX(-100%);text-align:right}
-        #statR{left:50%;transform:none;padding-left:16px;text-align:left}
-        .tl .num{font-size:19px}.tl .lbl{font-size:8px}}
+  /* mobile-only block/price readout inside the header (hidden on desktop) */
+  .mline{display:none}
+  @media (max-width:700px){#whales{display:none}.hx{display:none}#bar{font-size:10px}
+  /* phones: single clean left-stacked header — title, block·price, stats, controls */
+  #hud{left:10px;right:10px;top:8px;max-width:none;width:auto;line-height:1.5;
+       background:rgba(6,7,15,.62);padding:9px 11px 8px;border-radius:12px}
+  #hud .ttl{font-size:15px;margin-bottom:4px}
+  .mline{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;margin-bottom:3px}
+  .mline .mlk{font-size:13px;color:var(--dim)}
+  .mline b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;margin-left:2px}
+  .mline .mchg{font-size:12px;margin-left:3px}
+  .mline .mchg.up{color:#5ee27a}.mline .mchg.down{color:#ff4d6d}
+  /* hide the desktop flanked stats; they're shown in the header now */
+  .tl{display:none}
+  /* music + donate drop to the bottom-left, clear of the header and the grid */
+  .controls{left:12px;right:auto;top:auto;bottom:112px;flex-wrap:wrap}
+  .controls .btn{font-size:11px;padding:5px 10px}}
   @media (max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
   #start{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
          background:rgba(6,7,15,.62);backdrop-filter:blur(3px);text-align:center;padding:24px}
@@ -70,6 +83,7 @@
 
 <div id="hud">
   <div class="ttl">MEMPOOL MUSIC</div>
+  <div class="mline"><span class="mlk">BLOCK <b id="mbigblk">—</b></span><span class="mlk">BTC/USD <b id="mprice">—</b> <b class="mchg" id="mchg"></b></span></div>
   <div class="hx">STATUS <b id="st">connecting…</b></div>
   <div>CHORD <b id="chord">Am</b> → <b id="nxt">F</b> <span class="hx">at the next block</span></div>
   <div>NOTES <b id="nn">0</b> &nbsp; TX/S <b id="rate">0.0</b></div>
@@ -404,7 +418,7 @@
     const first = !tipHeight;
     tipHeight = b.height;
     $("blk").textContent = "#" + b.height;
-    $("bigblk").textContent = b.height.toLocaleString();
+    $("bigblk").textContent = $("mbigblk").textContent = b.height.toLocaleString();
     if (first) { lastBlockSec = b.timestamp; return; }
     lastBlockSec = Date.now() / 1000;
     const from = CHORDS[chordIdx].name;
@@ -646,7 +660,7 @@
   // ---------- demo mode (?demo or ?demo=8) ----------
   function demo() {
     setStatus("demo");
-    tipHeight = 900000; lastBlockSec = Date.now() / 1000 - 200; $("blk").textContent = "#900000"; $("bigblk").textContent = "900,000";
+    tipHeight = 900000; lastBlockSec = Date.now() / 1000 - 200; $("blk").textContent = "#900000"; $("bigblk").textContent = $("mbigblk").textContent = "900,000";
     const tick = () => {
       const whale = Math.random() < 0.03;
       const btc = whale ? 1 + Math.random() * 120 : Math.pow(10, -4.2 + Math.random() * 3.6);
@@ -666,14 +680,15 @@
 <script>
 /* spa: live BTC/USD price — Coinbase WS with REST fallbacks */
 (function () {
-  var el = document.getElementById('price'), cg = document.getElementById('chg');
-  if (!el) return;
+  var els = document.querySelectorAll('#price, #mprice'), cgs = document.querySelectorAll('#chg, #mchg');
+  if (!els.length) return;
   function paint(p, open24) {
     if (p == null) return;
-    el.textContent = '$' + Math.round(p).toLocaleString();
+    var txt = '$' + Math.round(p).toLocaleString();
+    [].forEach.call(els, function (e) { e.textContent = txt; });
     if (open24 && open24 > 0) {
       var d = (p - open24) / open24 * 100, s = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
-      if (cg.textContent !== s) { cg.textContent = s; cg.className = 'chg ' + (d >= 0 ? 'up' : 'down'); }
+      [].forEach.call(cgs, function (c) { if (c.textContent !== s) { c.textContent = s; c.className = 'chg ' + (d >= 0 ? 'up' : 'down'); } });
     }
   }
   function rest() {
