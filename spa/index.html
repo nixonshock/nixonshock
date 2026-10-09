@@ -53,9 +53,9 @@
   .tl .chg.up{color:#5ee27a} .tl .chg.down{color:#ff4d6d}
   /* mobile-only block/price readout inside the header (hidden on desktop) */
   .mline{display:none}
-  @media (max-width:700px){#whales{display:none}.hx{display:none}#bar{font-size:10px}
-  /* phones: single clean left-stacked header — title, block·price, stats, controls */
-  #hud{left:10px;right:10px;top:8px;max-width:none;width:auto;line-height:1.5;
+  @media (max-width:920px){#whales{display:none}.hx{display:none}#bar{font-size:10px}
+  /* phones & landscape/tablet: single clean left-stacked header — title, block·price, stats, controls */
+  #hud{left:10px;right:auto;top:8px;max-width:min(90vw,384px);width:auto;line-height:1.5;
        background:rgba(6,7,15,.62);padding:9px 11px 8px;border-radius:12px}
   #hud .ttl{font-size:15px;margin-bottom:4px}
   .mline{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;margin-bottom:3px}
@@ -68,14 +68,13 @@
   /* music + donate drop to the bottom-left, clear of the header and the grid */
   .controls{left:12px;right:auto;top:auto;bottom:112px;flex-wrap:wrap}
   .controls .btn{font-size:11px;padding:5px 10px}}
-  @media (max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
+  @media (max-width:920px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
   #start{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
          background:rgba(6,7,15,.62);backdrop-filter:blur(3px);text-align:center;padding:24px}
   #start button{font:600 16px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;color:#06070f;background:var(--cyan);border:0;
          padding:16px 28px;border-radius:999px;cursor:pointer;box-shadow:0 0 34px rgba(94,224,255,.55)}
   #start p{max-width:460px;margin:0;font-size:13px;line-height:1.6;color:var(--dim)}
   #start.hide{display:none}
-  @media (max-width:700px){#whales{display:none}.hx{display:none}#hud{max-width:90vw}#bar{font-size:10px}}
 </style>
 </head>
 <body>
@@ -458,7 +457,7 @@
 
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = innerWidth; H = innerHeight; small = W < 700;
+    W = innerWidth; H = innerHeight; small = W < 920;
     cv.width = W * DPR; cv.height = H * DPR;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     Y0 = small ? 96 : 104;
