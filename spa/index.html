@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mempool Music</title>
 <style>
-  :root{--ink:#e4ecff;--dim:#c7d2f5;--faint:#94a2cf;--cyan:#5ee0ff;--mag:#ff6bd6;--gold:#ffd84a}
+  :root{--ink:#e4ecff;--dim:#c7d2f5;--faint:#94a2cf;--cyan:#5ee0ff;--mag:#ff6bd6;--gold:#ffd84a;
+        --line:rgba(148,162,207,.32);--fg:#e4ecff;--accent:#ffd84a;--muted:#8ea0d0;--font-mono:ui-monospace,Menlo,Consolas,monospace}
   html,body{margin:0;height:100%;background:#06070f;overflow:hidden;color:var(--ink);
             font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;-webkit-user-select:none;user-select:none}
   canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
@@ -20,7 +21,7 @@
   #drl:hover{color:var(--cyan)}
   #drl:has(#dr:checked){color:var(--gold);border-bottom-color:var(--gold)}
   #dr{width:14px;height:14px;margin:0;accent-color:#ffd84a;cursor:pointer}
-  #whales{position:fixed;right:16px;top:14px;width:200px;font-size:12px;z-index:2}
+  #whales{position:fixed;left:16px;top:158px;width:200px;font-size:12px;z-index:2}
   #whales h3{margin:0 0 6px;font-size:11px;letter-spacing:.12em;color:var(--dim);font-weight:600}
   #whales a,#whales div.w{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;margin-bottom:3px;border-left:2px solid var(--gold);
             background:rgba(255,216,74,.07);color:var(--ink);text-decoration:none}
@@ -31,6 +32,26 @@
   #bar b{color:var(--dim);font-weight:600}
   #bar i{display:inline-block;width:9px;height:9px;margin:0 4px 0 12px;vertical-align:-1px;border-radius:2px}
   #bar .dk{color:var(--gold)}
+  /* donate + trollbox (recent donations) + music — shared /beeteesea/donate.js surface */
+  .controls{position:fixed;right:14px;top:12px;display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;z-index:4;pointer-events:auto}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font:inherit;font-weight:600;font-size:12px;color:var(--ink);cursor:pointer;border:1px solid rgba(94,224,255,.35);background:rgba(6,11,30,.6)}
+  .btn:hover{border-color:var(--cyan)}
+  .btn[data-on="1"]{background:var(--gold);color:#06070f;border-color:var(--gold)}
+  .panel{background:rgba(8,12,30,.92);border:1px solid rgba(94,224,255,.3);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;font-weight:500;padding:1px 6px;border:1px solid currentColor;border-radius:5px;opacity:.65}
+  .ddon{position:relative;display:inline-flex}
+  .donate{position:absolute;right:0;top:calc(100% + 10px);width:250px;display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;z-index:40;box-shadow:0 14px 34px rgba(0,0,0,.7);color:var(--ink)}
+  .donate .dh{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .donate img{border-radius:12px;background:#fff;padding:8px;border:1px solid var(--line);align-self:center;display:block}
+  /* big block height + live BTC price, centered top strip */
+  #stats{position:fixed;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:28px;align-items:flex-start;z-index:2;pointer-events:none;text-align:center;letter-spacing:.05em;user-select:none}
+  #stats .lbl{font-size:9px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
+  #stats .num{font-size:28px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1;text-shadow:0 0 16px rgba(94,224,255,.3)}
+  #stats .chg{font-size:11px;color:var(--dim);margin-top:3px;font-variant-numeric:tabular-nums}
+  #stats .chg.up{color:#5ee27a} #stats .chg.down{color:#ff4d6d}
+  @media (max-width:700px){#whales{display:none}.hx{display:none}#hud{max-width:90vw}#bar{font-size:10px}
+        #stats{top:6px;gap:14px}#stats .num{font-size:19px}#stats .lbl{font-size:8px}}
+  @media (max-width:760px){.donate{position:fixed;left:50%;right:auto;top:96px;transform:translateX(-50%);width:min(300px,calc(100vw - 20px))}}
   #start{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
          background:rgba(6,7,15,.62);backdrop-filter:blur(3px);text-align:center;padding:24px}
   #start button{font:600 16px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;color:#06070f;background:var(--cyan);border:0;
@@ -53,6 +74,20 @@
 </div>
 
 <div id="whales"><h3>RECENT WHALES ≥ 1 BTC</h3><div id="wl"><div class="none">none yet…</div></div></div>
+
+<div class="top"><div class="controls">
+  <span class="ddon">
+    <button id="dbtn" class="btn panel" type="button" data-on="1" aria-label="Donate" title="Send a few sats">Donate</button>
+    <div class="donate panel" id="dcard" role="dialog" aria-label="Donate">
+      <span class="dh">Support the spa ⚡</span>
+    </div>
+  </span>
+</div></div>
+
+<div id="stats">
+  <div><div class="lbl">Block</div><div class="num" id="bigblk">—</div></div>
+  <div><div class="lbl">BTC / USD</div><div class="num" id="price">—</div><div class="chg" id="chg"></div></div>
+</div>
 
 <div id="bar">
   <b>pitch</b> = amount (bigger is higher; the number on a note is its BTC) &nbsp;·&nbsp; <b>loudness &amp; brightness</b> = fee rate &nbsp;·&nbsp; <b>whale ≥ 1 BTC</b> = bell &nbsp;·&nbsp; <b>new block</b> = next chord<br>
@@ -272,6 +307,40 @@
     }
   }
 
+  const GUITAR_BTC = 50;                                 // 50+ BTC: epic electric guitar riff on top
+  // epic electric guitar riff — synthesized (distorted saws + vibrato lead)
+  function distTable(ac) {
+    const n = 1024, c = new Float32Array(n);
+    for (let i = 0; i < n; i++) { const x = i / n * 2 - 1; c[i] = Math.tanh(3.0 * x); }
+    return c;
+  }
+  function gtr(t, freq, dur, vel, pan, bend) {
+    const ac = A.ac;
+    const o1 = ac.createOscillator(), o2 = ac.createOscillator();
+    o1.type = o2.type = "sawtooth";
+    o1.frequency.value = freq; o2.frequency.value = freq * 1.006;
+    o1.detune.value = 6; o2.detune.value = -6;
+    const ws = ac.createWaveShaper(); if (!A.gtrDist) A.gtrDist = distTable(ac); ws.curve = A.gtrDist;
+    const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = bend ? 3200 : 2400;
+    const g = ac.createGain();
+    const peak = Math.min(0.5, 0.16 + 0.3 * vel);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + 0.012);
+    g.gain.setValueAtTime(peak, t + dur * 0.55); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o1.connect(ws); o2.connect(ws); ws.connect(f); f.connect(g); route(g, pan, bend ? 0.55 : 0.25);
+    if (bend) { const v = ac.createOscillator(), vg = ac.createGain(); v.frequency.value = 6; vg.gain.value = freq * 0.022; v.connect(vg); vg.connect(o1.frequency); vg.connect(o2.frequency); v.start(t); v.stop(t + dur); }
+    o1.start(t); o2.start(t); o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+  }
+  function guitarRiff(t, vel, pan) {
+    const A2 = 110, G2 = 98, F2 = 87.31, A3 = 220, E4 = 329.63, E5 = 659.26, D5 = 587.33;
+    gtr(t, A2, 0.12, vel, pan, false); gtr(t + 0.16, A2, 0.12, vel, pan, false);          // palm-muted chugs
+    gtr(t + 0.32, A2, 0.5, vel, pan, false); gtr(t + 0.32, A3, 0.5, vel * 0.7, pan, false); // A power chord
+    gtr(t + 0.82, G2, 0.42, vel, pan, false); gtr(t + 0.82, +G2 * 1.5, 0.42, vel * 0.7, pan, false);
+    gtr(t + 1.28, F2, 0.42, vel, pan, false); gtr(t + 1.28, F2 * 1.5, 0.42, vel * 0.7, pan, false);
+    gtr(t + 1.76, E5, 1.0, vel * 0.75, pan, true);                                        // screaming lead bend
+    gtr(t + 1.76, D5, 0.9, vel * 0.55, pan, true);
+    gtr(t + 2.76, E4, 0.5, vel * 0.6, pan, false);
+  }
+
   // ---------- scheduler: arrivals are random, music lands on the grid ----------
   const pending = [], noteQ = [], vis = [], markers = [];
   let nextStep = null, notesPlayed = 0, tipHeight = 0, lastBlockSec = null;
@@ -304,6 +373,7 @@
         if (it.whale) bell(t, freq, vel, it.pan);
         else voice(t, freq, vel, dur, it.pan, it.fee == null || it.fee < 3 ? 0 : it.fee < 15 ? 1 : 2);
       }
+      if (it.btc != null && it.btc >= GUITAR_BTC && A && A.ac.state === "running") guitarRiff(t, vel, it.pan);
       if (play) notesPlayed++;
       vis.push({ t, row, vel, dur: it.whale ? 3.2 : Math.max(dur, 1.15), color: it.whale ? "#ffd84a" : feeColor(it.fee), whale: it.whale, btc: it.btc, ghost: !play });
       if (!drumOn || !it.drum) continue;
@@ -362,6 +432,7 @@
     const first = !tipHeight;
     tipHeight = b.height;
     $("blk").textContent = "#" + b.height;
+    $("bigblk").textContent = b.height.toLocaleString();
     if (first) { lastBlockSec = b.timestamp; return; }
     lastBlockSec = Date.now() / 1000;
     const from = CHORDS[chordIdx].name;
@@ -603,7 +674,7 @@
   // ---------- demo mode (?demo or ?demo=8) ----------
   function demo() {
     setStatus("demo");
-    tipHeight = 900000; lastBlockSec = Date.now() / 1000 - 200; $("blk").textContent = "#900000";
+    tipHeight = 900000; lastBlockSec = Date.now() / 1000 - 200; $("blk").textContent = "#900000"; $("bigblk").textContent = "900,000";
     const tick = () => {
       const whale = Math.random() < 0.03;
       const btc = whale ? 1 + Math.random() * 120 : Math.pow(10, -4.2 + Math.random() * 3.6);
@@ -619,5 +690,55 @@
   if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); pollTip(); }
 })();
 </script>
+
+<script>
+/* spa: live BTC/USD price — Coinbase WS with REST fallbacks */
+(function () {
+  var el = document.getElementById('price'), cg = document.getElementById('chg');
+  if (!el) return;
+  function paint(p, open24) {
+    if (p == null) return;
+    el.textContent = '$' + Math.round(p).toLocaleString();
+    if (open24 && open24 > 0) {
+      var d = (p - open24) / open24 * 100, s = (d >= 0 ? '+' : '') + d.toFixed(2) + '%';
+      if (cg.textContent !== s) { cg.textContent = s; cg.className = 'chg ' + (d >= 0 ? 'up' : 'down'); }
+    }
+  }
+  function rest() {
+    fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { var p = parseFloat(j.data && j.data.amount); if (p) paint(p); })
+      .catch(function () {
+        fetch('https://mempool.space/api/v1/prices', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (j) { var p = parseFloat(j.USD); if (p) paint(p); }).catch(function () {});
+      });
+  }
+  var ws = null;
+  function open() {
+    try { ws = new WebSocket('wss://ws-feed.exchange.coinbase.com'); }
+    catch (e) { setTimeout(open, 8000); return; }
+    ws.onopen = function () { try { ws.send(JSON.stringify({ type: 'subscribe', product_ids: ['BTC-USD'], channels: ['ticker'] })); } catch (e) {} };
+    ws.onmessage = function (ev) { try { var m = JSON.parse(ev.data); if (m.type === 'ticker' && m.price) paint(parseFloat(m.price), parseFloat(m.open_24h)); } catch (e) {} };
+    ws.onclose = function () { ws = null; setTimeout(open, 8000); };
+    ws.onerror = function () { try { ws.close(); } catch (e) {} };
+  }
+  open(); rest(); setInterval(rest, 20000);
+})();
+</script>
+
+<script>
+/* spa: donate toggle — closes the card. donate.js builds the live card, the
+   music control, and the Recent-donations trollbox feed. Card default-open. */
+(function () {
+  var dbtn = document.getElementById('dbtn'), dcard = document.getElementById('dcard');
+  if (!dbtn || !dcard) return;
+  function setDonate(o) { dcard.hidden = !o; dbtn.dataset.on = o ? '1' : '0'; }
+  dbtn.addEventListener('click', function (e) { e.stopPropagation(); setDonate(dcard.hidden); });
+  document.addEventListener('click', function (e) { if (!dcard.hidden && !e.target.closest('.ddon') && !e.target.closest('#start')) setDonate(false); });
+})();
+</script>
+
+<script src="/beeteesea/donate.js"></script>
 </body>
 </html>
