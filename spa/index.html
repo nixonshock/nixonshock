@@ -314,33 +314,6 @@
     }
   }
 
-  const GUITAR_BTC = 50;                                 // 50+ BTC: one distorted electric-guitar note
-  // 50+ BTC: one distorted electric-guitar note (clean, not a busy riff)
-  function distTable(ac) {
-    const n = 1024, c = new Float32Array(n);
-    for (let i = 0; i < n; i++) { const x = i / n * 2 - 1; c[i] = Math.tanh(3.0 * x); }
-    return c;
-  }
-  function gtr(t, freq, dur, vel, pan, bend) {
-    const ac = A.ac;
-    const o1 = ac.createOscillator(), o2 = ac.createOscillator();
-    o1.type = o2.type = "sawtooth";
-    o1.frequency.value = freq; o2.frequency.value = freq * 1.006;
-    o1.detune.value = 6; o2.detune.value = -6;
-    const ws = ac.createWaveShaper(); if (!A.gtrDist) A.gtrDist = distTable(ac); ws.curve = A.gtrDist;
-    const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = bend ? 3200 : 2400;
-    const g = ac.createGain();
-    const peak = Math.min(0.5, 0.16 + 0.3 * vel);
-    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + 0.012);
-    g.gain.setValueAtTime(peak, t + dur * 0.55); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o1.connect(ws); o2.connect(ws); ws.connect(f); f.connect(g); route(g, pan, bend ? 0.55 : 0.25);
-    if (bend) { const v = ac.createOscillator(), vg = ac.createGain(); v.frequency.value = 6; vg.gain.value = freq * 0.022; v.connect(vg); vg.connect(o1.frequency); vg.connect(o2.frequency); v.start(t); v.stop(t + dur); }
-    o1.start(t); o2.start(t); o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
-  }
-  function guitarRiff(t, vel, pan) {
-    gtr(t, 220, 1.6, vel, pan, true);   // a single low A3 note with a slow vibrato crawl
-  }
-
   // ---------- scheduler: arrivals are random, music lands on the grid ----------
   const pending = [], noteQ = [], vis = [], markers = [];
   let nextStep = null, notesPlayed = 0, tipHeight = 0, lastBlockSec = null;
@@ -373,7 +346,6 @@
         if (it.whale) bell(t, freq, vel, it.pan);
         else voice(t, freq, vel, dur, it.pan, it.fee == null || it.fee < 3 ? 0 : it.fee < 15 ? 1 : 2);
       }
-      if (it.btc != null && it.btc >= GUITAR_BTC && A && A.ac.state === "running") guitarRiff(t, vel, it.pan);
       if (play) notesPlayed++;
       vis.push({ t, row, vel, dur: it.whale ? 3.2 : Math.max(dur, 1.15), color: it.whale ? "#ffd84a" : feeColor(it.fee), whale: it.whale, btc: it.btc, ghost: !play });
       if (!drumOn || !it.drum) continue;
