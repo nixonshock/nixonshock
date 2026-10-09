@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mempool Music</title>
+<style>
+  :root{--ink:#e4ecff;--dim:#8a96b8;--faint:#4b5578;--cyan:#5ee0ff;--mag:#ff6bd6;--gold:#ffd84a}
+  html,body{margin:0;height:100%;background:#06070f;overflow:hidden;color:var(--ink);
+            font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;-webkit-user-select:none;user-select:none}
+  canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+  #hud{position:fixed;left:16px;top:14px;font-size:12px;line-height:1.6;letter-spacing:.04em;color:var(--dim);z-index:2;max-width:min(300px,46vw)}
+  #hud b{color:var(--ink);font-weight:600}
+  #hud .ttl{font-size:17px;letter-spacing:.18em;color:var(--cyan);margin-bottom:2px;text-shadow:0 0 12px rgba(94,224,255,.5)}
+  #ctl{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:2px}
+  #ctl input[type=range]{width:96px;accent-color:#5ee0ff}
+  #mute{cursor:pointer;border-bottom:1px dotted var(--faint);pointer-events:auto}
+  #mute:hover{color:var(--cyan)}
+  #drl{display:flex;align-items:center;gap:5px;cursor:pointer;border-bottom:1px dotted var(--faint);pointer-events:auto}
+  #drl:hover{color:var(--cyan)}
+  #drl:has(#dr:checked){color:var(--gold);border-bottom-color:var(--gold)}
+  #dr{width:14px;height:14px;margin:0;accent-color:#ffd84a;cursor:pointer}
+  #whales{position:fixed;right:16px;top:14px;width:200px;font-size:12px;z-index:2}
+  #whales h3{margin:0 0 6px;font-size:11px;letter-spacing:.12em;color:var(--dim);font-weight:600}
+  #whales a,#whales div.w{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;margin-bottom:3px;border-left:2px solid var(--gold);
+            background:rgba(255,216,74,.07);color:var(--ink);text-decoration:none}
+  #whales a:hover{background:rgba(255,216,74,.18)}
+  #whales .t{color:var(--faint)} #whales .none{color:var(--faint);padding:4px 0}
+  #bar{position:fixed;left:0;right:0;bottom:0;padding:8px 16px 12px;text-align:center;font-size:11px;line-height:1.7;color:var(--faint);z-index:2;
+       background:linear-gradient(transparent,rgba(6,7,15,.9) 35%)}
+  #bar b{color:var(--dim);font-weight:600}
+  #bar i{display:inline-block;width:9px;height:9px;margin:0 4px 0 12px;vertical-align:-1px;border-radius:2px}
+  #bar .dk{color:var(--gold)}
+  #start{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+         background:rgba(6,7,15,.62);backdrop-filter:blur(3px);text-align:center;padding:24px}
+  #start button{font:600 16px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;color:#06070f;background:var(--cyan);border:0;
+         padding:16px 28px;border-radius:999px;cursor:pointer;box-shadow:0 0 34px rgba(94,224,255,.55)}
+  #start p{max-width:460px;margin:0;font-size:13px;line-height:1.6;color:var(--dim)}
+  #start.hide{display:none}
+  @media (max-width:700px){#whales{display:none}.hx{display:none}#hud{max-width:90vw}#bar{font-size:10px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div class="ttl">MEMPOOL MUSIC</div>
+  <div class="hx">STATUS <b id="st">connecting…</b></div>
+  <div>CHORD <b id="chord">Am</b> → <b id="nxt">F</b> <span class="hx">at the next block</span></div>
+  <div>NOTES <b id="nn">0</b> &nbsp; TX/S <b id="rate">0.0</b></div>
+  <div class="hx">LAST BLOCK <b id="blk">—</b></div>
+  <div id="ctl">VOL <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume"> <span id="mute" role="button" tabindex="0">MUTE</span> <label id="drl" title="Play a drum hit for every transaction under 0.1 BTC"><input id="dr" type="checkbox"> DRUM</label></div>
+</div>
+
+<div id="whales"><h3>RECENT WHALES ≥ 1 BTC</h3><div id="wl"><div class="none">none yet…</div></div></div>
+
+<div id="bar">
+  <b>pitch</b> = amount (bigger is higher; the number on a note is its BTC) &nbsp;·&nbsp; <b>loudness &amp; brightness</b> = fee rate &nbsp;·&nbsp; <b>whale ≥ 1 BTC</b> = bell &nbsp;·&nbsp; <b>new block</b> = next chord<br>
+  fee rate:
+  <i style="background:#7f8fb0"></i>&lt;2 <i style="background:#4cc9f0"></i>2–5 <i style="background:#5ee27a"></i>5–10
+  <i style="background:#ffe066"></i>10–20 <i style="background:#ff9f43"></i>20–50 <i style="background:#ff4d6d"></i>50+
+  <span class="hx">&nbsp; · &nbsp;[M] mute &nbsp;·&nbsp; [D] drum</span><br>
+  <span class="dk">drum on</span> (tx &lt; 0.1 BTC, DRUM checked):
+  <i style="background:#5ee0ff"></i>hi-hat &lt;0.003 <i style="background:#ff9f43"></i>kick 0.003–0.03 <i style="background:#ff6bd6"></i>snare 0.03–0.1
+</div>
+
+<div id="start">
+  <button id="go">▶ START THE MUSIC</button>
+  <p>Every Bitcoin transaction becomes a note, played in a calm A-minor scale. Each new block moves the music to the next chord. Tick <b>DRUM</b> to add a hi-hat / kick / snare for every transaction under 0.1 BTC. Browsers need one click before they allow sound.</p>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- config ----------
+  const WS_URL = "wss://mempool.space/api/v1/ws";
+  const API    = "https://mempool.space/api";
+  const P      = new URLSearchParams(location.search);
+  const DEMO   = P.has("demo");                                  // ?demo or ?demo=8 (transactions per second)
+  const DEMO_RATE = DEMO ? (parseFloat(P.get("demo")) || 5) : 0;
+  const BPM = 96, STEP = 60 / BPM / 2;                           // notes land on the eighth-note grid
+  const WHALE_BTC = 1, MAX_VOICES = 3, MAX_WHALES_STEP = 2, MAX_DRUMS_STEP = 3;
+
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const setStatus = s => { $("st").textContent = s; };
+
+  // ---------- the music: A minor pentatonic over Am - F - C - G ----------
+  const PENT = [0, 3, 5, 7, 10], PNAME = ["A", "C", "D", "E", "G"];
+  const ROWS = [];                                               // 20 rows, A2 (110 Hz) up to G6
+  for (let i = 0; i < 20; i++) {
+    const oct = Math.floor(i / 5), k = i % 5, semi = oct * 12 + PENT[k];
+    ROWS.push({ semi, freq: 110 * Math.pow(2, semi / 12), name: PNAME[k] + (2 + oct + (k > 0 ? 1 : 0)) });
+  }
+  const CHORDS = [
+    { name: "Am", semis: [0, 3, 7],   bass: -12, pc: [0, 3, 7]  },   // semitones from A3 (220 Hz)
+    { name: "F",  semis: [-4, 0, 3],  bass: -16, pc: [8, 0, 3]  },
+    { name: "C",  semis: [3, 7, 10],  bass: -9,  pc: [3, 7, 10] },
+    { name: "G",  semis: [-2, 2, 5],  bass: -14, pc: [10, 2, 5] }
+  ];
+  let chordIdx = 0;
+
+  const feeColor = r => r == null ? "#9aa6c8" : r < 2 ? "#7f8fb0" : r < 5 ? "#4cc9f0" : r < 10 ? "#5ee27a" : r < 20 ? "#ffe066" : r < 50 ? "#ff9f43" : "#ff4d6d";
+  const rowFor = btc => btc == null ? 3 + ((Math.random() * 5) | 0)
+                                    : clamp(Math.round((Math.log10(Math.max(btc, 1e-5)) + 4.5) / 7 * 19), 0, 19);
+  const fmtBtc = b => b == null ? "" : b >= 1 ? b.toFixed(2) : b >= 0.0001 ? b.toFixed(4) : "<0.0001";
+  const velFor = fee => fee == null ? 0.3 : clamp(0.2 + 0.8 * Math.log10(1 + fee) / 2.0, 0.2, 1);
+
+  // ---------- drums: every tx under 0.1 BTC gets a hit ----------
+  const DRUM_BTC = 0.1;                                          // drum threshold
+  const DRUM_COLOR = { K: "#ff9f43", S: "#ff6bd6", H: "#5ee0ff" };
+  const DRUM_NAME = { K: "kick", S: "snare", H: "hi-hat" };
+  // smaller transfer = tighter/quieter voice: hi-hat under 0.003, kick up to 0.03, snare above
+  const drumKind = (btc, fee) => btc < 0.003 ? "H" : btc < 0.03 ? "K" : "S";
+  const drumsOn = () => $("dr").checked;
+
+  // ---------- audio engine (Web Audio, no files) ----------
+  let A = null, muted = false;
+  const clock = () => A ? A.ac.currentTime : performance.now() / 1000;
+  const volGain = () => { const v = $("vol").value / 100; return muted ? 0 : v * v * 0.9; };
+
+  function makeIR(ac, sec) {
+    const len = Math.floor(ac.sampleRate * sec), buf = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = buf.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+    return buf;
+  }
+  function makeNoise(ac) {
+    const buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.5), ac.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
+  function startAudio() {
+    if (A) { A.ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { setStatus("no audio support"); return; }
+    const ac = new AC();
+    const master = ac.createGain(); master.gain.value = volGain();
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 4;
+    const analyser = ac.createAnalyser(); analyser.fftSize = 1024;
+    master.connect(comp); comp.connect(ac.destination); comp.connect(analyser);
+    const dry = ac.createGain(); dry.connect(master);
+    const send = ac.createGain(); send.gain.value = 0.5;
+    const conv = ac.createConvolver(); conv.buffer = makeIR(ac, 2.8);
+    const wet = ac.createGain(); wet.gain.value = 0.6; send.connect(conv); conv.connect(wet); wet.connect(master);
+    const delayIn = ac.createGain(); delayIn.gain.value = 0.4;
+    const delay = ac.createDelay(2); delay.delayTime.value = STEP * 1.5;
+    const fb = ac.createGain(); fb.gain.value = 0.38; const dwet = ac.createGain(); dwet.gain.value = 0.5;
+    delayIn.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(dwet); dwet.connect(master); dwet.connect(send);
+    const padFilter = ac.createBiquadFilter(); padFilter.type = "lowpass"; padFilter.frequency.value = 500; padFilter.Q.value = 0.7;
+    const padOut = ac.createGain(); padOut.gain.value = 0.6; padFilter.connect(padOut); padOut.connect(dry); padOut.connect(send);
+    A = { ac, master, dry, send, delayIn, padFilter, analyser, pad: null, noise: makeNoise(ac), buf: new Float32Array(analyser.fftSize) };
+    vis.length = 0; markers.length = 0; nextStep = null;
+    setChord(chordIdx, ac.currentTime + 0.05);
+    ac.resume();
+  }
+
+  function setChord(idx, t) {
+    if (!A) return;
+    const ac = A.ac, c = CHORDS[idx];
+    if (A.pad) {
+      const old = A.pad;
+      old.g.gain.cancelScheduledValues(t);
+      old.g.gain.setValueAtTime(Math.max(0.0001, old.g.gain.value), t);
+      old.g.gain.linearRampToValueAtTime(0.0001, t + 2.5);
+      old.osc.forEach(o => { try { o.stop(t + 2.7); } catch {} });
+    }
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 2.2); g.connect(A.padFilter);
+    const osc = [];
+    for (const s of c.semis) for (const d of [-8, 8]) {
+      const o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.value = 220 * Math.pow(2, s / 12); o.detune.value = d;
+      const og = ac.createGain(); og.gain.value = 0.008; o.connect(og); og.connect(g); o.start(t); osc.push(o);   // background pad: kept very soft
+    }
+    const b = ac.createOscillator(); b.type = "sine"; b.frequency.value = 220 * Math.pow(2, c.bass / 12);
+    const bg = ac.createGain(); bg.gain.value = 0.03; b.connect(bg); bg.connect(g); b.start(t); osc.push(b);
+    A.pad = { g, osc };
+  }
+
+  function route(node, pan, wetAmt) {
+    const ac = A.ac; let n = node;
+    if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = pan; n.connect(p); n = p; }
+    n.connect(A.dry);
+    const s = ac.createGain(); s.gain.value = wetAmt; n.connect(s); s.connect(A.send);
+    if (wetAmt > 0.3) n.connect(A.delayIn);
+  }
+
+  // kind 0 soft sine, 1 triangle, 2 bright saw: chosen by fee rate
+  function voice(t, freq, vel, dur, pan, kind) {
+    const ac = A.ac, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+    o.type = kind === 0 ? "sine" : kind === 1 ? "triangle" : "sawtooth"; o.frequency.value = freq;
+    f.type = "lowpass"; f.frequency.value = kind === 2 ? 2200 : 6500;
+    const peak = (0.05 + 0.17 * vel) * (kind === 2 ? 0.6 : 1);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(f); f.connect(g); route(g, pan, 0.35);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+
+  function bell(t, freq, vel, pan) {
+    const ac = A.ac, c = ac.createOscillator(), m = ac.createOscillator(), mg = ac.createGain(), g = ac.createGain();
+    c.type = "sine"; c.frequency.value = freq; m.type = "sine"; m.frequency.value = freq * 3.5;
+    mg.gain.setValueAtTime(freq * 1.8, t); mg.gain.exponentialRampToValueAtTime(freq * 0.05, t + 2.5);
+    m.connect(mg); mg.connect(c.frequency);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1 + 0.12 * vel, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.4);
+    c.connect(g); route(g, pan, 0.9);
+    const h = ac.createOscillator(), hg = ac.createGain(); h.type = "sine"; h.frequency.value = freq * 2;
+    hg.gain.setValueAtTime(0.0001, t); hg.gain.exponentialRampToValueAtTime(0.04, t + 0.01); hg.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    h.connect(hg); route(hg, -pan, 0.9);
+    c.start(t); m.start(t); h.start(t); c.stop(t + 3.5); m.stop(t + 3.5); h.stop(t + 1.7);
+  }
+
+  // ---------- drum voices (also synthesized, no files) ----------
+  function noiseSrc(t, dur) {
+    const s = A.ac.createBufferSource();
+    s.buffer = A.noise; s.loop = true; s.start(t); s.stop(t + dur + 0.03);
+    return s;
+  }
+
+  function kick(t, vel, pan) {
+    const ac = A.ac, o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(150, t);
+    o.frequency.exponentialRampToValueAtTime(44, t + 0.13);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.42 + 0.38 * vel, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.44);
+    o.connect(g); route(g, pan * 0.4, 0.05);
+    o.start(t); o.stop(t + 0.47);
+    const n = noiseSrc(t, 0.04), f = ac.createBiquadFilter(), ng = ac.createGain();   // attack click
+    f.type = "bandpass"; f.frequency.value = 1900; f.Q.value = 0.8;
+    ng.gain.setValueAtTime(0.05 + 0.05 * vel, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+    n.connect(f); f.connect(ng); route(ng, pan * 0.4, 0.05);
+  }
+
+  function snare(t, vel, pan) {
+    const ac = A.ac, n = noiseSrc(t, 0.24), f = ac.createBiquadFilter(), hp = ac.createBiquadFilter(), g = ac.createGain();
+    f.type = "bandpass"; f.frequency.value = 1900; f.Q.value = 0.6;
+    hp.type = "highpass"; hp.frequency.value = 420;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.26 + 0.28 * vel, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.21);
+    n.connect(f); f.connect(hp); hp.connect(g); route(g, pan * 0.8, 0.35);
+    const o = ac.createOscillator(), og = ac.createGain();                            // the "body" tone
+    o.type = "triangle";
+    o.frequency.setValueAtTime(210, t); o.frequency.exponentialRampToValueAtTime(150, t + 0.1);
+    og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(0.1 + 0.09 * vel, t + 0.006);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+    o.connect(og); route(og, pan * 0.8, 0.2);
+    o.start(t); o.stop(t + 0.16);
+  }
+
+  function hat(t, vel, pan, open) {
+    const ac = A.ac, dur = open ? 0.22 : 0.05;
+    const n = noiseSrc(t, dur + 0.02), hp = ac.createBiquadFilter(), bp = ac.createBiquadFilter(), g = ac.createGain();
+    hp.type = "highpass"; hp.frequency.value = 7200;
+    bp.type = "bandpass"; bp.frequency.value = 9500; bp.Q.value = 0.5;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.075 + 0.075 * vel, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    n.connect(hp); hp.connect(bp); bp.connect(g); route(g, pan, open ? 0.3 : 0.15);
+  }
+
+  const playDrum = (k, t, vel, pan, fee) => k === "K" ? kick(t, vel, pan) : k === "S" ? snare(t, vel, pan) : hat(t, vel, pan, fee != null && fee >= 20);
+
+  // ---------- scheduler: arrivals are random, music lands on the grid ----------
+  const pending = [], noteQ = [], vis = [], markers = [];
+  let nextStep = null, notesPlayed = 0, tipHeight = 0, lastBlockSec = null;
+
+  function scheduler() {
+    const nowP = performance.now();
+    for (let i = pending.length - 1; i >= 0; i--) if (pending[i].at <= nowP) { noteQ.push(pending[i]); pending.splice(i, 1); }
+    const now = clock();
+    if (nextStep == null || nextStep < now - 1) nextStep = now + 0.1;
+    while (nextStep < now + 0.15) { processStep(nextStep); nextStep += STEP; }
+    if (A && Math.random() < 0.05) {
+      const f = lastBlockSec == null ? 0 : clamp((Date.now() / 1000 - lastBlockSec) / 600, 0, 1);   // the longer the wait, the brighter the pad
+      A.padFilter.frequency.setTargetAtTime(450 + 1100 * f, A.ac.currentTime, 0.6);
+    }
+  }
+  setInterval(scheduler, 30);
+
+  function processStep(t) {
+    if (!noteQ.length) return;
+    const items = noteQ.splice(0);
+    items.sort((a, b) => (b.whale - a.whale) || ((b.fee || 0) - (a.fee || 0)));
+    const drumOn = drumsOn();
+    let nv = 0, nw = 0, nd = 0;
+    for (const it of items) {
+      let play;
+      if (it.whale) play = nw++ < MAX_WHALES_STEP; else play = nv++ < MAX_VOICES;
+      const row = it.row, freq = ROWS[row].freq, vel = velFor(it.fee);
+      const dur = it.whale ? 3.2 : 0.28 + (19 - row) / 19 * 0.55;
+      if (play && A && A.ac.state === "running") {
+        if (it.whale) bell(t, freq, vel, it.pan);
+        else voice(t, freq, vel, dur, it.pan, it.fee == null || it.fee < 3 ? 0 : it.fee < 15 ? 1 : 2);
+      }
+      if (play) notesPlayed++;
+      vis.push({ t, row, vel, dur: it.whale ? 3.2 : Math.max(dur, 1.15), color: it.whale ? "#ffd84a" : feeColor(it.fee), whale: it.whale, btc: it.btc, ghost: !play });
+      if (!drumOn || !it.drum) continue;
+      const k = drumKind(it.btc, it.fee), live = nd++ < MAX_DRUMS_STEP && A && A.ac.state === "running";
+      if (live) playDrum(k, t, vel, it.pan, it.fee);
+      vis.push({ t, drum: k, color: DRUM_COLOR[k], vel, dur: 0.9, btc: it.btc, ghost: !live });
+    }
+    $("nn").textContent = notesPlayed.toLocaleString();
+  }
+
+  // ---------- transactions in ----------
+  const known = new Set(), arrivals = [];
+  let whales = [];
+
+  function addTx(id, btc, fee, spreadMs) {
+    if (id) { if (known.has(id)) return; known.add(id); if (known.size > 8000) known.delete(known.values().next().value); }
+    arrivals.push(performance.now());
+    const whale = btc != null && btc >= WHALE_BTC;
+    if (pending.length > 300) pending.splice(0, 150);
+    const pan = id ? clamp(parseInt(id.slice(0, 4), 16) / 65535 * 2 - 1, -1, 1) * 0.7 : (Math.random() * 2 - 1) * 0.7;
+    pending.push({ at: performance.now() + Math.random() * spreadMs, id, btc, fee, whale, drum: btc != null && btc < DRUM_BTC, row: rowFor(btc), pan });
+    if (whale) { whales.unshift({ id, btc, ts: Date.now() }); if (whales.length > 6) whales.pop(); renderWhales(); }
+  }
+
+  function renderWhales() {
+    const kids = [];
+    if (!whales.length) { const d = document.createElement("div"); d.className = "none"; d.textContent = "none yet…"; kids.push(d); }
+    for (const w of whales) {
+      const el = document.createElement(w.id ? "a" : "div");
+      if (w.id) { el.href = "https://mempool.space/tx/" + w.id; el.target = "_blank"; el.rel = "noopener"; } else el.className = "w";
+      const a = document.createElement("span"); a.textContent = w.btc.toFixed(2) + " BTC";
+      const t = document.createElement("span"); t.className = "t";
+      const s = Math.max(0, Math.floor((Date.now() - w.ts) / 1000));
+      t.textContent = s < 60 ? s + "s ago" : Math.floor(s / 60) + "m ago";
+      el.append(a, t); kids.push(el);
+    }
+    $("wl").replaceChildren(...kids);
+  }
+  setInterval(renderWhales, 1000);
+  setInterval(() => {
+    const cut = performance.now() - 10000;
+    while (arrivals.length && arrivals[0] < cut) arrivals.shift();
+    $("rate").textContent = (arrivals.length / 10).toFixed(1);
+  }, 1000);
+
+  // ---------- blocks ----------
+  let bannerUntil = 0, bannerText = "";
+  function showChordHud() { $("chord").textContent = CHORDS[chordIdx].name; $("nxt").textContent = CHORDS[(chordIdx + 1) % CHORDS.length].name; }
+
+  function onBlock(b) {
+    if (!b || b.height <= tipHeight) return;
+    const first = !tipHeight;
+    tipHeight = b.height;
+    $("blk").textContent = "#" + b.height;
+    if (first) { lastBlockSec = b.timestamp; return; }
+    lastBlockSec = Date.now() / 1000;
+    const from = CHORDS[chordIdx].name;
+    chordIdx = (chordIdx + 1) % CHORDS.length;
+    showChordHud();
+    markers.push({ t: clock(), h: b.height, label: "#" + b.height + "  " + from + " → " + CHORDS[chordIdx].name });
+    bannerText = "BLOCK #" + b.height + (b.tx_count ? "  ·  " + b.tx_count.toLocaleString() + " TX" : "");
+    bannerUntil = performance.now() + 6000;
+    if (A && A.ac.state === "running") {
+      const t = A.ac.currentTime + 0.05, c = CHORDS[chordIdx];
+      setChord(chordIdx, t);
+      const tones = c.semis.flatMap(s => [s, s + 12]).sort((a, b2) => a - b2);
+      tones.forEach((s, i) => voice(t + i * 0.11, 220 * Math.pow(2, (s + 12) / 12), 0.7, 1.4, (i / 5 - 0.5) * 0.8, 1));
+      bell(t + tones.length * 0.11, 220 * Math.pow(2, (c.semis[0] + 36) / 12), 0.8, 0);
+    }
+  }
+
+  // ---------- drawing ----------
+  const cv = $("c"), ctx = cv.getContext("2d");
+  let W = 0, H = 0, DPR = 1, Y0 = 100, Y1 = 500, rowH = 20, playX = 600, SPEED = 80, waveY = 0, drumY = 0, small = false;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight; small = W < 700;
+    cv.width = W * DPR; cv.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    Y0 = small ? 96 : 104;
+    Y1 = H - (small ? 150 : 130);
+    rowH = (Y1 - Y0) / 20;
+    playX = W * 0.8;
+    SPEED = clamp(W * 0.075, 55, 120);
+    drumY = Y1 + (small ? 18 : 17);
+    waveY = Y1 + (small ? 40 : 38);
+  }
+  addEventListener("resize", resize);
+  resize();
+
+  const rrect = (x, y, w, h, r) => { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); };
+
+  function draw(nowP) {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const now = clock();
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#0b0e22"); bg.addColorStop(1, "#05060d");
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // chord rows
+    const pcs = CHORDS[chordIdx].pc;
+    ctx.textBaseline = "middle"; ctx.textAlign = "left"; ctx.font = "10px ui-monospace,Menlo,Consolas,monospace";
+    for (let i = 0; i < 20; i++) {
+      const y = Y0 + (19 - i) * rowH, inChord = pcs.indexOf(ROWS[i].semi % 12) >= 0;
+      if (inChord) { ctx.fillStyle = "rgba(94,224,255,.07)"; ctx.fillRect(0, y, W, rowH); }
+      ctx.fillStyle = inChord ? "rgba(94,224,255,.85)" : "rgba(138,150,184,.45)";
+      ctx.fillText(ROWS[i].name, 8, y + rowH / 2);
+      ctx.fillStyle = "rgba(255,255,255,.035)"; ctx.fillRect(34, y + rowH - 0.5, W, 1);
+    }
+    // bar lines on the grid (every 4 eighth notes)
+    ctx.fillStyle = "rgba(255,255,255,.05)";
+    const g0 = Math.floor((now - playX / SPEED) / (STEP * 4)) * STEP * 4;
+    for (let tb = g0; tb < now + 1; tb += STEP * 4) { const x = playX - (now - tb) * SPEED; if (x > 34 && x < W) ctx.fillRect(x, Y0, 1, Y1 - Y0); }
+
+    // drum lane (baseline the hits scroll along)
+    ctx.fillStyle = "rgba(255,255,255,.05)"; ctx.fillRect(34, drumY, W, 1);
+
+    // block markers
+    for (let i = markers.length - 1; i >= 0; i--) {
+      const m = markers[i], x = playX - (now - m.t) * SPEED;
+      if (x < -200) { markers.splice(i, 1); continue; }
+      const flash = clamp(1 - (now - m.t) / 1.2, 0, 1);
+      ctx.fillStyle = `rgba(255,216,74,${0.22 + 0.6 * flash})`; ctx.fillRect(x - 1, Y0 - 6, 2, Y1 - Y0 + 12);
+      ctx.fillStyle = "rgba(255,216,74,.85)"; ctx.textAlign = "left"; ctx.font = "11px ui-monospace,Menlo,Consolas,monospace";
+      ctx.fillText(m.label, x + 6, Y0 - 12);
+    }
+
+    // notes
+    for (let i = vis.length - 1; i >= 0; i--) {                    // drop notes that have scrolled off the left edge
+      const a = now - vis[i].t;
+      if (a > 0 && playX - a * SPEED + vis[i].dur * SPEED < -10) vis.splice(i, 1);
+    }
+    for (const v of vis) {                                         // oldest first, so newer notes sit on top
+      if (v.drum) continue;                                        // drums draw in their own lane below
+      const age = now - v.t;
+      if (age < 0) continue;
+      const xs = playX - age * SPEED, len = v.dur * SPEED, xe = Math.min(playX, xs + len);
+      const fade = clamp(xe / 140, 0, 1), y = Y0 + (19 - v.row) * rowH, h = rowH * 0.62, cy = y + rowH / 2;
+      if (v.ghost) { ctx.globalAlpha = 0.3 * fade; ctx.fillStyle = v.color; ctx.fillRect(xs - 1.5, cy - 1.5, 3, 3); ctx.globalAlpha = 1; continue; }
+      ctx.globalAlpha = (0.62 + 0.38 * v.vel) * fade;
+      ctx.fillStyle = v.color;
+      if (v.whale) { ctx.shadowColor = "#ffd84a"; ctx.shadowBlur = 14; }
+      rrect(xs, cy - h / 2, Math.max(3, xe - xs), h, 3); ctx.fill();
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      if (v.btc != null) {                                        // the amount, written inside the moving note
+        ctx.save();
+        rrect(xs, cy - h / 2, Math.max(3, xe - xs), h, 3); ctx.clip();
+        ctx.globalAlpha = fade; ctx.fillStyle = "#06070f"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.font = "600 " + Math.round(clamp(rowH * 0.42, 9, 12)) + "px ui-monospace,Menlo,Consolas,monospace";
+        ctx.fillText(fmtBtc(v.btc) + (v.whale ? " BTC" : ""), xs + 5, cy + 0.5);
+        ctx.restore();
+      }
+      if (age < 0.35) {                                           // onset ring at the playhead
+        ctx.strokeStyle = v.color; ctx.globalAlpha = (1 - age / 0.35) * 0.8; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(playX, cy, (v.whale ? 8 : 4) + age * (v.whale ? 120 : 70), 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      if (v.whale && age < 3) {
+        ctx.globalAlpha = clamp(1.2 - age / 2.6, 0, 1); ctx.fillStyle = "#ffd84a"; ctx.textAlign = "left";
+        ctx.font = "bold 12px ui-monospace,Menlo,Consolas,monospace"; ctx.fillText(v.btc.toFixed(2) + " BTC", playX + 14, cy); ctx.globalAlpha = 1;
+      }
+    }
+
+    // drum hits (K / S / H) in the lane above the waveform
+    for (const v of vis) {
+      if (!v.drum) continue;
+      const age = now - v.t;
+      if (age < 0) continue;
+      const x = playX - age * SPEED;
+      if (x < -20) continue;
+      const fade = clamp(x / 140, 0, 1) * clamp(1.7 - age / 1.1, 0, 1);
+      if (fade <= 0) continue;
+      const s = v.vel > 0.75 ? 12 : v.vel > 0.45 ? 10 : 8;
+      ctx.globalAlpha = fade * (v.ghost ? 0.28 : 1);
+      ctx.fillStyle = v.color;
+      rrect(x - s / 2, drumY - s / 2, s, s, 2.5); ctx.fill();
+      ctx.globalAlpha = fade; ctx.fillStyle = "#06070f"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.font = "600 8px ui-monospace,Menlo,Consolas,monospace";
+      ctx.fillText(v.drum, x, drumY + 0.5);
+      ctx.globalAlpha = 1;
+    }
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+
+    // playhead
+    const ph = ctx.createLinearGradient(0, Y0, 0, Y1);
+    ph.addColorStop(0, "rgba(94,224,255,0)"); ph.addColorStop(0.5, "rgba(94,224,255,.7)"); ph.addColorStop(1, "rgba(94,224,255,0)");
+    ctx.fillStyle = ph; ctx.fillRect(playX - 1, Y0 - 10, 2, Y1 - Y0 + 20);
+
+    // chord title
+    const tx = small ? W - 16 : W / 2;
+    ctx.textAlign = small ? "right" : "center"; ctx.textBaseline = "middle";
+    ctx.font = "600 " + (small ? 30 : 46) + "px ui-monospace,Menlo,Consolas,monospace";
+    ctx.fillStyle = "#5ee0ff"; ctx.shadowColor = "#5ee0ff"; ctx.shadowBlur = 18;
+    ctx.fillText(CHORDS[chordIdx].name, tx, small ? Y0 - 38 : 46); ctx.shadowBlur = 0;
+    ctx.font = "11px ui-monospace,Menlo,Consolas,monospace"; ctx.fillStyle = "#8a96b8";
+    const banner = performance.now() < bannerUntil;
+    ctx.fillStyle = banner ? "#ffd84a" : "#8a96b8";
+    ctx.fillText(banner ? bannerText : "next block → " + CHORDS[(chordIdx + 1) % CHORDS.length].name, tx, small ? Y0 - 14 : 78);
+
+    // waveform
+    ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(94,224,255,.75)"; ctx.beginPath();
+    if (A) {
+      A.analyser.getFloatTimeDomainData(A.buf);
+      for (let i = 0; i < A.buf.length; i += 2) { const x = i / A.buf.length * W, y = waveY + A.buf[i] * 34; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+    } else { ctx.moveTo(0, waveY); ctx.lineTo(W, waveY); ctx.strokeStyle = "rgba(94,224,255,.2)"; }
+    ctx.stroke();
+  }
+
+  function frame(now) { draw(now); requestAnimationFrame(frame); }
+
+  // ---------- controls ----------
+  $("go").addEventListener("click", () => { startAudio(); $("start").classList.add("hide"); });
+  $("vol").addEventListener("input", () => { if (A) A.master.gain.setTargetAtTime(volGain(), A.ac.currentTime, 0.05); });
+  function toggleMute() {
+    muted = !muted; $("mute").textContent = muted ? "UNMUTE" : "MUTE";
+    if (A) A.master.gain.setTargetAtTime(volGain(), A.ac.currentTime, 0.05);
+  }
+  $("mute").addEventListener("click", toggleMute);
+  $("dr").addEventListener("change", () => { if (drumsOn() && !A) $("go").click(); });   // drums need the audio engine
+  addEventListener("keydown", e => {
+    if (e.code === "KeyM") toggleMute();
+    else if (e.code === "KeyD") { $("dr").checked = !$("dr").checked; $("dr").dispatchEvent(new Event("change")); }
+    else if ((e.code === "Space" || e.code === "Enter") && !$("start").classList.contains("hide")) { e.preventDefault(); startAudio(); $("start").classList.add("hide"); }
+  });
+
+  // ---------- data: mempool.space ----------
+  let ws, backoff = 1000, primed = false, lookups = 0, coolUntil = 0;
+  const lookupQ = [];
+
+  function connect() {
+    setStatus("connecting…");
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+      backoff = 1000;
+      ws.send(JSON.stringify({ action: "init" }));
+      ws.send(JSON.stringify({ action: "want", data: ["blocks"] }));
+      ws.send(JSON.stringify({ "track-mempool-txids": true }));
+      setStatus("listening");
+    };
+    ws.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch { return; }
+      if (m.blocks && m.blocks.length && !tipHeight) onBlock(m.blocks.reduce((a, b) => (b.height > a.height ? b : a)));
+      if (m.block) onBlock(m.block);
+      if (m["mempool-txids"] && m["mempool-txids"].added) {
+        for (const id of m["mempool-txids"].added) {
+          if (known.has(id) || lookupQ.includes(id)) continue;
+          lookupQ.push(id);
+          if (lookupQ.length > 60) addTx(lookupQ.shift(), null, null, 600);     // too busy to look up: still play a note
+        }
+      }
+    };
+    ws.onclose = () => { setStatus("reconnecting…"); setTimeout(connect, backoff); backoff = Math.min(backoff * 2, 15000); };
+    ws.onerror = () => { try { ws.close(); } catch {} };
+  }
+
+  async function pollRecent() {
+    try {
+      const r = await fetch(API + "/mempool/recent");
+      if (r.ok) {
+        const list = await r.json();
+        if (!primed) { primed = true; for (const t of list) known.add(t.txid); }
+        else for (const t of list) addTx(t.txid, t.value / 1e8, t.vsize ? t.fee / t.vsize : null, 1800);
+      }
+    } catch {}
+    setTimeout(pollRecent, 2000);
+  }
+
+  function lookupLoop() {
+    if (lookupQ.length && lookups < 2 && performance.now() > coolUntil) {
+      const id = lookupQ.shift();
+      if (!known.has(id)) {
+        lookups++;
+        fetch(API + "/tx/" + id).then(r => {
+          if (r.status === 429) { coolUntil = performance.now() + 5000; return null; }
+          return r.ok ? r.json() : null;
+        }).then(t => {
+          if (t && t.vout) addTx(id, t.vout.reduce((s, o) => s + (o.value || 0), 0) / 1e8, t.weight ? t.fee / (t.weight / 4) : null, 250);
+          else addTx(id, null, null, 250);
+        }).catch(() => {}).finally(() => { lookups--; });
+      }
+    }
+    setTimeout(lookupLoop, 400);
+  }
+
+  async function pollTip() {
+    try {
+      const r = await fetch(API + "/v1/blocks");
+      if (r.ok) { const a = await r.json(); if (a.length) onBlock(a[0]); }
+    } catch {}
+  }
+  setInterval(() => { if (!DEMO) pollTip(); }, 20000);
+
+  // ---------- demo mode (?demo or ?demo=8) ----------
+  function demo() {
+    setStatus("demo");
+    tipHeight = 900000; lastBlockSec = Date.now() / 1000 - 200; $("blk").textContent = "#900000";
+    const tick = () => {
+      const whale = Math.random() < 0.03;
+      const btc = whale ? 1 + Math.random() * 120 : Math.pow(10, -4.2 + Math.random() * 3.6);
+      addTx(null, btc, Math.exp(Math.random() * 4.4) * 0.8, 0);
+      setTimeout(tick, -Math.log(1 - Math.random()) * 1000 / DEMO_RATE);
+    };
+    tick();
+    setInterval(() => onBlock({ height: tipHeight + 1, timestamp: Date.now() / 1000, tx_count: 1800 + ((Math.random() * 2400) | 0) }), 30000);
+  }
+
+  showChordHud();
+  requestAnimationFrame(frame);
+  if (DEMO) demo(); else { connect(); pollRecent(); lookupLoop(); pollTip(); }
+})();
+</script>
+</body>
+</html>
