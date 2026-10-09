@@ -85,7 +85,7 @@
   <div class="ttl">MEMPOOL MUSIC</div>
   <div class="mline"><span class="mlk">BLOCK <b id="mbigblk">—</b></span><span class="mlk">BTC/USD <b id="mprice">—</b> <b class="mchg" id="mchg"></b></span></div>
   <div class="hx">STATUS <b id="st">connecting…</b></div>
-  <div>CHORD <b id="chord">Am</b> → <b id="nxt">F</b> <span class="hx">at the next block</span></div>
+  <div>CHORD <b id="chord">Am</b> → <b id="nxt">F</b> <span class="hx">· TONE <b id="inst">Bell</b></span></div>
   <div>NOTES <b id="nn">0</b> &nbsp; TX/S <b id="rate">0.0</b></div>
   <div class="hx">LAST BLOCK <b id="blk">—</b></div>
   <div id="ctl">VOL <input id="vol" type="range" min="0" max="100" value="70" aria-label="Volume"> <span id="mute" role="button" tabindex="0">MUTE</span> <label id="drl" title="Drum per transaction: hi-hat <0.003, kick 0.003-0.03, snare 0.03+, drum loop 10+ BTC"><input id="dr" type="checkbox" checked> DRUM</label></div>
@@ -111,13 +111,14 @@
 <div class="tl" id="statR"><div class="lbl">BTC / USD</div><div class="num" id="price">—</div><div class="chg" id="chg"></div></div>
 
 <div id="bar">
-  <b>pitch</b> = amount (bigger is higher; the number on a note is its BTC) &nbsp;·&nbsp; <b>loudness &amp; brightness</b> = fee rate &nbsp;·&nbsp; <b>whale ≥ 1 BTC</b> = bell &nbsp;·&nbsp; <b>new block</b> = next chord<br>
+  <b>pitch</b> = amount (bigger is higher; the number on a note is its BTC) &nbsp;·&nbsp; <b>loudness &amp; brightness</b> = fee rate &nbsp;·&nbsp; <b>whale ≥ 1 BTC</b> = bell &nbsp;·&nbsp; <b>new block</b> = next chord <span class="hx">&amp; next tone</span><br>
   fee rate:
   <i style="background:#7f8fb0"></i>&lt;2 <i style="background:#4cc9f0"></i>2–5 <i style="background:#5ee27a"></i>5–10
   <i style="background:#ffe066"></i>10–20 <i style="background:#ff9f43"></i>20–50 <i style="background:#ff4d6d"></i>50+
   <span class="hx">&nbsp; · &nbsp;[M] mute &nbsp;·&nbsp; [D] drum</span><br>
   <span class="dk">drum on</span> (DRUM checked):
-  <i style="background:#5ee0ff"></i>hi-hat &lt;0.003 <i style="background:#ff9f43"></i>kick 0.003–0.03 <i style="background:#ff6bd6"></i>snare 0.03+ <i style="background:#ffd84a"></i>10&nbsp;BTC+ = drum loop
+  <i style="background:#5ee0ff"></i>hi-hat &lt;0.003 <i style="background:#ff9f43"></i>kick 0.003–0.03 <i style="background:#ff6bd6"></i>snare 0.03+ <i style="background:#ffd84a"></i>10&nbsp;BTC+ = drum loop<br>
+  tone: <i style="background:#7fc4ff"></i>Bell <i style="background:#7be08f"></i>Flute <i style="background:#ff9f43"></i>Marimba <i style="background:#ff6bd6"></i>Strings — <b>rotates each new block</b>
 </div>
 
 <div id="start">
@@ -170,6 +171,15 @@
   // smaller transfer = tighter/quieter voice: hi-hat <0.003, kick 0.003-0.03, snare 0.03+, loop 10+
   const drumKind = btc => btc < 0.003 ? "H" : btc < 0.03 ? "K" : "S";
   const drumsOn = () => $("dr").checked;
+
+  // ---------- rotating tones: a different instrument after each new block ----------
+  const INSTRUMENTS = [
+    { name: "Bell",    wave: "sine",     shift: 12, atk: .008, rel: 1.00, wet: .45, det: 0,   bright: 1.00 },  // luminous glass
+    { name: "Flute",   wave: "triangle", shift: 0,  atk: .022, rel: 1.25, wet: .30, det: 3,   bright: 0.90 },  // warm & breathy
+    { name: "Marimba", wave: "triangle", shift: -12, atk: .004, rel: 0.45, wet: .35, det: 0,   bright: 0.85 },  // woody pluck, an octave down
+    { name: "Strings", wave: "sawtooth", shift: 0,  atk: .050, rel: 1.60, wet: .40, det: 8,   bright: 0.75 }   // rich detuned pad
+  ];
+  let instIdx = (Math.random() * INSTRUMENTS.length) | 0;   // random start tone
 
   // ---------- audio engine (Web Audio, no files) ----------
   let A = null, muted = false;
@@ -242,15 +252,20 @@
     if (wetAmt > 0.3) n.connect(A.delayIn);
   }
 
-  // kind 0 soft sine, 1 triangle, 2 bright saw: chosen by fee rate
+  // kind 0 soft sine, 1 triangle, 2 bright saw (fee brightness) — modulated by the current rotating instrument
   function voice(t, freq, vel, dur, pan, kind) {
-    const ac = A.ac, o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
-    o.type = kind === 0 ? "sine" : kind === 1 ? "triangle" : "sawtooth"; o.frequency.value = freq;
-    f.type = "lowpass"; f.frequency.value = kind === 2 ? 2200 : 6500;
+    const ac = A.ac, INST = INSTRUMENTS[instIdx];
+    const o = ac.createOscillator(), f = ac.createBiquadFilter(), g = ac.createGain();
+    o.type = INST.wave; o.frequency.value = freq * Math.pow(2, INST.shift / 12);
+    if (INST.det) o.detune.value = (Math.random() * 2 - 1) * INST.det;
+    f.type = "lowpass"; f.frequency.value = (kind === 2 ? 2200 : 6500) * INST.bright;
     const peak = (0.05 + 0.17 * vel) * (kind === 2 ? 0.6 : 1);
-    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(f); f.connect(g); route(g, pan, 0.35);
-    o.start(t); o.stop(t + dur + 0.05);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(peak, t + INST.atk);
+    g.gain.setValueAtTime(peak, t + Math.min(dur * 0.7, dur));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur * INST.rel);
+    o.connect(f); f.connect(g); route(g, pan, INST.wet);
+    o.start(t); o.stop(t + Math.max(dur, dur * INST.rel) + 0.1);
   }
 
   function bell(t, freq, vel, pan) {
@@ -411,7 +426,7 @@
 
   // ---------- blocks ----------
   let bannerUntil = 0, bannerText = "";
-  function showChordHud() { $("chord").textContent = CHORDS[chordIdx].name; $("nxt").textContent = CHORDS[(chordIdx + 1) % CHORDS.length].name; }
+  function showChordHud() { $("chord").textContent = CHORDS[chordIdx].name; $("nxt").textContent = CHORDS[(chordIdx + 1) % CHORDS.length].name; $("inst").textContent = INSTRUMENTS[instIdx].name; }
 
   function onBlock(b) {
     if (!b || b.height <= tipHeight) return;
@@ -423,6 +438,7 @@
     lastBlockSec = Date.now() / 1000;
     const from = CHORDS[chordIdx].name;
     chordIdx = (chordIdx + 1) % CHORDS.length;
+    instIdx = (instIdx + 1) % INSTRUMENTS.length;   // rotate the tone
     showChordHud();
     markers.push({ t: clock(), h: b.height, label: "#" + b.height + "  " + from + " → " + CHORDS[chordIdx].name });
     bannerText = "BLOCK #" + b.height + (b.tx_count ? "  ·  " + b.tx_count.toLocaleString() + " TX" : "");
@@ -553,16 +569,18 @@
     ph.addColorStop(0, "rgba(94,224,255,0)"); ph.addColorStop(0.5, "rgba(94,224,255,.7)"); ph.addColorStop(1, "rgba(94,224,255,0)");
     ctx.fillStyle = ph; ctx.fillRect(playX - 1, Y0 - 10, 2, Y1 - Y0 + 20);
 
-    // chord title
+    // chord title (+ rotating-tone color)
     const tx = small ? W - 16 : W / 2;
+    const TONE_COL = ["#7fc4ff", "#7be08f", "#ff9f43", "#ff6bd6"];
+    const tc = TONE_COL[instIdx];
     ctx.textAlign = small ? "right" : "center"; ctx.textBaseline = "middle";
     ctx.font = "600 " + (small ? 30 : 46) + "px ui-monospace,Menlo,Consolas,monospace";
-    ctx.fillStyle = "#5ee0ff"; ctx.shadowColor = "#5ee0ff"; ctx.shadowBlur = 18;
+    ctx.fillStyle = tc; ctx.shadowColor = tc; ctx.shadowBlur = 18;
     ctx.fillText(CHORDS[chordIdx].name, tx, small ? Y0 - 38 : 46); ctx.shadowBlur = 0;
     ctx.font = "11px ui-monospace,Menlo,Consolas,monospace"; ctx.fillStyle = "#8a96b8";
     const banner = performance.now() < bannerUntil;
     ctx.fillStyle = banner ? "#ffd84a" : "#c7d2f5";
-    ctx.fillText(banner ? bannerText : "next block → " + CHORDS[(chordIdx + 1) % CHORDS.length].name, tx, small ? Y0 - 14 : 78);
+    ctx.fillText(banner ? bannerText : "next block → " + CHORDS[(chordIdx + 1) % CHORDS.length].name + " · " + INSTRUMENTS[instIdx].name, tx, small ? Y0 - 14 : 78);
 
     // waveform
     ctx.lineWidth = 1.5; ctx.strokeStyle = "rgba(94,224,255,.75)"; ctx.beginPath();
