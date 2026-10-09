@@ -84,6 +84,11 @@
     <button id="dbtn" class="btn panel" type="button" data-on="1" aria-label="Donate" title="Send a few sats">Donate</button>
     <div class="donate panel" id="dcard" role="dialog" aria-label="Donate">
       <span class="dh">Support the spa ⚡</span>
+      <div class="dnf-donate">
+        <div class="dnf-ln-cap">Scan with any wallet — attach a message</div>
+        <img class="dnf-ln-qr" alt="Scan to donate" src="https://api.qrserver.com/v1/create-qr-code/?size=360x360&qzone=4&data=lightning%3Alnurl1dp68gurn8ghj7un9d3shjtn5v95kccfkxaskzdpww3ejumn9wshkzurf9ajx7mnpw3jj7mrww4excycpzv5">
+        <div class="dnf-ln-url"><code>donate@nixonshock.com</code></div>
+      </div>
     </div>
   </span>
 </div></div>
@@ -309,8 +314,8 @@
     }
   }
 
-  const GUITAR_BTC = 50;                                 // 50+ BTC: epic electric guitar riff on top
-  // epic electric guitar riff — synthesized (distorted saws + vibrato lead)
+  const GUITAR_BTC = 50;                                 // 50+ BTC: one distorted electric-guitar note
+  // 50+ BTC: one distorted electric-guitar note (clean, not a busy riff)
   function distTable(ac) {
     const n = 1024, c = new Float32Array(n);
     for (let i = 0; i < n; i++) { const x = i / n * 2 - 1; c[i] = Math.tanh(3.0 * x); }
@@ -333,14 +338,7 @@
     o1.start(t); o2.start(t); o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
   }
   function guitarRiff(t, vel, pan) {
-    const A2 = 110, G2 = 98, F2 = 87.31, A3 = 220, E4 = 329.63, E5 = 659.26, D5 = 587.33;
-    gtr(t, A2, 0.12, vel, pan, false); gtr(t + 0.16, A2, 0.12, vel, pan, false);          // palm-muted chugs
-    gtr(t + 0.32, A2, 0.5, vel, pan, false); gtr(t + 0.32, A3, 0.5, vel * 0.7, pan, false); // A power chord
-    gtr(t + 0.82, G2, 0.42, vel, pan, false); gtr(t + 0.82, +G2 * 1.5, 0.42, vel * 0.7, pan, false);
-    gtr(t + 1.28, F2, 0.42, vel, pan, false); gtr(t + 1.28, F2 * 1.5, 0.42, vel * 0.7, pan, false);
-    gtr(t + 1.76, E5, 1.0, vel * 0.75, pan, true);                                        // screaming lead bend
-    gtr(t + 1.76, D5, 0.9, vel * 0.55, pan, true);
-    gtr(t + 2.76, E4, 0.5, vel * 0.6, pan, false);
+    gtr(t, 220, 1.6, vel, pan, true);   // a single low A3 note with a slow vibrato crawl
   }
 
   // ---------- scheduler: arrivals are random, music lands on the grid ----------
