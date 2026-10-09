@@ -609,7 +609,8 @@
 
   // ---------- data: mempool.space ----------
   let ws, backoff = 1000, primed = false, lookups = 0, coolUntil = 0;
-  const lookupQ = [];
+  const lookupQ = [];   // {id, at} — at = when the txid arrived; used to skip doomed /api/tx fetches
+  const LOOKUP_MAX_AGE = 5000;  // ms: a txid older than this has almost certainly confirmed & left the mempool
 
   function connect() {
     setStatus("connecting…");
@@ -627,9 +628,9 @@
       if (m.block) onBlock(m.block);
       if (m["mempool-txids"] && m["mempool-txids"].added) {
         for (const id of m["mempool-txids"].added) {
-          if (known.has(id) || lookupQ.includes(id)) continue;
-          lookupQ.push(id);
-          if (lookupQ.length > 60) addTx(lookupQ.shift(), null, null, 600);     // too busy to look up: still play a note
+          if (known.has(id) || lookupQ.some(q => q.id === id)) continue;
+          lookupQ.push({ id, at: Date.now() });
+          if (lookupQ.length > 80) addTx(lookupQ.shift().id, null, null, 350);   // too busy to look up: still play a note
         }
       }
     };
@@ -651,16 +652,22 @@
 
   function lookupLoop() {
     if (lookupQ.length && lookups < 2 && performance.now() > coolUntil) {
-      const id = lookupQ.shift();
-      if (!known.has(id)) {
-        lookups++;
-        fetch(API + "/tx/" + id).then(r => {
-          if (r.status === 429) { coolUntil = performance.now() + 5000; return null; }
-          return r.ok ? r.json() : null;
-        }).then(t => {
-          if (t && t.vout) addTx(id, t.vout.reduce((s, o) => s + (o.value || 0), 0) / 1e8, t.weight ? t.fee / (t.weight / 4) : null, 250);
-          else addTx(id, null, null, 250);
-        }).catch(() => {}).finally(() => { lookups--; });
+      const entry = lookupQ.shift();
+      if (entry && !known.has(entry.id)) {
+        if (Date.now() - entry.at > LOOKUP_MAX_AGE) {
+          // Stale — the tx has almost certainly confirmed and left the mempool, so a
+          // lookup would just 404 (and spam the console). Play a note with no amount.
+          addTx(entry.id, null, null, 250);
+        } else {
+          lookups++;
+          fetch(API + "/tx/" + entry.id).then(r => {
+            if (r.status === 429) { coolUntil = performance.now() + 5000; return null; }
+            return r.ok ? r.json() : null;
+          }).then(t => {
+            if (t && t.vout) addTx(entry.id, t.vout.reduce((s, o) => s + (o.value || 0), 0) / 1e8, t.weight ? t.fee / (t.weight / 4) : null, 250);
+            else addTx(entry.id, null, null, 250);
+          }).catch(() => {}).finally(() => { lookups--; });
+        }
       }
     }
     setTimeout(lookupLoop, 400);
