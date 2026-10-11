@@ -74,6 +74,17 @@
           "value": "matrix.nixonshock.com"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://www.nixonshock.com/spa",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "spa.nixonshock.com"
+        }
+      ]
     }
   ],
   "rewrites": [
