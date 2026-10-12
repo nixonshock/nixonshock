@@ -117,7 +117,7 @@
   <span class="hx">&nbsp; · &nbsp;[M] mute &nbsp;·&nbsp; [D] drum</span><br>
   <span class="dk">drum on</span> (DRUM checked):
   <i style="background:#5ee0ff"></i>hi-hat &lt;0.003 <i style="background:#ff9f43"></i>kick 0.003–0.03 <i style="background:#ff6bd6"></i>snare 0.03+ <i style="background:#ffd84a"></i>10&nbsp;BTC+ = drum loop<br>
-  tone: <i style="background:#7fc4ff"></i>Bell <i style="background:#7be08f"></i>Flute <i style="background:#ff9f43"></i>Marimba <i style="background:#ff6bd6"></i>Strings <i style="background:#9be6ff"></i>Music box <i style="background:#ffcf5e"></i>Brass <i style="background:#c9a0ff"></i>E-piano <i style="background:#5ef0d0"></i>Organ — <b>rotates each new block</b>
+  tone: <i style="background:#7fc4ff"></i>Bell <i style="background:#7be08f"></i>Flute <i style="background:#ff9f43"></i>Marimba <i style="background:#ff6bd6"></i>Strings <i style="background:#9be6ff"></i>Music box <i style="background:#ffcf5e"></i>Brass <i style="background:#c9a0ff"></i>E-piano <i style="background:#5ef0d0"></i>Organ <i style="background:#9dff3e"></i>8-Bit — <b>rotates each new block</b>
 </div>
 
 <div id="start">
@@ -180,7 +180,8 @@
     { name: "Music box", wave: "sine",     shift: 24, atk: .003, rel: .80, wet: .50, det: 0,  bright: 1.00 },  // tinkly glass, two octaves up
     { name: "Brass",  wave: "sawtooth", shift: 0,  atk: .040, rel: .90, wet: .35, det: 5,   bright: 0.90 },  // bold bright lead
     { name: "E-piano", wave: "triangle", shift: 0,  atk: .006, rel: .70, wet: .40, det: 6,   bright: 0.80 },  // warm bell tone
-    { name: "Organ",  wave: "sine",     shift: 0,  atk: .060, rel: 1.60, wet: .30, det: 2,   bright: 0.70 }   // churchy sustain
+    { name: "Organ",  wave: "sine",     shift: 0,  atk: .060, rel: 1.60, wet: .30, det: 2,   bright: 0.70 },  // churchy sustain
+    { name: "8-Bit",  wave: "square",   shift: 0,  atk: .004, rel: .90, wet: .55, det: 0,   bright: 0.95 }   // NES pulse lead, retro echo
   ];
   let instIdx = (Math.random() * INSTRUMENTS.length) | 0;   // random start tone
 
@@ -574,7 +575,7 @@
 
     // chord title (+ rotating-tone color)
     const tx = small ? W - 16 : W / 2;
-    const TONE_COL = ["#7fc4ff", "#7be08f", "#ff9f43", "#ff6bd6", "#9be6ff", "#ffcf5e", "#c9a0ff", "#5ef0d0"];
+    const TONE_COL = ["#7fc4ff", "#7be08f", "#ff9f43", "#ff6bd6", "#9be6ff", "#ffcf5e", "#c9a0ff", "#5ef0d0", "#9dff3e"];
     const tc = TONE_COL[instIdx];
     ctx.textAlign = small ? "right" : "center"; ctx.textBaseline = "middle";
     ctx.font = "600 " + (small ? 30 : 46) + "px ui-monospace,Menlo,Consolas,monospace";
