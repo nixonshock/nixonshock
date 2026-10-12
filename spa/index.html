@@ -93,6 +93,7 @@
 <div id="whales"><h3>RECENT WHALES ≥ 1 BTC</h3><div id="wl"><div class="none">none yet…</div></div></div>
 
 <div class="top"><div class="controls">
+  <button id="tone" class="btn panel" type="button" title="Cycle to the next instrument tone now (no need to wait for a block) · press T" aria-label="Next instrument tone">TONE <span id="tonebtn">Bell</span> ▸</button>
   <span class="ddon">
     <button id="dbtn" class="btn panel" type="button" data-on="1" aria-label="Donate" title="Send a few sats">Donate</button>
     <div class="donate panel" id="dcard" role="dialog" aria-label="Donate">
@@ -430,7 +431,7 @@
 
   // ---------- blocks ----------
   let bannerUntil = 0, bannerText = "";
-  function showChordHud() { $("chord").textContent = CHORDS[chordIdx].name; $("nxt").textContent = CHORDS[(chordIdx + 1) % CHORDS.length].name; $("inst").textContent = INSTRUMENTS[instIdx].name; }
+  function showChordHud() { $("chord").textContent = CHORDS[chordIdx].name; $("nxt").textContent = CHORDS[(chordIdx + 1) % CHORDS.length].name; $("inst").textContent = INSTRUMENTS[instIdx].name; const tb = $("tonebtn"); if (tb) tb.textContent = INSTRUMENTS[instIdx].name; }
 
   function onBlock(b) {
     if (!b || b.height <= tipHeight) return;
@@ -606,8 +607,18 @@
   }
   $("mute").addEventListener("click", toggleMute);
   $("dr").addEventListener("change", () => { if (drumsOn() && !A) $("go").click(); });   // drums need the audio engine
+  function nextTone() {
+    instIdx = (instIdx + 1) % INSTRUMENTS.length;
+    showChordHud();
+    if (A && A.ac) {   // instant preview so you hear the new instrument right away
+      const t = A.ac.currentTime + 0.02, c = CHORDS[chordIdx];
+      c.semis.forEach(s => voice(t + 0.02, 220 * Math.pow(2, s / 12), 0.85, 0.9, 0, 0));
+    }
+  }
+  $("tone").addEventListener("click", nextTone);
   addEventListener("keydown", e => {
     if (e.code === "KeyM") toggleMute();
+    else if (e.code === "KeyT") nextTone();
     else if (e.code === "KeyD") { $("dr").checked = !$("dr").checked; $("dr").dispatchEvent(new Event("change")); }
     else if ((e.code === "Space" || e.code === "Enter") && !$("start").classList.contains("hide")) { e.preventDefault(); startAudio(); $("start").classList.add("hide"); }
   });
