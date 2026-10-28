@@ -92,11 +92,14 @@
       '.music .mvol span{font-size:10px;color:var(--muted,#9aa);min-width:26px;text-align:right;}\n' +
       '@media(max-width:760px){.music{position:fixed;left:50%;right:auto;top:150px;transform:translateX(-50%);width:min(280px,calc(100vw - 20px));}}\n' +
       '.tb{position:fixed;right:14px;bottom:14px;z-index:301;font-family:system-ui,sans-serif;}\n' +
-      '.tb .tb-btn{width:46px;height:46px;border-radius:50%;font-size:20px;border:1px solid var(--line,rgba(127,127,127,.35));' +
-        'background:rgba(20,26,36,.9);color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);}\n' +
+      '.tb .tb-btn{display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 15px 0 13px;border-radius:999px;font-size:13px;font-weight:700;' +
+        'border:1px solid rgba(255,255,255,.30);background:rgba(20,26,36,.94);color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.45);' +
+        'transition:border-color .15s,transform .12s;}\n' +
+      '.tb .tb-btn:hover{border-color:var(--accent,#ffa13d);transform:translateY(-1px);}\n' +
+      '.tb .tb-btn .tb-i{font-size:16px;line-height:1;}\n' +
       '.tb .tb-btn.on{opacity:0;pointer-events:none;}\n' +
       '.tb .tb-panel{position:fixed;right:14px;bottom:14px;width:300px;max-width:calc(100vw - 20px);height:46vh;' +
-        'display:flex;flex-direction:column;background:var(--tb-bg,rgba(10,14,20,.97));border:1px solid rgba(127,127,127,.3);border-radius:14px;' +
+        'display:flex;flex-direction:column;background:var(--tb-bg,rgba(10,14,20,.97));border:1px solid rgba(255,255,255,.22);border-radius:14px;' +
         'overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);}\n' +
       '.tb .tb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;font-size:10px;' +
         'letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#9aa);font-weight:700;border-bottom:1px solid rgba(127,127,127,.18);}\n' +
@@ -107,10 +110,25 @@
       '.tb .tb-msg b{color:#ffd54a;font-weight:700;margin-right:4px;}\n' +
       '.tb .tb-don{color:#3ddc84;font-weight:700;}\n' +
       '.tb .tb-pay{font-size:15px;font-weight:800;color:#f8c144;line-height:1.3;word-break:break-word;animation:tbGlow 1.8s ease-in-out infinite;text-shadow:0 0 6px rgba(248,193,68,.5);}\n' +
-      '.tb .tb-form{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(127,127,127,.18);}\n' +
-      '.tb .tb-form input{flex:1;min-width:0;padding:6px 8px;font-size:12px;border:1px solid var(--line,rgba(127,127,127,.35));' +
-        'border-radius:9px;background:rgba(127,127,127,.06);color:var(--fg,#fff);font-family:inherit;}\n' +
-      '.tb .tb-form button{flex:none;padding:6px 10px;font-size:12px;font-weight:700;}\n' +
+      '.tb .tb-form{display:grid;grid-template-columns:1fr auto;gap:7px 8px;padding:9px 10px;border-top:1px solid rgba(255,255,255,.14);' +
+        'background:rgba(0,0,0,.30);}\n' +
+      '.tb .tb-f{display:grid;grid-template-columns:62px 1fr;align-items:center;gap:8px;min-width:0;}\n' +
+      '.tb .tb-f>span{font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.6);font-weight:800;line-height:1.1;}\n' +
+      '.tb .tb-f-name{grid-column:1/-1;}\n' +
+      '.tb .tb-f-text{grid-column:1;}\n' +
+      '.tb .tb-form input{width:100%;box-sizing:border-box;padding:7px 9px;font-size:12.5px;color:#fff;font-family:inherit;' +
+        'border:1.5px solid rgba(255,255,255,.32);border-radius:10px;background:rgba(255,255,255,.11);' +
+        'transition:border-color .15s,background .15s,box-shadow .15s;}\n' +
+      '.tb .tb-form input::placeholder{color:rgba(255,255,255,.45);}\n' +
+      '.tb .tb-form input:focus{outline:none;border-color:var(--accent,#ffa13d);background:rgba(255,255,255,.15);' +
+        'box-shadow:0 0 0 3px rgba(255,161,61,.22);}\n' +
+      '.tb .tb-send{grid-column:2;grid-row:2;align-self:center;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;' +
+        'font-size:12.5px;font-weight:800;border:0;border-radius:10px;background:var(--accent,#ffa13d);color:#1a1200;cursor:pointer;' +
+        'box-shadow:0 4px 14px rgba(0,0,0,.35);transition:filter .15s,background .15s,color .15s;}\n' +
+      '.tb .tb-send:hover{filter:brightness(1.1);}\n' +
+      '.tb .tb-send kbd{font:inherit;font-size:10px;font-weight:800;opacity:.55;border:1px solid rgba(0,0,0,.3);border-radius:4px;padding:0 4px;}\n' +
+      '.tb .tb-send:disabled{background:var(--accent,#ffa13d);color:#1a1200;opacity:.45;box-shadow:none;cursor:default;filter:none;}\n' +
+      '.tb .tb-hint{margin:0;padding:0 10px 10px;background:rgba(0,0,0,.30);font-size:10.5px;line-height:1.45;color:rgba(255,255,255,.55);}\n' +
       '@keyframes tbGlow{0%,100%{text-shadow:0 0 4px rgba(248,193,68,.45),0 0 14px rgba(248,193,68,.3);}50%{text-shadow:0 0 12px rgba(248,193,68,.95),0 0 30px rgba(248,193,68,.6);}}\n' +
       '@media(max-width:560px){.tb .tb-panel{width:min(300px,calc(100vw - 20px));right:10px;bottom:10px;}}\n' +
       '@media(max-width:640px){#dcard,.tb{display:none!important}}\n' +
@@ -574,15 +592,18 @@
     var host = document.createElement('div');
     host.className = 'tb';
     host.innerHTML =
-      '<button type="button" class="tb-btn on" id="tbBtn" aria-label="Open chat">💬</button>' +
-      '<div class="tb-panel" id="tbPanel">' +
-        '<div class="tb-head"><span>trollbox · chat + sats</span><span class="tb-online" id="tbOnline">● 0 online</span><button type="button" class="btn panel" id="tbClose">✕</button></div>' +
+      '<button type="button" class="tb-btn on" id="tbBtn" aria-label="Open chat"><span class="tb-i">💬</span>chat</button>' +
+      '<div class="tb-panel" id="tbPanel" role="dialog" aria-label="Trollbox chat">' +
+        '<div class="tb-head"><span>trollbox · chat + sats</span><span class="tb-online" id="tbOnline">● 0 online</span><button type="button" class="btn panel" id="tbClose" aria-label="Close chat">✕</button></div>' +
         '<div class="tb-list" id="tbList"></div>' +
         '<div class="tb-form">' +
-          '<input id="tbName" maxlength="20" placeholder="anon" aria-label="Name">' +
-          '<input id="tbText" maxlength="200" placeholder="say something" aria-label="Message">' +
-          '<button type="button" class="btn panel" id="tbSend">Send</button>' +
+          '<label class="tb-f tb-f-name" for="tbName"><span>your name</span>' +
+            '<input id="tbName" maxlength="20" placeholder="anon" autocomplete="off" spellcheck="false"></label>' +
+          '<label class="tb-f tb-f-text" for="tbText"><span>message</span>' +
+            '<input id="tbText" maxlength="200" placeholder="say something…" autocomplete="off"></label>' +
+          '<button type="button" class="tb-send" id="tbSend">Send <kbd>⏎</kbd></button>' +
         '</div>' +
+        '<p class="tb-hint">Enter sends · name saved on this device · donate with a message to post in gold</p>' +
       '</div>';
     document.body.appendChild(host);
     var btn = host.querySelector('#tbBtn'), panel = host.querySelector('#tbPanel'),
@@ -646,9 +667,14 @@
       api('chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sender: sender, text: text }) });
       textIn.value = '';
+      syncSend();
     }
+    function syncSend() { sendBtn.disabled = !textIn.value.trim(); }
+    syncSend();
+    textIn.addEventListener('input', syncSend);
     sendBtn.addEventListener('click', send);
-    textIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+    textIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); send(); } });
+    nameIn.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); textIn.focus(); } });
   }
 
   /* ---------------- boot ----------------
