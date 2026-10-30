@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Saeculum Atlas — the Fourth Turning set against the record</title>
+<meta name="description" content="Strauss–Howe saecula 1435–today laid against dated events from twelve regions and rival cycle theories (Kondratiev, Turchin, Chinese dynasties), with a clock, a forecast window and a phase comparison table.">
+<link rel="canonical" href="https://www.nixonshock.com/4thturning">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Saeculum Atlas — the Fourth Turning set against the record">
+<meta property="og:description" content="Strauss–Howe saecula 1435–today laid against dated events from twelve regions and rival cycle theories (Kondratiev, Turchin, Chinese dynasties), with a clock, a forecast window and a phase comparison table.">
+<meta property="og:url" content="https://www.nixonshock.com/4thturning">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+/* Layout: one long reading page. Hero thesis, a swim-lane timeline (regions as lanes, theories as lenses),
+   then a clock, a forecast ribbon, a saeculum comparison table and a method section. Season colors carry the turnings. */
+:root{
+  --bg:#F2F5F8; --panel:#FFFFFF; --fg:#13202C; --muted:#566574; --line:#D2DAE2; --soft:#E6ECF1; --on-bar:#101B25;
+  --high:#86C29E; --awake:#E6B85A; --unravel:#DC8F66; --crisis:#7FA6D8;
+  --prophet:#B1A3DE; --nomad:#D2AE7C; --hero:#7CC3C4; --artist:#DE9DB9;
+  --war:#B23A48; --econ:#2C7D8E; --pol:#6B5CA5; --soc:#5E7F2C;
+  --now:#D6336C;
+  --display:'Newsreader',Georgia,'Times New Roman',serif;
+  --body:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E161E; --panel:#15202B; --fg:#E4EBF1; --muted:#93A3B2; --line:#2A3947; --soft:#1C2936; --on-bar:#0C151D;
+  --high:#6DBB8D; --awake:#E2B04C; --unravel:#D9805A; --crisis:#6C9AD6;
+  --prophet:#9C8BD6; --nomad:#C49C66; --hero:#5DB3B4; --artist:#D68AAB;
+  --war:#E0687A; --econ:#55B3C4; --pol:#9A8BD0; --soc:#93B35E; --now:#FF6B9A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E161E; --panel:#15202B; --fg:#E4EBF1; --muted:#93A3B2; --line:#2A3947; --soft:#1C2936; --on-bar:#0C151D;
+  --high:#6DBB8D; --awake:#E2B04C; --unravel:#D9805A; --crisis:#6C9AD6;
+  --prophet:#9C8BD6; --nomad:#C49C66; --hero:#5DB3B4; --artist:#D68AAB;
+  --war:#E0687A; --econ:#55B3C4; --pol:#9A8BD0; --soc:#93B35E; --now:#FF6B9A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--display);font-weight:500;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.04}
+h1 em{font-style:italic;color:var(--muted)}
+h2{font-size:clamp(24px,3.4vw,32px);line-height:1.15}
+h3{font-size:19px}
+p{margin:0}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lede{max-width:66ch;color:var(--muted);font-size:16.5px}
+header{display:flex;flex-direction:column;gap:16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.bd{display:inline-flex;align-items:center;gap:6px;font:500 11px var(--mono);letter-spacing:.04em;padding:3px 8px;border:1px solid var(--line);border-radius:3px;background:var(--panel);white-space:nowrap}
+.bd i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.bd.sh i{background:var(--crisis)}.bd.doc i{background:var(--soc)}.bd.con i{background:var(--awake)}.bd.spec i{background:var(--now)}
+section{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sec-h{display:flex;flex-direction:column;gap:6px}
+.controls{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.grp{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.grp>span.lab{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+label.ck{display:inline-flex;gap:6px;align-items:center;cursor:pointer;font-size:13.5px}
+label.ck input{accent-color:var(--crisis);width:15px;height:15px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{font:500 12px var(--mono);padding:6px 11px;background:var(--panel);color:var(--fg);border:0;border-right:1px solid var(--line);cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--now);outline-offset:2px}
+.tl{display:flex;border:1px solid var(--line);border-radius:6px;background:var(--panel);min-width:0}
+.tl-l{flex:none;width:132px;border-right:1px solid var(--line);background:var(--panel);border-radius:6px 0 0 6px}
+.tl-r{flex:1;min-width:0;overflow-x:auto;overscroll-behavior-x:contain}
+.lbl{padding:7px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.lbl b{font:600 12.5px var(--body);line-height:1.2}
+.lbl small{font:400 10px var(--mono);color:var(--muted);line-height:1.25}
+.lbl.axis{background:var(--soft)}
+svg text{font-family:var(--body)}
+.t{fill:var(--fg);font-size:11px}.tm{fill:var(--muted);font-size:10px}.mono{font-family:var(--mono)}
+.bt{fill:var(--on-bar);font-size:10.5px;font-weight:500;pointer-events:none}
+.grid{stroke:var(--line);stroke-width:1}
+.ax{fill:var(--muted);font:10px var(--mono)}
+g[data-k]{cursor:pointer}
+g[data-k]:hover rect.hl,g[data-k]:focus-visible rect.hl{stroke:var(--fg);stroke-width:1.5}
+g[data-k]:focus-visible{outline:none}
+g[data-k]:hover .t{text-decoration:underline}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.detail h3{font-size:24px}
+.meta{font:12px var(--mono);color:var(--muted)}
+.detail .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.detail p{max-width:74ch}
+.detail .crit{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:10px}
+.two{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 18px;min-width:0}
+.legend{display:flex;flex-direction:column;gap:3px;font-size:12.5px;margin-top:8px}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
+.now-big{font:500 40px/1 var(--display)}
+.stat{display:flex;flex-direction:column;gap:4px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.bars{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.bars div{display:grid;grid-template-columns:150px 1fr 34px;gap:8px;align-items:center;font-size:12.5px}
+.bars div b{font:500 11px var(--mono);text-align:right}
+.bars span.b{height:10px;background:var(--crisis);border-radius:2px;display:block}
+@media (max-width:520px){.bars div{grid-template-columns:104px 1fr 30px}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 12px var(--mono);padding:6px 11px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+th,td{padding:9px 11px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top;text-align:left}
+th{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--soft)}
+tr:last-child td{border-bottom:0}th:last-child,td:last-child{border-right:0}
+td.ph{white-space:nowrap;font-weight:600;width:120px}
+td.ph i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px}
+td ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}
+td li span{font:11px var(--mono);color:var(--muted)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.notes .card{display:flex;flex-direction:column;gap:8px}
+.notes ul,.src{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.src{font-size:13px;color:var(--muted)}
+.src a{color:var(--fg)}
+.small{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.tl-r{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Strauss–Howe generational theory · Anglo-American saeculum 1435–today</div>
+  <h1>Saeculum Atlas <em>the Fourth Turning set against the record</em></h1>
+  <p class="lede">The Fourth Turning proposes that history repeats in cycles of about 80–90 years, each split into four moods: High, Awakening, Unraveling and Crisis. This page lays that claim beside dated events from several regions and beside rival cycle theories, so you can see where the pattern holds and where it is stretched.</p>
+  <div class="badges" aria-label="Badge key">
+    <span class="bd sh"><i></i>S&amp;H claim</span><span class="bd doc"><i></i>Documented fact</span><span class="bd con"><i></i>Contested</span><span class="bd spec"><i></i>Forecast</span>
+  </div>
+</header>
+
+<section id="timeline">
+  <div class="sec-h"><div class="eyebrow">Swim lanes</div><h2>Every region on one time axis</h2>
+  <p class="lede">Tier 1 is the cycle Strauss and Howe actually built from. Tier 2 can be given their turning bands as an extension, which is contested. Tier 3 shows events only. Click any bar, dot or band for details.</p></div>
+  <div class="controls">
+    <div class="grp"><span class="lab">Lenses</span>
+      <label class="ck"><input type="checkbox" id="l-sh" checked> Fourth Turning</label>
+      <label class="ck"><input type="checkbox" id="l-kw" checked> Kondratiev waves</label>
+      <label class="ck"><input type="checkbox" id="l-tu" checked> Turchin 50-year peaks</label>
+      <label class="ck"><input type="checkbox" id="l-dy" checked> Chinese dynasties</label>
+    </div>
+    <div class="grp"><label class="ck"><input type="checkbox" id="l-pj"> Project turnings onto Tier 2 (contested)</label></div>
+    <div class="grp"><span class="lab">Span</span>
+      <div class="seg" role="group" aria-label="Time span">
+        <button type="button" data-r="all" aria-pressed="false">1430–2045</button>
+        <button type="button" data-r="mid" aria-pressed="true">1750–2045</button>
+        <button type="button" data-r="rec" aria-pressed="false">1900–2045</button>
+      </div></div>
+  </div>
+  <div class="tl" id="tl"><div class="tl-l" id="tl-l"></div><div class="tl-r" id="tl-r"></div></div>
+  <div class="badges" id="kinds" aria-label="Event colors"></div>
+  <div class="detail" id="detail" aria-live="polite"></div>
+</section>
+
+<section id="now">
+  <div class="sec-h"><div class="eyebrow">Where the theory says we are</div><h2>The clock and the forecast window</h2>
+  <p class="lede">Each ring is one saeculum stretched to the same length, so the same season lines up across rings. The outer ring is the current one.</p></div>
+  <div class="two">
+    <div class="card"><svg id="clock" viewBox="0 0 260 260" width="100%" style="max-width:300px;display:block;margin:0 auto" role="img" aria-label="Saeculum clock"></svg><div class="legend" id="clock-leg"></div></div>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="card stat"><div class="eyebrow">Today</div><div class="now-big" id="now-big"></div><p id="now-txt" class="small"></p></div>
+      <div class="card"><h3>Crisis end: three ways to read it</h3><p class="small" style="margin-top:4px">Bars show the window each reading allows. The derived window uses only the gaps between past Crisis endings in the Strauss–Howe table.</p>
+        <div style="overflow-x:auto;margin-top:8px"><svg id="ribbon" viewBox="0 0 760 190" width="100%" style="min-width:560px;display:block" role="img" aria-label="Forecast window ribbon"></svg></div></div>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="card"><h3>How long past Crises lasted</h3><p class="small">Years, from the Strauss–Howe turning table. The Civil War Crisis is the outlier; the authors say it came early.</p><div class="bars" id="b-dur"></div></div>
+    <div class="card"><h3>Years between Crisis endings</h3><p class="small">Saeculum length measured end to end. Five intervals, from 71 to 110 years.</p><div class="bars" id="b-gap"></div></div>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="sec-h"><div class="eyebrow">Similarity finder</div><h2>Line up saecula and compare phases</h2>
+  <p class="lede">Choose saecula to stack them by years since their start. Events come from the Global and Anglo-America lanes only, which is the region the theory covers. The table below places each event in the turning it fell into.</p></div>
+  <div class="chips" id="chips" role="group" aria-label="Saecula to compare"></div>
+  <div class="card" style="overflow-x:auto"><svg id="align" viewBox="0 0 960 300" width="100%" style="min-width:680px;display:block" role="img" aria-label="Aligned saecula"></svg></div>
+  <div class="tbl"><table id="cmp"></table></div>
+</section>
+
+<section id="method">
+  <div class="sec-h"><div class="eyebrow">Read before citing</div><h2>What this page can and cannot show</h2></div>
+  <div class="notes">
+    <div class="card"><h3>How to read the badges</h3><ul>
+      <li><b>S&amp;H claim:</b> a date or label that comes from Strauss and Howe's own tables and books. It is their reading, not a measurement.</li>
+      <li><b>Documented fact:</b> a dated event in standard histories.</li>
+      <li><b>Contested:</b> a cycle whose boundaries differ between authors, or a theory applied beyond its authors' scope.</li>
+      <li><b>Forecast:</b> a prediction that has not resolved.</li></ul></div>
+    <div class="card"><h3>Known criticism</h3><ul>
+      <li>Boundaries are drawn after the events are known, so the pattern can bend to fit. Peter Turchin calls this the Procrustean method.</li>
+      <li>Francis Fukuyama, reviewing the 2023 update, called the turning points arbitrary.</li>
+      <li>The theory covers Anglo-American history. Applying it to other regions is an extension its authors did not make in the same detail.</li>
+      <li>The proposed mechanism, cycles in parenting style, has little macro-level evidence.</li></ul></div>
+    <div class="card"><h3>Not in this version</h3><ul>
+      <li>Indicator charts (public debt, inequality, institutional trust, political violence). They need cleaned time series per region.</li>
+      <li>A link to a source on every event. Event dates here follow standard reference histories and should be checked before they are published as fact.</li>
+      <li>Modelski's long cycles and Ibn Khaldun's cycle as further lenses.</li>
+      <li>Turning dates before 1594 and the 1594–1704 sub-turnings follow the Wikipedia table and were not re-verified against a second source. They carry a note in the detail card.</li></ul></div>
+  </div>
+  <div class="card"><h3>Sources used to build this version</h3>
+    <ul class="src">
+      <li><a href="https://www.wikiwand.com/en/Strauss%E2%80%93Howe_generational_theory">Strauss–Howe generational theory (Wikipedia mirror)</a>: saecula, turnings, generations</li>
+      <li><a href="https://www.benmunoz.com/the-fourth-turning-by-neil-howe-and-william-strauss/">Summary of The Fourth Turning</a>: Crisis dates and climaxes</li>
+      <li><a href="https://wiki.p2pfoundation.net/Fourth_Turning">P2P Foundation wiki, Fourth Turning</a>: Howe's descriptions of the turnings</li>
+      <li><a href="https://app.hedgeye.com/insights/58414-the-fourth-turning-why-american-crisis-may-last-until-2030">Neil Howe at Hedgeye, 2017</a>: current Crisis begins 2008, runs to about 2030</li>
+      <li><a href="https://www.publishersweekly.com/9781982173739">Publishers Weekly on The Fourth Turning Is Here (2023)</a> and <a href="https://www.foreignaffairs.com/reviews/fourth-turning-here-what-seasons-history-tell-us-about-how-and-when-crisis-will-end">Foreign Affairs review</a>: the 2023 forecast of a climax around 2030</li>
+      <li><a href="https://psmag.com/?p=42812">Pacific Standard on American generations</a> and <a href="https://www.cdamm.org/articles/strauss-howe">CDAMM</a>: birth-year spans and archetypes</li>
+      <li><a href="https://academickids.com/encyclopedia/index.php/William_Strauss">Academic Kids on Strauss and Howe</a>: the short Civil War Crisis explanation</li>
+      <li><a href="https://peterturchin.com/the-science-behind-my-forecast-for-2020/">Peter Turchin, forecast for 2020</a>, <a href="https://bigthink.com/the-present/2020-predictions/">Big Think</a> and <a href="https://nature.com/news/polopoly_fs/1.11078!/menu/main/topColumns/topLeftColumn/pdf/488024a.pdf">Nature</a>: 50-year instability peaks in 1870, 1920, 1970 and the 2020 forecast</li>
+      <li><a href="https://encyclopedia.com/social-sciences/applied-and-social-sciences-magazines/long-waves">Encyclopedia.com on long waves</a>, <a href="https://corporatefinanceinstitute.com/resources/economics/kondratieff-wave/">CFI on Kondratieff waves</a> and <a href="https://naukaru.ru/en/nauka/article/9933/view">a UK wave-modelling paper</a>: wave dates and technologies</li>
+      <li><a href="https://evidencefinance.neocities.org/fourthturning">Critical assessment of the theory</a>: secondary source for the criticisms above</li>
+    </ul></div>
+</section>
+</div>
+
+<script>
+/* ---------- data ---------- */
+var NOWD=(function(){var d=new Date();var s=new Date(d.getFullYear(),0,1);return d.getFullYear()+(d-s)/(365.25*864e5);})();
+var SH={
+  high:{name:'High',v:'--high',mood:'Institutions are strong and individualism is weak. Society is confident about shared goals.'},
+  awake:{name:'Awakening',v:'--awake',mood:'A spiritual upheaval attacks the established order in the name of personal and moral autonomy.'},
+  unravel:{name:'Unraveling',v:'--unravel',mood:'Institutions are weak and distrusted while individualism is strong.'},
+  crisis:{name:'Crisis',v:'--crisis',mood:'A decisive era of secular upheaval in which the old civic order is replaced by a new one.'}
+};
+function T(t,s,e,l){return {t:t,s:s,e:e,l:l};}
+var SAE=[
+ {id:'late',name:'Late Medieval',s:1435,e:1487,partial:true,v:false,climax:1485,tn:[T('unravel',1435,1459,'Retreat from France'),T('crisis',1459,1487,'Wars of the Roses')]},
+ {id:'ref',name:'Reformation',s:1487,e:1594,v:false,climax:1588,tn:[T('high',1487,1525,'Tudor Renaissance'),T('awake',1525,1551,'Protestant Reformation'),T('unravel',1551,1569,'Religious conflict'),T('crisis',1569,1594,'Armada Crisis')]},
+ {id:'nw',name:'New World',s:1594,e:1704,v:false,climax:1689,tn:[T('high',1594,1621,'Merrie England'),T('awake',1621,1649,'Puritan Awakening'),T('unravel',1649,1675,'Reaction and Restoration'),T('crisis',1675,1704,'Glorious Revolution')]},
+ {id:'rev',name:'Revolutionary',s:1704,e:1794,v:true,climax:1781,tn:[T('high',1704,1727,'Augustan Age of Empire'),T('awake',1727,1746,'Great Awakening'),T('unravel',1746,1773,'Seven Years’ War era'),T('crisis',1773,1794,'American Revolution')]},
+ {id:'cw',name:'Civil War',s:1794,e:1865,v:true,climax:1863,tn:[T('high',1794,1822,'Era of Good Feelings'),T('awake',1822,1844,'Transcendental Awakening'),T('unravel',1844,1860,'Mexican War and sectionalism'),T('crisis',1860,1865,'Civil War')]},
+ {id:'gp',name:'Great Power',s:1865,e:1946,v:true,climax:1944,tn:[T('high',1865,1886,'Reconstruction and Gilded Age'),T('awake',1886,1908,'Missionary Awakening'),T('unravel',1908,1929,'World War I and the Roaring Twenties'),T('crisis',1929,1946,'Great Depression and World War II')]},
+ {id:'mil',name:'Millennial',s:1946,e:2033,v:true,climax:2030,prov:true,tn:[T('high',1946,1964,'Post-war High'),T('awake',1964,1984,'Consciousness Revolution'),T('unravel',1984,2008,'Culture Wars'),T('crisis',2008,2033,'Millennial Crisis (provisional)')]}
+];
+var GEN=[
+ ['Humanist','artist',1461,1482],['Reformation','prophet',1483,1511],['Reprisal','nomad',1512,1540],['Elizabethan','hero',1541,1565],['Parliamentary','artist',1566,1587],
+ ['Puritan','prophet',1584,1614],['Cavalier','nomad',1615,1647],['Glorious','hero',1648,1673],['Enlightenment','artist',1674,1700],
+ ['Awakening','prophet',1701,1723],['Liberty','nomad',1724,1741],['Republican','hero',1742,1766],['Compromise','artist',1767,1791],
+ ['Transcendental','prophet',1792,1821],['Gilded','nomad',1822,1842],['Progressive','artist',1843,1859],
+ ['Missionary','prophet',1860,1882],['Lost','nomad',1883,1900],['G.I.','hero',1901,1924],['Silent','artist',1925,1942],
+ ['Boomer','prophet',1943,1960],['Gen X','nomad',1961,1981],['Millennial','hero',1982,2004],['Homeland','artist',2006,2029]
+];
+var ARCH={prophet:{n:'Prophet',d:'Idealist. Comes of age during a High, leads during a Crisis.'},nomad:{n:'Nomad',d:'Reactive. Grows up during an Awakening, leads as the Crisis arrives.'},hero:{n:'Hero',d:'Civic. Grows up during an Unraveling, builds in the Crisis.'},artist:{n:'Artist',d:'Adaptive. Grows up during a Crisis, matures into the next High.'}};
+var KW=[
+ {n:'K1',tech:'Steam and textiles',s:1780,e:1830},{n:'K2',tech:'Railways and steel',s:1830,e:1887},{n:'K3',tech:'Electricity and chemicals',s:1887,e:1926},
+ {n:'K4',tech:'Oil and mass production',s:1926,e:1985},{n:'K5',tech:'Information technology',s:1985,e:2045}
+];
+var TU=[{y:1870,f:false},{y:1920,f:false},{y:1970,f:false},{y:2020,f:true}];
+var DY=[{n:'Ming',s:1368,e:1644},{n:'Qing',s:1644,e:1912},{n:'Republic of China',s:1912,e:1949},{n:'People’s Republic',s:1949,e:2045}];
+var EV=[];
+function E(l,s,e,k,t,n){EV.push({l:l,s:s,e:e,k:k,t:t,n:n||''});}
+E('global',1756,1763,'war','Seven Years’ War','Fought across Europe, North America and India. Often called the first global war.');
+E('global',1803,1815,'war','Napoleonic Wars');
+E('global',1914,1918,'war','World War I');
+E('global',1929,1939,'econ','Great Depression','Began with the Wall Street crash of October 1929 and ran through the 1930s.');
+E('global',1939,1945,'war','World War II');
+E('global',1947,1991,'pol','Cold War');
+E('global',2007,2009,'econ','Global Financial Crisis','Banking crisis that peaked with the Lehman Brothers failure in September 2008.');
+E('global',2020,2023,'soc','COVID-19 pandemic','The WHO declared a pandemic in March 2020 and ended the global health emergency in May 2023.');
+E('global',2022,null,'war','Russia invades Ukraine','Full-scale invasion began 24 February 2022.');
+E('anglo',1455,1487,'war','Wars of the Roses','English dynastic civil wars. The Strauss–Howe Crisis is dated 1459–1487.');
+E('anglo',1588,null,'war','Spanish Armada','English fleet defeats the Spanish invasion attempt.');
+E('anglo',1642,1651,'war','English Civil War');
+E('anglo',1675,1676,'war','King Philip’s War','Conflict between New England colonists and Native peoples.');
+E('anglo',1688,null,'pol','Glorious Revolution','William of Orange replaces James II.');
+E('anglo',1730,1745,'soc','First Great Awakening','Religious revival in the colonies. Dates are approximate.');
+E('anglo',1760,1840,'econ','Industrial Revolution (Britain)','Dates are approximate and vary by author.');
+E('anglo',1775,1783,'war','American Revolutionary War');
+E('anglo',1776,null,'pol','Declaration of Independence');
+E('anglo',1787,null,'pol','US Constitution drafted');
+E('anglo',1790,1840,'soc','Second Great Awakening','Dates are approximate.');
+E('anglo',1812,1815,'war','War of 1812');
+E('anglo',1832,null,'pol','Great Reform Act (UK)');
+E('anglo',1861,1865,'war','American Civil War');
+E('anglo',1920,1933,'soc','Prohibition (US)');
+E('anglo',1929,null,'econ','Wall Street crash','Stock market collapse in October 1929.');
+E('anglo',1933,1939,'pol','New Deal');
+E('anglo',1941,null,'war','US enters World War II','After the attack on Pearl Harbor in December 1941.');
+E('anglo',1964,null,'pol','Civil Rights Act (US)');
+E('anglo',1965,1973,'war','Vietnam War: US ground combat','US combat troops were deployed from 1965 and withdrawn by 1973.');
+E('anglo',1974,null,'pol','Nixon resigns after Watergate');
+E('anglo',1980,null,'pol','Reagan elected (US)');
+E('anglo',2001,null,'war','September 11 attacks');
+E('anglo',2016,null,'pol','Brexit referendum (UK)','23 June 2016.');
+E('weu',1517,null,'soc','Luther’s Ninety-five Theses','Start of the Protestant Reformation.');
+E('weu',1618,1648,'war','Thirty Years’ War','Ended with the Peace of Westphalia.');
+E('weu',1789,1799,'pol','French Revolution');
+E('weu',1848,1849,'pol','Revolutions of 1848');
+E('weu',1871,null,'pol','German unification');
+E('weu',1919,null,'pol','Treaty of Versailles');
+E('weu',1989,null,'pol','Berlin Wall falls');
+E('weu',1992,null,'pol','Maastricht Treaty signed','Founding treaty of the European Union.');
+E('weu',2010,2012,'econ','Eurozone debt crisis');
+E('japan',1467,1615,'war','Sengoku period','Approximate dates for the era of warring provinces.');
+E('japan',1603,1868,'pol','Tokugawa shogunate');
+E('japan',1853,null,'pol','Perry’s fleet arrives');
+E('japan',1868,null,'pol','Meiji Restoration');
+E('japan',1904,1905,'war','Russo-Japanese War');
+E('japan',1937,1945,'war','War with China and the Pacific War');
+E('japan',1945,1952,'pol','Allied occupation');
+E('japan',1990,1992,'econ','Asset price bubble bursts');
+E('russia',1598,1613,'pol','Time of Troubles');
+E('russia',1682,1725,'pol','Reign of Peter the Great');
+E('russia',1812,null,'war','Napoleon invades Russia');
+E('russia',1861,null,'pol','Emancipation of the serfs');
+E('russia',1917,null,'pol','Revolutions of 1917');
+E('russia',1918,1922,'war','Russian Civil War');
+E('russia',1991,null,'pol','Soviet Union dissolves');
+E('china',1644,null,'pol','Ming to Qing','Manchu forces take Beijing.');
+E('china',1839,1842,'war','First Opium War');
+E('china',1850,1864,'war','Taiping Rebellion');
+E('china',1911,null,'pol','Xinhai Revolution');
+E('china',1937,1945,'war','War with Japan');
+E('china',1949,null,'pol','People’s Republic founded');
+E('china',1966,1976,'soc','Cultural Revolution');
+E('china',1978,null,'econ','Reform and opening');
+E('india',1526,1857,'pol','Mughal Empire');
+E('india',1757,null,'war','Battle of Plassey','Marks the rise of East India Company rule.');
+E('india',1857,null,'war','Rebellion of 1857');
+E('india',1947,null,'pol','Independence and partition');
+E('india',1991,null,'econ','Economic liberalization');
+E('mena',1453,null,'war','Fall of Constantinople');
+E('mena',1501,1736,'pol','Safavid dynasty (Persia)');
+E('mena',1435,1922,'pol','Ottoman Empire','The empire began in about 1299 and ended in 1922.');
+E('mena',1916,null,'pol','Sykes–Picot Agreement');
+E('mena',1924,null,'pol','Caliphate abolished');
+E('mena',1979,null,'pol','Iranian Revolution');
+E('mena',1990,1991,'war','Gulf War');
+E('mena',2010,2012,'pol','Arab Spring');
+E('africa',1884,1885,'pol','Berlin Conference');
+E('africa',1896,null,'war','Battle of Adwa','Ethiopia defeats Italy.');
+E('africa',1957,null,'pol','Ghana independence');
+E('africa',1960,null,'pol','Year of Africa','Seventeen states gain independence.');
+E('africa',1994,null,'pol','South Africa’s first democratic election');
+E('latam',1521,null,'war','Fall of Tenochtitlan');
+E('latam',1791,1804,'pol','Haitian Revolution');
+E('latam',1808,1826,'war','Wars of independence','Approximate span of the Spanish-American independence wars.');
+E('latam',1959,null,'pol','Cuban Revolution');
+E('latam',1982,null,'econ','Latin American debt crisis');
+var KC={war:['War','--war'],econ:['Economy','--econ'],pol:['Politics','--pol'],soc:['Society','--soc']};
+var LANES=[
+ {id:'global',name:'Global',tier:'Reference'},
+ {id:'kw',name:'Kondratiev waves',tier:'Lens · contested',lens:'kw'},
+ {id:'tu',name:'Turchin peaks',tier:'Lens · US model',lens:'tu'},
+ {id:'anglo',name:'Anglo-America',tier:'Tier 1 · US, UK',sh:true},
+ {id:'weu',name:'Western Europe',tier:'Tier 2 · extension',proj:true},
+ {id:'japan',name:'Japan',tier:'Tier 2 · extension',proj:true},
+ {id:'russia',name:'Russia',tier:'Tier 2 · extension',proj:true},
+ {id:'china',name:'China',tier:'Tier 3 · events only',dy:true},
+ {id:'india',name:'India',tier:'Tier 3 · events only'},
+ {id:'mena',name:'Middle East',tier:'Tier 3 · events only'},
+ {id:'africa',name:'Africa',tier:'Tier 3 · events only'},
+ {id:'latam',name:'Latin America',tier:'Tier 3 · events only'}
+];
+var RANGES={all:{s:1430,e:2045,ppy:3.4,step:50},mid:{s:1750,e:2045,ppy:7.4,step:25},rec:{s:1900,e:2045,ppy:14,step:10}};
+
+/* ---------- helpers ---------- */
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fy(y){return y>=NOWD&&y>2026?String(y):String(y);}
+function span(s,e){return e==null||e===s?String(s):s+'–'+e;}
+var BD={sh:['sh','S&H claim'],doc:['doc','Documented fact'],con:['con','Contested'],spec:['spec','Forecast']};
+function badge(k){return '<span class="bd '+BD[k][0]+'"><i></i>'+BD[k][1]+'</span>';}
+var state={r:'mid',sh:true,kw:true,tu:true,dy:true,pj:false};
+var R=RANGES.mid;
+function X(y){return (y-R.s)*R.ppy;}
+
+/* ---------- timeline ---------- */
+function layoutEvents(list){
+  var levels=[],out=[];
+  list.slice().sort(function(a,b){return a.s-b.s;}).forEach(function(ev){
+    var x0=Math.max(0,X(ev.s)),isSpan=ev.e!=null&&ev.e>ev.s,x1=isSpan?X(Math.min(ev.e,R.e)):x0,tw=ev.t.length*5.9;
+    var ext=isSpan?Math.max(x1,x0+tw):x0+10+tw,lv=0;
+    while(levels[lv]!=null&&levels[lv]>x0-8)lv++;
+    levels[lv]=ext;out.push({ev:ev,lv:lv,x0:x0,x1:x1,isSpan:isSpan});
+  });
+  return {out:out,n:levels.length};
+}
+function renderTimeline(){
+  R=RANGES[state.r];
+  var W=(R.e-R.s)*R.ppy,AX=28,RH=17;
+  var rows=[],y=AX,html='',lab='<div class="lbl axis" style="height:'+AX+'px"><small>YEAR</small></div>';
+  var defs='<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--fg)" stroke-width="1.4" opacity=".35"/></pattern></defs>';
+  var body='',lanesH=[];
+  LANES.forEach(function(L){
+    if(L.lens==='kw'&&!state.kw)return;
+    if(L.lens==='tu'&&!state.tu)return;
+    var list=EV.filter(function(e){return e.l===L.id&&e.s<=R.e&&(e.e==null?e.s:e.e)>=R.s;});
+    var lay=layoutEvents(list),pad=6,h=pad,rowsInfo={};
+    if(L.sh&&state.sh){rowsInfo.tn=h;h+=26;rowsInfo.gn=h;h+=22;}
+    if(L.dy&&state.dy){rowsInfo.dy=h;h+=24;}
+    if(L.lens){rowsInfo.lens=h;h+=34;}
+    if(!L.lens){rowsInfo.ev=h;h+=Math.max(1,lay.n)*RH+4;}
+    h+=pad;
+    lanesH.push({L:L,y:y,h:h,rowsInfo:rowsInfo,lay:lay});
+    lab+='<div class="lbl" style="height:'+h+'px"><b>'+esc(L.name)+'</b><small>'+esc(L.tier)+'</small></div>';
+    y+=h;
+  });
+  var H=y;
+  // grid and axis
+  var gx='';
+  for(var yr=Math.ceil(R.s/R.step)*R.step;yr<=R.e;yr+=R.step){var x=X(yr);gx+='<line class="grid" x1="'+x+'" x2="'+x+'" y1="'+AX+'" y2="'+H+'"/><text class="ax" x="'+(x+4)+'" y="18">'+yr+'</text>';}
+  // lane separators and projected bands
+  var lb='';
+  lanesH.forEach(function(o){
+    lb+='<line class="grid" x1="0" x2="'+W+'" y1="'+(o.y+o.h)+'" y2="'+(o.y+o.h)+'"/>';
+    if(o.L.proj&&state.pj&&state.sh){
+      SAE.forEach(function(sa,si){sa.tn.forEach(function(t,ti){
+        if(t.e<R.s||t.s>R.e)return;
+        lb+='<rect x="'+X(Math.max(t.s,R.s))+'" y="'+o.y+'" width="'+(X(Math.min(t.e,R.e))-X(Math.max(t.s,R.s)))+'" height="'+o.h+'" fill="var('+SH[t.t].v+')" opacity=".16" pointer-events="none"><title>Projected turning, contested: '+SH[t.t].name+' '+t.s+'–'+t.e+'</title></rect>';
+      });});
+    }
+  });
+  // forecast band + now line
+  var fb='';
+  if(state.sh){fb='<rect x="'+X(2030)+'" y="'+AX+'" width="'+(X(2033)-X(2030))+'" height="'+(H-AX)+'" fill="url(#hatch)" pointer-events="none"><title>Howe: Crisis climax about 2030, end about 2033</title></rect>';}
+  fb+='<line x1="'+X(NOWD)+'" x2="'+X(NOWD)+'" y1="'+AX+'" y2="'+H+'" stroke="var(--now)" stroke-width="1.5" stroke-dasharray="4 3" pointer-events="none"/><text x="'+(X(NOWD)-4)+'" y="'+(AX-12)+'" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--now)">today</text>';
+  var elems='';
+  lanesH.forEach(function(o){
+    var L=o.L,ri=o.rowsInfo,by=o.y;
+    if(ri.tn!=null){
+      SAE.forEach(function(sa,si){sa.tn.forEach(function(t,ti){
+        if(t.e<R.s||t.s>R.e)return;
+        var x0=X(Math.max(t.s,R.s)),x1=X(Math.min(t.e,R.e)),w=x1-x0,fill=(sa.prov&&ti===3)?'':'';
+        var txt=w>150?SH[t.t].name+' · '+t.l:w>46?SH[t.t].name:'';
+        var maxc=Math.floor((w-8)/5.8);if(txt.length>maxc)txt=SH[t.t].name.length<=maxc?SH[t.t].name:'';
+        elems+='<g data-k="tn" data-i="'+si+'-'+ti+'" tabindex="0" role="button" aria-label="'+esc(SH[t.t].name+' '+t.s+' to '+t.e)+'"><rect class="hl" x="'+x0+'" y="'+(by+ri.tn)+'" width="'+Math.max(w-1,1)+'" height="22" rx="2" fill="var('+SH[t.t].v+')"/>';
+        if(sa.prov&&ti===3){var px=X(Math.max(NOWD,R.s));elems+='<rect x="'+px+'" y="'+(by+ri.tn)+'" width="'+Math.max(x1-px,0)+'" height="22" fill="url(#hatch)" pointer-events="none"/>';}
+        elems+='<text class="bt" x="'+(x0+5)+'" y="'+(by+ri.tn+15)+'">'+esc(txt)+'</text><title>'+esc(SH[t.t].name+' '+t.s+'–'+t.e+' ('+sa.name+' saeculum)')+'</title></g>';
+        if(ti===3&&sa.climax>=R.s&&sa.climax<=R.e){elems+='<path d="M'+(X(sa.climax)-4)+','+(by+ri.tn+26)+' l4,-6 l4,6z" fill="var(--fg)" pointer-events="none"><title>Crisis climax '+sa.climax+(sa.prov?' (forecast)':'')+'</title></path>';}
+      });});
+      GEN.forEach(function(g,gi){
+        if(g[3]<R.s||g[2]>R.e)return;
+        var x0=X(Math.max(g[2],R.s)),x1=X(Math.min(g[3]+1,R.e)),w=x1-x0,txt=g[0];
+        if(txt.length*5.6>w-6)txt=w>40?txt.slice(0,Math.max(2,Math.floor((w-8)/5.6)-1))+'…':'';
+        if(w<=40)txt='';
+        elems+='<g data-k="gn" data-i="'+gi+'" tabindex="0" role="button" aria-label="'+esc(g[0]+' generation')+'"><rect class="hl" x="'+x0+'" y="'+(by+ri.gn)+'" width="'+Math.max(w-1,1)+'" height="18" rx="2" fill="var(--'+g[1]+')"/><text class="bt" x="'+(x0+4)+'" y="'+(by+ri.gn+13)+'">'+esc(txt)+'</text><title>'+esc(g[0]+' generation, born '+g[2]+'–'+g[3]+' ('+ARCH[g[1]].n+')')+'</title></g>';
+      });
+    }
+    if(ri.dy!=null){
+      DY.forEach(function(d,di){
+        if(d.e<R.s||d.s>R.e)return;
+        var x0=X(Math.max(d.s,R.s)),x1=X(Math.min(d.e,R.e)),w=x1-x0,col=di%2?'--soft':'--line';
+        elems+='<g data-k="dy" data-i="'+di+'" tabindex="0" role="button" aria-label="'+esc(d.n)+'"><rect class="hl" x="'+x0+'" y="'+(by+ri.dy)+'" width="'+Math.max(w-1,1)+'" height="20" rx="2" fill="var('+col+')" stroke="var(--line)"/><text class="t" x="'+(x0+5)+'" y="'+(by+ri.dy+14)+'">'+esc(w>d.n.length*6+8?d.n:'')+'</text><title>'+esc(d.n+' '+d.s+'–'+(d.e>2026?'present':d.e))+'</title></g>';
+      });
+    }
+    if(L.lens==='kw'){
+      KW.forEach(function(k,ki){
+        if(k.e<R.s||k.s>R.e)return;
+        var x0=X(Math.max(k.s,R.s)),x1=X(Math.min(k.e,R.e)),w=x1-x0,txt=w>150?k.n+' · '+k.tech:w>30?k.n:'';
+        elems+='<g data-k="kw" data-i="'+ki+'" tabindex="0" role="button" aria-label="'+esc(k.n+' '+k.tech)+'"><rect class="hl" x="'+x0+'" y="'+(by+ri.lens)+'" width="'+Math.max(w-1,1)+'" height="26" rx="2" fill="var(--'+(ki%2?'soft':'line')+')" stroke="var(--line)"/><text class="t" x="'+(x0+5)+'" y="'+(by+ri.lens+17)+'">'+esc(txt)+'</text><title>'+esc(k.n+' '+k.tech+' ≈'+k.s+'–'+k.e)+'</title></g>';
+      });
+    }
+    if(L.lens==='tu'){
+      TU.forEach(function(p,pi){
+        if(p.y+8<R.s||p.y-8>R.e)return;
+        var cx=X(p.y),fill=p.f?'none':'var(--fg)';
+        elems+='<g data-k="tu" data-i="'+pi+'" tabindex="0" role="button" aria-label="Turchin peak '+p.y+'"><rect class="hl" x="'+(cx-X(R.s+5)+X(R.s))+'" y="'+(by+ri.lens+8)+'" width="'+(10*R.ppy)+'" height="10" rx="5" fill="var(--soft)" stroke="var(--line)"/><circle cx="'+cx+'" cy="'+(by+ri.lens+13)+'" r="5" fill="'+fill+'" stroke="var(--fg)" stroke-width="1.5"/><text class="t" x="'+(cx+10*R.ppy/2+6)+'" y="'+(by+ri.lens+17)+'">'+p.y+(p.f?' (forecast)':'')+'</text><title>Turchin 50-year instability peak '+(p.f?'forecast for ':'around ')+p.y+'</title></g>';
+      });
+    }
+    if(ri.ev!=null){
+      o.lay.out.forEach(function(it){
+        var ev=it.ev,ei=EV.indexOf(ev),yy=by+ri.ev+it.lv*RH,col='var('+KC[ev.k][1]+')';
+        if(it.isSpan){elems+='<g data-k="ev" data-i="'+ei+'" tabindex="0" role="button" aria-label="'+esc(ev.t)+'"><rect class="hl" x="'+it.x0+'" y="'+(yy+11)+'" width="'+Math.max(it.x1-it.x0,2)+'" height="4" rx="2" fill="'+col+'"/><text class="t" x="'+(it.x0+1)+'" y="'+(yy+9)+'">'+esc(ev.t)+'</text><title>'+esc(ev.t+' '+span(ev.s,ev.e))+'</title></g>';}
+        else{elems+='<g data-k="ev" data-i="'+ei+'" tabindex="0" role="button" aria-label="'+esc(ev.t)+'"><rect class="hl" x="'+(it.x0-4)+'" y="'+(yy+4)+'" width="8" height="8" transform="rotate(45 '+it.x0+' '+(yy+8)+')" fill="'+col+'"/><text class="t" x="'+(it.x0+9)+'" y="'+(yy+11)+'">'+esc(ev.t)+'</text><title>'+esc(ev.t+' '+ev.s)+'</title></g>';}
+      });
+    }
+  });
+  $('tl-l').innerHTML=lab;
+  $('tl-r').innerHTML='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Timeline of regions and cycle lenses">'+defs+'<rect x="0" y="0" width="'+W+'" height="'+AX+'" fill="var(--soft)"/>'+gx+lb+fb+elems+'</svg>';
+  var sc=$('tl-r');sc.style.scrollBehavior='auto';sc.scrollLeft=Math.max(0,X(NOWD)-sc.clientWidth*0.72);sc.style.scrollBehavior='';
+}
+
+/* ---------- detail card ---------- */
+var CRIT='Critics, including Peter Turchin and Francis Fukuyama, argue that Strauss and Howe fit turning boundaries to the events afterwards, so the pattern is hard to falsify.';
+function detail(html){$('detail').innerHTML=html;}
+function showDetail(k,i){
+  var h='';
+  if(k==='tn'){
+    var p=i.split('-'),sa=SAE[+p[0]],t=sa.tn[+p[1]],S=SH[t.t];
+    var extra=[];
+    if(!sa.v)extra.push('The date for this early turning follows the Wikipedia table and was not re-checked against a second source in this build.');
+    if(sa.partial)extra.push('This saeculum is shown from its Unraveling only, so it is left out of the comparison.');
+    if(sa.prov&&t.t==='crisis')extra.push('This Crisis is still running. The 2033 end and the 2030 climax are Howe’s 2023 forecast.');
+    if(sa.id==='cw'&&t.t==='crisis')extra.push('Strauss and Howe say this Crisis came about a decade early and lasted only 1860–1865, much shorter than the usual twenty years or more.');
+    h='<div class="row">'+badge(sa.prov&&t.t==='crisis'?'spec':'sh')+'<span class="meta">'+esc(sa.name)+' saeculum</span></div><h3>'+S.name+': '+esc(t.l)+'</h3><div class="meta">'+t.s+'–'+t.e+' · '+(t.e-t.s)+' years'+(t.t==='crisis'&&sa.climax?' · climax '+sa.climax+(sa.prov?' (forecast)':''):'')+'</div><p>'+S.mood+'</p>'+extra.map(function(x){return '<p class="small">'+esc(x)+'</p>';}).join('')+'<p class="crit">'+CRIT+'</p>';
+  }else if(k==='gn'){
+    var g=GEN[+i],a=ARCH[g[1]];
+    h='<div class="row">'+badge('sh')+'<span class="meta">Generation</span></div><h3>'+esc(g[0])+' generation <span class="meta">('+a.n+')</span></h3><div class="meta">Born '+g[2]+'–'+g[3]+'</div><p>'+esc(a.d)+'</p><p class="crit">Generation boundaries are chosen by the authors, and several birth-year spans differ between publications.</p>';
+  }else if(k==='ev'){
+    var e=EV[+i],lane=LANES.filter(function(l){return l.id===e.l;})[0];
+    h='<div class="row">'+badge('doc')+'<span class="meta">'+KC[e.k][0]+' · '+esc(lane.name)+'</span></div><h3>'+esc(e.t)+'</h3><div class="meta">'+span(e.s,e.e)+'</div>'+(e.n?'<p>'+esc(e.n)+'</p>':'')+'<p class="small">Which turning this falls in depends on the lens you choose. Switch on the Fourth Turning band in the Anglo-America lane to compare.</p>';
+  }else if(k==='kw'){
+    var w=KW[+i];
+    h='<div class="row">'+badge('con')+'<span class="meta">Kondratiev wave</span></div><h3>'+w.n+': '+esc(w.tech)+'</h3><div class="meta">About '+w.s+'–'+(w.e>2030?'present':w.e)+'</div><p>Long economic waves of roughly 40 to 60 years, tied to clusters of technology. Authors agree on five waves since the Industrial Revolution but disagree on where they start and stop.</p><p class="small">Bands here join start years from several sources (K1 and K2 from a general reference, K3 to K5 from modelling of UK data). Treat the edges as approximate.</p>';
+  }else if(k==='tu'){
+    var q=TU[+i];
+    h='<div class="row">'+badge(q.f?'spec':'doc')+'<span class="meta">Turchin · fathers-and-sons cycle</span></div><h3>Instability peak '+(q.f?'forecast for ':'around ')+q.y+'</h3><div class="meta">US, about 50-year cycle</div><p>Peter Turchin found peaks of US political violence near 1870, 1920 and 1970, and in 2010 forecast the next for about 2020. He and Andrey Korotayev published a retrospective check of that forecast in 2020.</p><p class="small">This lens runs on structural pressures: falling wages, elite competition and state finances. It is a different mechanism from generations.</p>';
+  }else if(k==='dy'){
+    var d=DY[+i];
+    h='<div class="row">'+badge('doc')+'<span class="meta">Chinese rule</span></div><h3>'+esc(d.n)+'</h3><div class="meta">'+d.s+'–'+(d.e>2026?'present':d.e)+'</div><p>The dynastic cycle of rise, consolidation and decline fits Chinese history better than the Strauss–Howe scheme, which was not built for it. Compare its transitions with the events in the lane.</p>';
+  }
+  detail(h);
+}
+function wireDetail(){
+  var r=$('tl-r');
+  r.addEventListener('click',function(ev){var g=ev.target.closest('[data-k]');if(g)showDetail(g.getAttribute('data-k'),g.getAttribute('data-i'));});
+  r.addEventListener('keydown',function(ev){if(ev.key==='Enter'||ev.key===' '){var g=ev.target.closest('[data-k]');if(g){ev.preventDefault();showDetail(g.getAttribute('data-k'),g.getAttribute('data-i'));}}});
+}
+
+/* ---------- clock ---------- */
+function pt(cx,cy,r,a){var t=a*Math.PI/180;return [cx+r*Math.sin(t),cy-r*Math.cos(t)];}
+function arc(cx,cy,r0,r1,a0,a1){var p1=pt(cx,cy,r1,a0),p2=pt(cx,cy,r1,a1),p3=pt(cx,cy,r0,a1),p4=pt(cx,cy,r0,a0),lg=(a1-a0)>180?1:0;
+  return 'M'+p1[0]+','+p1[1]+' A'+r1+','+r1+' 0 '+lg+' 1 '+p2[0]+','+p2[1]+' L'+p3[0]+','+p3[1]+' A'+r0+','+r0+' 0 '+lg+' 0 '+p4[0]+','+p4[1]+'Z';}
+function renderClock(){
+  var rings=SAE.filter(function(s){return s.id!=='late';}),n=rings.length,out='',cx=130,cy=130;
+  rings.forEach(function(sa,idx){
+    var rr=n-1-idx,r1=112-rr*16,r0=r1-14,len=sa.e-sa.s;
+    sa.tn.forEach(function(t){
+      var a0=(t.s-sa.s)/len*360,a1=(t.e-sa.s)/len*360-.8;
+      out+='<path d="'+arc(cx,cy,r0,r1,a0,a1)+'" fill="var('+SH[t.t].v+')" opacity="'+(sa.prov?1:.72)+'"><title>'+esc(sa.name+': '+SH[t.t].name+' '+t.s+'–'+t.e)+'</title></path>';
+    });
+  });
+  var mil=SAE[SAE.length-1],ang=(NOWD-mil.s)/(mil.e-mil.s)*360,p=pt(cx,cy,114,ang),q=pt(cx,cy,10,ang);
+  out+='<line x1="'+q[0]+'" y1="'+q[1]+'" x2="'+p[0]+'" y2="'+p[1]+'" stroke="var(--now)" stroke-width="2.5"/><circle cx="'+p[0]+'" cy="'+p[1]+'" r="4.5" fill="var(--now)"/><circle cx="'+cx+'" cy="'+cy+'" r="4" fill="var(--fg)"/>';
+  out+='<text x="130" y="12" text-anchor="middle" class="ax">start</text>';
+  $('clock').innerHTML=out;
+  var lg='';rings.slice().reverse().forEach(function(s,i){lg+='<span><i style="background:var(--fg);opacity:'+(1-i*.13)+'"></i>'+(i===0?'Outer: ':'')+esc(s.name)+' '+s.s+'–'+s.e+'</span>';});
+  lg+='<span style="margin-top:6px"><i style="background:var(--high)"></i>High <i style="background:var(--awake);margin-left:6px"></i>Awakening</span><span><i style="background:var(--unravel)"></i>Unraveling <i style="background:var(--crisis);margin-left:6px"></i>Crisis</span>';
+  $('clock-leg').innerHTML=lg;
+  var c=mil.tn[3],since=NOWD-c.s,left=mil.e-NOWD;
+  $('now-big').textContent=Math.floor(NOWD);
+  $('now-txt').innerHTML='Strauss and Howe place us in the Crisis turning of the Millennial saeculum. By their dates it began in 2008, so it is about '+since.toFixed(0)+' years in, with about '+left.toFixed(0)+' to run if Howe’s 2033 end holds. Howe’s best guess for the climax is about 2030. These are forecasts, not measurements.';
+}
+function renderRibbon(){
+  var a=2018,b=2042,W=760,L=210,pw=W-L-10;function xx(y){return L+(y-a)/(b-a)*pw;}
+  var o='<defs><pattern id="h2" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--fg)" stroke-width="1.3" opacity=".4"/></pattern></defs>';
+  for(var y=a;y<=b;y+=4){o+='<line class="grid" x1="'+xx(y)+'" x2="'+xx(y)+'" y1="22" y2="170"/><text class="ax" x="'+xx(y)+'" y="14" text-anchor="middle">'+y+'</text>';}
+  function row(i,label,sub,s,e,col,mk){var yy=34+i*40;
+    o+='<text class="t" x="0" y="'+(yy+11)+'" font-weight="600">'+esc(label)+'</text><text class="tm" x="0" y="'+(yy+25)+'">'+esc(sub)+'</text>';
+    if(s!=null)o+='<rect x="'+xx(s)+'" y="'+(yy+2)+'" width="'+(xx(e)-xx(s))+'" height="20" rx="2" fill="var('+col+')"/>';
+    (mk||[]).forEach(function(m){o+='<path d="M'+(xx(m.y)-5)+','+(yy+30)+' l5,-8 l5,8z" fill="var(--fg)"/><text class="tm" x="'+xx(m.y)+'" y="'+(yy+40)+'" text-anchor="middle">'+esc(m.t)+'</text>';});}
+  row(0,'Howe, 2017–2023','S&H claim',a,2033,'--crisis',[{y:2030,t:'climax ~2030'},{y:2033,t:'end'}]);
+  row(1,'Earlier commentary','Crisis end 2028–2030',2028,2030,'--awake',[]);
+  row(2,'Derived from past gaps','Crisis endings 71–90 years apart',2027,2036,'--unravel',[]);
+  row(3,'Turchin 2010 forecast','Peak of instability about 2020',null,null,'--pol',[{y:2020,t:'2020 peak'}]);
+  var nx=xx(NOWD);o+='<line x1="'+nx+'" x2="'+nx+'" y1="22" y2="172" stroke="var(--now)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="'+(nx+4)+'" y="184" font-size="10" font-family="var(--mono)" fill="var(--now)">today</text>';
+  o+='<rect x="'+xx(NOWD)+'" y="36" width="'+(xx(2033)-xx(NOWD))+'" height="20" fill="url(#h2)"/>';
+  $('ribbon').innerHTML=o;
+  function bars(id,items,max){$(id).innerHTML=items.map(function(it){return '<div><span>'+esc(it[0])+'</span><span class="b" style="width:'+(it[1]/max*100)+'%;'+(it[2]?'background:var(--now)':'')+'"></span><b>'+it[1]+'</b></div>';}).join('');}
+  bars('b-dur',[['Wars of the Roses',28],['Armada',25],['Glorious Revolution',29],['American Revolution',21],['Civil War',5],['Depression and WWII',17],['Millennial (so far)',Math.round(NOWD-2008),1]],30);
+  bars('b-gap',[['1487 to 1594',107],['1594 to 1704',110],['1704 to 1794',90],['1794 to 1865',71],['1865 to 1946',81]],110);
+}
+
+/* ---------- comparison ---------- */
+var sel={rev:1,cw:1,gp:1,mil:1};
+function renderChips(){
+  $('chips').innerHTML=SAE.filter(function(s){return !s.partial;}).map(function(s){return '<button type="button" class="chip" data-id="'+s.id+'" aria-pressed="'+(sel[s.id]?'true':'false')+'">'+esc(s.name)+' '+s.s+'</button>';}).join('');
+}
+function evIn(sa,t){return EV.filter(function(e){return (e.l==='global'||e.l==='anglo')&&e.s>=t.s&&e.s<t.e;});}
+function renderCompare(){
+  var list=SAE.filter(function(s){return sel[s.id];}),LW=170,PW=760,MAXO=112;
+  function ax(o){return LW+o*(PW/MAXO);}
+  var rh=64,H=34+list.length*rh,o='';
+  for(var t=0;t<=MAXO;t+=10)o+='<line class="grid" x1="'+ax(t)+'" x2="'+ax(t)+'" y1="24" y2="'+H+'"/><text class="ax" x="'+ax(t)+'" y="14" text-anchor="middle">'+t+'</text>';
+  o+='<text class="tm" x="0" y="14">years since saeculum start</text>';
+  list.forEach(function(sa,i){
+    var y0=34+i*rh;
+    o+='<text class="t" x="0" y="'+(y0+14)+'" font-weight="600">'+esc(sa.name)+'</text><text class="tm" x="0" y="'+(y0+28)+'">'+sa.s+'–'+sa.e+(sa.prov?' (provisional)':'')+'</text>';
+    sa.tn.forEach(function(t){
+      var x0=ax(t.s-sa.s),x1=ax(t.e-sa.s),w=x1-x0;
+      o+='<rect x="'+x0+'" y="'+y0+'" width="'+Math.max(w-1,1)+'" height="22" rx="2" fill="var('+SH[t.t].v+')"><title>'+esc(SH[t.t].name+' '+t.s+'–'+t.e)+'</title></rect><text class="bt" x="'+(x0+4)+'" y="'+(y0+15)+'">'+esc(w>60?SH[t.t].name:w>20?SH[t.t].name.slice(0,3):'')+'</text>';
+    });
+    o+='<path d="M'+(ax(sa.climax-sa.s)-4)+','+(y0+30)+' l4,-6 l4,6z" fill="var(--fg)"><title>Crisis climax '+sa.climax+'</title></path>';
+    EV.filter(function(e){return (e.l==='global'||e.l==='anglo')&&e.s>=sa.s&&e.s<sa.e;}).forEach(function(e){
+      o+='<circle cx="'+ax(e.s-sa.s)+'" cy="'+(y0+40)+'" r="3.5" fill="var('+KC[e.k][1]+')"><title>'+esc(e.t+' '+span(e.s,e.e))+'</title></circle>';
+    });
+    if(sa.prov){var nx=ax(NOWD-sa.s);o+='<line x1="'+nx+'" x2="'+nx+'" y1="'+(y0-4)+'" y2="'+(y0+48)+'" stroke="var(--now)" stroke-width="1.5" stroke-dasharray="4 3"/><text x="'+(nx-4)+'" y="'+(y0+58)+'" text-anchor="end" font-size="10" font-family="var(--mono)" fill="var(--now)">today</text>';}
+  });
+  o+='<text class="tm" x="'+LW+'" y="'+(H+14)+'">Triangle: Crisis climax · dots: events (colors as in the timeline key)</text>';
+  var al=$('align');al.setAttribute('viewBox','0 0 960 '+(H+24));al.innerHTML=o;
+  var tb='<thead><tr><th>Phase</th>'+list.map(function(s){return '<th>'+esc(s.name)+'</th>';}).join('')+'</tr></thead><tbody>';
+  ['high','awake','unravel','crisis'].forEach(function(k){
+    tb+='<tr><td class="ph"><i style="background:var('+SH[k].v+')"></i>'+SH[k].name+'</td>';
+    list.forEach(function(sa){
+      var t=sa.tn.filter(function(x){return x.t===k;})[0];
+      if(!t){tb+='<td></td>';return;}
+      var es=evIn(sa,t);
+      tb+='<td><div class="small" style="margin-bottom:5px">'+t.s+'–'+t.e+' · '+esc(t.l)+'</div>'+(es.length?'<ul>'+es.map(function(e){return '<li>'+esc(e.t)+' <span>'+e.s+'</span></li>';}).join('')+'</ul>':'<span class="small">No events listed</span>')+'</td>';
+    });
+    tb+='</tr>';
+  });
+  $('cmp').innerHTML=tb+'</tbody>';
+}
+
+/* ---------- wiring ---------- */
+function init(){
+  $('kinds').innerHTML=Object.keys(KC).map(function(k){return '<span class="bd"><i style="background:var('+KC[k][1]+')"></i>'+KC[k][0]+'</span>';}).join('')+'<span class="bd"><i style="background:var(--fg);opacity:.5"></i>Hatched: forecast window</span>';
+  ['sh','kw','tu','dy','pj'].forEach(function(k){$('l-'+k).addEventListener('change',function(e){state[k]=e.target.checked;renderTimeline();});});
+  var segs=document.querySelectorAll('.seg button');
+  segs.forEach(function(b){b.addEventListener('click',function(){segs.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});state.r=b.getAttribute('data-r');renderTimeline();});});
+  $('chips').addEventListener('click',function(e){var c=e.target.closest('.chip');if(!c)return;var id=c.getAttribute('data-id');if(sel[id]){if(Object.keys(sel).filter(function(k){return sel[k];}).length<2)return;delete sel[id];}else sel[id]=1;renderChips();renderCompare();});
+  renderTimeline();wireDetail();renderClock();renderRibbon();renderChips();renderCompare();
+  var d=SAE[SAE.length-1];showDetail('tn',(SAE.length-1)+'-3');
+}
+init();
+</script>
+
+<script defer src="/_vercel/insights/script.js"></script>
+</body></html>
